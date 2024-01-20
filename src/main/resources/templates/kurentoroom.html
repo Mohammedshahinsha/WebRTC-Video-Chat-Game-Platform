@@ -19,6 +19,22 @@
 <script>
 </script>
 <style>
+    #canvas {
+        border: 1px solid black;
+        cursor: url('https://cdn-icons-png.flaticon.com/512/481/481874.png'), auto; /* 초기 커서를 연필 아이콘으로 설정 */
+    }
+
+    #editor {
+        margin-top: 10px;
+    }
+
+    #myModal .modal-dialog {
+        max-width: 800px; /* 모달의 최대 너비 설정 */
+    }
+
+    #myModal .modal-content {
+        height: 600px; /* 모달 컨텐츠의 높이 설정 */
+    }
 </style>
 <body>
 <div id="container">
@@ -58,42 +74,53 @@
     </div>
 
     <!-- chatting -->
-    <div class="floating-chat">
-        <i class="fa fa-comments" aria-hidden="true"></i>
-        <div class="chat">
-            <div class="header">
-            <span class="title">
-                Tell Me Your Story
-            </span>
-                <button>
-                    <i class="fa fa-times" aria-hidden="true"></i>
-                </button>
-            </div>
-            <ul class="messages">
+    <div class="floating-chat" style="margin-bottom: 40px">
+        <!-- 모달을 여는 버튼 -->
+        <button type="button" class="btn btn-primary" id="" data-toggle="modal" data-target="#myModal">
+            모달 열기
+        </button>
 
-            </ul>
-            <div class="footer">
-                <div class="absolute bottom-2 md:bottom-3 left-2 md:left-4">
-                    <div class="flex">
-                        <button class="btn relative p-0 text-black dark:text-white" id="uploadFile" aria-label="Attach files">
-                            <div class="flex w-full gap-2 items-center justify-center">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
-                                     xmlns="http://www.w3.org/2000/svg">
-                                    <path fill-rule="evenodd" clip-rule="evenodd"
-                                          d="M9 7C9 4.23858 11.2386 2 14 2C16.7614 2 19 4.23858 19 7V15C19 18.866 15.866 22 12 22C8.13401 22 5 18.866 5 15V9C5 8.44772 5.44772 8 6 8C6.55228 8 7 8.44772 7 9V15C7 17.7614 9.23858 20 12 20C14.7614 20 17 17.7614 17 15V7C17 5.34315 15.6569 4 14 4C12.3431 4 11 5.34315 11 7V15C11 15.5523 11.4477 16 12 16C12.5523 16 13 15.5523 13 15V9C13 8.44772 13.4477 8 14 8C14.5523 8 15 8.44772 15 9V15C15 16.6569 13.6569 18 12 18C10.3431 18 9 16.6569 9 15V7Z"
-                                          fill="currentColor"></path>
-                                </svg>
-                            </div>
-                        </button>
-                        <input type="file" id="file" style="display: none;" />
-                    </div>
-                </div>
-                <div class="text-box" contenteditable="true" disabled="true"></div>
-                <button id="sendMessage">send</button>
-            </div>
-        </div>
     </div>
+
+<!--    <div class="floating-chat">-->
+<!--        <i class="fa fa-comments" aria-hidden="true"></i>-->
+<!--        <div class="chat">-->
+<!--            <div class="header">-->
+<!--            <span class="title">-->
+<!--                Tell Me Your Story-->
+<!--            </span>-->
+<!--                <button>-->
+<!--                    <i class="fa fa-times" aria-hidden="true"></i>-->
+<!--                </button>-->
+<!--            </div>-->
+<!--            <ul class="messages">-->
+
+<!--            </ul>-->
+<!--            <div class="footer">-->
+<!--                <div class="absolute bottom-2 md:bottom-3 left-2 md:left-4">-->
+<!--                    <div class="flex">-->
+<!--                        <button class="btn relative p-0 text-black dark:text-white" id="uploadFile"-->
+<!--                                aria-label="Attach files">-->
+<!--                            <div class="flex w-full gap-2 items-center justify-center">-->
+<!--                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none"-->
+<!--                                     xmlns="http://www.w3.org/2000/svg">-->
+<!--                                    <path fill-rule="evenodd" clip-rule="evenodd"-->
+<!--                                          d="M9 7C9 4.23858 11.2386 2 14 2C16.7614 2 19 4.23858 19 7V15C19 18.866 15.866 22 12 22C8.13401 22 5 18.866 5 15V9C5 8.44772 5.44772 8 6 8C6.55228 8 7 8.44772 7 9V15C7 17.7614 9.23858 20 12 20C14.7614 20 17 17.7614 17 15V7C17 5.34315 15.6569 4 14 4C12.3431 4 11 5.34315 11 7V15C11 15.5523 11.4477 16 12 16C12.5523 16 13 15.5523 13 15V9C13 8.44772 13.4477 8 14 8C14.5523 8 15 8.44772 15 9V15C15 16.6569 13.6569 18 12 18C10.3431 18 9 16.6569 9 15V7Z"-->
+<!--                                          fill="currentColor"></path>-->
+<!--                                </svg>-->
+<!--                            </div>-->
+<!--                        </button>-->
+<!--                        <input type="file" id="file" style="display: none;"/>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--                <div class="text-box" contenteditable="true" disabled="true"></div>-->
+<!--                <button id="sendMessage">send</button>-->
+<!--            </div>-->
+<!--        </div>-->
+<!--    </div>-->
     <!-- chatting end -->
+
+
 </div>
 <script src="/js/common/ajaxUtil.js"></script>
 <script src="/js/rtc/participant.js"></script>
@@ -102,6 +129,68 @@
 <script src="/js/rtc/dataChannel.js"></script>
 <script src="/js/rtc/dataChannelChatting.js"></script>
 <script src="/js/rtc/dataChannelFileUtil.js"></script>
+<script>
+    $(document).ready(function(){
+        // 캔버스와 컨텍스트를 가져옵니다.
+        var canvas = document.getElementById('mycanvas');
+        var ctx = canvas.getContext('2d');
+
+        var drawing = false; // 그리기 상태를 추적하는 변수
+        var lastX = 0;
+        var lastY = 0;
+
+        // 마우스 위치를 설정하는 함수
+        function setMousePosition(e) {
+            var rect = canvas.getBoundingClientRect();
+            lastX = e.clientX - rect.left;
+            lastY = e.clientY - rect.top;
+        }
+
+        // 마우스 누를 때
+        canvas.addEventListener('mousedown', function (e) {
+            setMousePosition(e);
+            drawing = true;
+            const pos = {
+                "mouseInit" : true
+            }
+
+            dataChannel.sendMessage(pos, "game");
+        });
+
+        // 마우스 움직일 때
+        canvas.addEventListener('mousemove', function (e) {
+            if (drawing) {
+                ctx.beginPath();
+                ctx.moveTo(lastX, lastY);
+                setMousePosition(e);
+                ctx.lineTo(lastX, lastY);
+                ctx.stroke();
+
+                console.log("x pos : ", lastX + " ::::: " + "y pos : ", lastY);
+
+                const pos = {
+                    "mouseX": lastX,
+                    "mouseY": lastY
+                }
+
+                dataChannel.sendMessage(pos, "game");
+            }
+        });
+
+        // 마우스 뗄 때와 캔버스 밖으로 나갈 때
+        canvas.addEventListener('mouseup', function () {
+            drawing = false;
+
+        });
+        canvas.addEventListener('mouseout', function () {
+            drawing = false;
+
+        });
+    });
+
+
+
+</script>
 </body>
 </html>
 
@@ -149,6 +238,22 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-primary" id="reconnectButton">확인</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Modal -->
+<div id="myModal" class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">모달 제목</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <canvas id="mycanvas" width="800" height="600"></canvas>
             </div>
         </div>
     </div>

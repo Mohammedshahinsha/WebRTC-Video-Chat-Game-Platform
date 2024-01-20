@@ -5,6 +5,10 @@ let chanId = 0;
 
 const dataChannel = {
     user : null,
+    lastX : 0,
+    lastY : 0,
+    saveX: 0,
+    saveY : 0,
     init: function() {
         // 핸들러들을 바인딩하여 'this'가 항상 dataChannel 객체를 참조하도록 보장하기 위함
         this.handleDataChannelOpen = this.handleDataChannelOpen.bind(this);
@@ -43,6 +47,36 @@ const dataChannel = {
             this.showNewMessage(message, 'other');
             this.showNewFileMessage(file, 'other');
 
+        }  else if (recvMessage.type === "game") {
+            if (recvMessage.message.mouseInit) {
+                this.saveX = 0;
+                this.saveY = 0;
+                return;
+            }
+
+            var canvas = document.getElementById('mycanvas');
+            var ctx = canvas.getContext('2d');
+
+            if (this.saveX === 0 && this.saveY === 0) {
+                this.saveX = recvMessage.message.mouseX;
+                this.saveY = recvMessage.message.mouseY;
+            }
+
+            ctx.beginPath();
+            ctx.moveTo(this.saveX, this.saveY); // 시작점 설정
+
+            this.lastX = recvMessage.message.mouseX;
+            this.lastY = recvMessage.message.mouseY;
+            console.log("x pos : ", this.lastX + " ::::: "+"y pos : ", this.lastY);
+
+            ctx.lineTo(this.lastX, this.lastY); // 끝점 설정 (여기서는 시작점에서 조금 떨어진 위치로 설정)
+            ctx.stroke(); // 선 그리기
+
+            this.saveX = this.lastX;
+            this.saveY = this.lastY;
+
+
+
         } else {
             // 일반 메시지 처리
             let message = recvMessage.userName + " : " + recvMessage.message;
@@ -57,10 +91,10 @@ const dataChannel = {
         if (this.isNullOrUndefined(event)) return;
         // console.log("dataChannel.OnClose", event);
     },
-    sendMessage: function(message) {
+    sendMessage: function(message, type) {
         if (this.isNullOrUndefined(message)) return;
         let messageData = {
-            type : "message",
+            type : type,
             userName : this.user.name,
             message : message
         }
