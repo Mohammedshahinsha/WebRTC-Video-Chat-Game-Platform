@@ -158,18 +158,17 @@
 <script src="/js/rtc/participant.js"></script>
 <script src="/js/rtc/kurento-utils.js"></script>
 <script src="/js/rtc/kurento-service.js"></script>
-<script src="/js/rtc/dataChannel.js"></script>
-<script src="/js/rtc/dataChannelChatting.js"></script>
-<script src="/js/rtc/dataChannelFileUtil.js"></script>
-<script src="/js/rtc/mediaDevice.js"></script>
 <script>
+    var subject = '';
+    var gameLeader = false;
+    var gameStart = false;
+
     $(document).ready(function () {
         // 캔버스와 컨텍스트를 가져옵니다.
         var canvas = document.getElementById('mycanvas');
         var ctx = canvas.getContext('2d');
 
         var drawing = false; // 그리기 상태를 추적하는 변수
-        var gameStart = false;
         var lastX = 0;
         var lastY = 0;
 
@@ -188,7 +187,7 @@
                 "mouseInit": true
             }
 
-            dataChannel.sendMessage(pos, "game");
+            dataChannel.sendMessage(pos, 'gameMouseEvent');
         });
 
         // 마우스 움직일 때
@@ -207,7 +206,7 @@
                     "mouseY": lastY
                 }
 
-                dataChannel.sendMessage(pos, "game");
+                dataChannel.sendMessage(pos, 'gameMouseEvent');
             }
         });
 
@@ -243,7 +242,12 @@
         $('#startBtn').on('click', function() {
             var timeLeft = 10; // 10초로 설정
             gameStart = true;
-            $('#startBtn').attr('disabled', true);
+            gameLeader = true;
+
+            dataChannel.sendMessage('자동차', 'newGame');
+
+            // $('#startBtn').attr('disabled', false);
+            $('#answerBtn').attr('disabled', true);
 
             // 타이머 표시 업데이트
             var timerId = setInterval(function() {
@@ -271,7 +275,7 @@
 
         // answerBtn
         $('#answerBtn').on('click', function(){
-            debugger
+
             // SpeechRecognition 인터페이스 확인
             window.SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
@@ -300,14 +304,33 @@
 
                 // 결과 출력 (예: 페이지에 표시)
                 console.log(transcript);
-
                 recognition.stop();
                 console.log("음성 인식 종료");
-                TTStest();
+                // TTStest();
+
+                checkAnswer(transcript);
             });
 
         })
     });
+
+    function checkAnswer(answer){
+        if(answer === subject){
+            gameLeader = false;
+            gameStart = false;
+            $('#answerBtn').attr('disabled', false);
+            $('#startBtn').attr('disabled', true);
+
+            // 여기서 이름대신 answer 을 던지면...?
+            const newGame = {
+                "user" : name,
+                "subject" : subject
+            }
+
+
+            dataChannel.sendMessage(newGame, 'gameLeaderChange');
+        }
+    }
 
     function TTStest(){
         // SpeechSynthesis 객체 확인
@@ -354,6 +377,11 @@
     }
 
 </script>
+
+<script src="/js/rtc/dataChannel.js"></script>
+<script src="/js/rtc/dataChannelChatting.js"></script>
+<script src="/js/rtc/dataChannelFileUtil.js"></script>
+<script src="/js/rtc/mediaDevice.js"></script>
 </body>
 </html>
 
