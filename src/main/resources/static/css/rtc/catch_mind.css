@@ -1,0 +1,64 @@
+.floating-game-canvas {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  position: fixed;
+  bottom: 10px;
+  right: 10px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: -moz-linear-gradient(-45deg, #183850 0, #183850 25%, #192c46 50%, #22254c 75%, #22254c 100%);
+  background: -webkit-linear-gradient(345deg, #183850 0, #183850 25%, #192c46 50%, #22254c 75%, #22254c 100%);
+  margin-bottom: 40px;
+}
+
+#catchMindCanvas .modal-dialog {
+  max-width: 800px; /* 모달의 최대 너비 설정 */
+}
+
+#catchMindCanvas .modal-content {
+  height: 600px; /* 모달 컨텐츠의 높이 설정 */
+}
+
+/* 모달창을 더욱 중앙에 위치시키기 위한 추가적인 스타일 */
+.modal-dialog {
+  display: flex;
+  align-items: center; /* 세로 정렬 */
+  min-height: calc(100% - (.5rem * 2));
+}
+
+.modal {
+  /* 화면이 작은 장치에서도 모달이 중앙에 위치하도록 */
+  overflow-y: auto;
+}
+
+@font-face {
+  font-family: 'Press Start 2p';
+}
+
+.start-btn{
+  font-family: 'Press Start 2p';
+  text-align: center;
+  display: inline-block;
+  margin:5px;
+  font-weight: bold;
+  padding: 10px 0 10px 10px ;
+  background-color: lightgray;
+  text-shadow: -1px -1px black, 1px 1px white;
+  color: gray;
+  -webkit-border-radius: 7px;
+  -moz-border-radius: 7px;
+  -o-border-radius: 7px;
+  border-radius: 7px;
+  box-shadow: 0 .2em gray;
+  cursor: pointer;
+}
+
+.start-btn:active {
+  box-shadow: none;
+  position: relative;
+  top: .2em;
+}

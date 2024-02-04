@@ -4,33 +4,33 @@
 let chanId = 0;
 
 const dataChannel = {
-    user : null,
-    lastX : 0,
-    lastY : 0,
+    user: null,
+    lastX: 0,
+    lastY: 0,
     saveX: 0,
-    saveY : 0,
-    init: function() {
+    saveY: 0,
+    init: function () {
         // 핸들러들을 바인딩하여 'this'가 항상 dataChannel 객체를 참조하도록 보장하기 위함
         this.handleDataChannelOpen = this.handleDataChannelOpen.bind(this);
         this.handleDataChannelClose = this.handleDataChannelClose.bind(this);
         this.handleDataChannelMessageReceived = this.handleDataChannelMessageReceived.bind(this);
         this.handleDataChannelError = this.handleDataChannelError.bind(this);
     },
-    initDataChannelUser : function(user) {
+    initDataChannelUser: function (user) {
         this.user = user;
     },
-    isNullOrUndefined : function(value) {
+    isNullOrUndefined: function (value) {
         return value === null || value === undefined;
     },
-    getChannelName : function() {
+    getChannelName: function () {
         return chanId++;
     },
-    handleDataChannelOpen: function(event)  {
+    handleDataChannelOpen: function (event) {
         if (this.isNullOrUndefined(event)) return;
         // console.log("dataChannel.OnOpen", event);
         this.sendMessage("등장!!")
     },
-    handleDataChannelMessageReceived: function(event) { // datachannel 메시지 받는 부분
+    handleDataChannelMessageReceived: function (event) { // datachannel 메시지 받는 부분
         if (this.isNullOrUndefined(event)) return;
         // console.log("dataChannel.OnMessage:", event);
         let recvMessage = JSON.parse(event.data);
@@ -47,15 +47,15 @@ const dataChannel = {
             this.showNewMessage(message, 'other');
             this.showNewFileMessage(file, 'other');
 
-        }  else if (recvMessage.type === "game") {
+        } else if (recvMessage.type === "gameMouseEvent") {
+            var canvas = document.getElementById('mycanvas');
+            var ctx = canvas.getContext('2d');
+
             if (recvMessage.message.mouseInit) {
                 this.saveX = 0;
                 this.saveY = 0;
                 return;
             }
-
-            var canvas = document.getElementById('mycanvas');
-            var ctx = canvas.getContext('2d');
 
             if (this.saveX === 0 && this.saveY === 0) {
                 this.saveX = recvMessage.message.mouseX;
@@ -67,7 +67,7 @@ const dataChannel = {
 
             this.lastX = recvMessage.message.mouseX;
             this.lastY = recvMessage.message.mouseY;
-            console.log("x pos : ", this.lastX + " ::::: "+"y pos : ", this.lastY);
+            // console.log("x pos : ", this.lastX + " ::::: "+"y pos : ", this.lastY);
 
             ctx.lineTo(this.lastX, this.lastY); // 끝점 설정 (여기서는 시작점에서 조금 떨어진 위치로 설정)
             ctx.stroke(); // 선 그리기
@@ -75,38 +75,52 @@ const dataChannel = {
             this.saveX = this.lastX;
             this.saveY = this.lastY;
 
+        } else if (recvMessage.type === 'gameRequest') { // TODO 변수명 변경 필요
+            // 모달창 표시
+            $('#gameRequestModal').modal('show');
 
+        } else if (recvMessage.type === 'newGame') { // TODO 변수명 변경 필요
+            debugger
+            // 새로운 게임 시작 후 선택된 주제 저장
+            subject = recvMessage.message;
 
+        } else if (recvMessage.type === 'gameLeaderChange') { // TODO 변수명 변경 필요
+            debugger
+            startNewGame();
+
+        } else if (recvMessage.type === 'canvasClean') {
+            debugger
+            cleanCanvas();
         } else {
             // 일반 메시지 처리
             let message = recvMessage.userName + " : " + recvMessage.message;
             this.showNewMessage(message, "other");
         }
     },
-    handleDataChannelError: function(error) {
+    handleDataChannelError: function (error) {
         if (this.isNullOrUndefined(error)) return;
         console.error("dataChannel.OnError:", error);
     },
-    handleDataChannelClose: function(leaveEvent, event) {
+    handleDataChannelClose: function (leaveEvent, event) {
         if (this.isNullOrUndefined(event)) return;
         // console.log("dataChannel.OnClose", event);
     },
-    sendMessage: function(message, type) {
+    sendMessage: function (message, type) {
         if (this.isNullOrUndefined(message)) return;
         let messageData = {
-            type : type,
-            userName : this.user.name,
-            message : message
+            type: type,
+            userName: this.user.name,
+            message: message
         }
 
         this.user.rtcPeer.send(JSON.stringify(messageData));
     },
-    sendFileMessage : function(fileMeta){
+    sendFileMessage: function (fileMeta) {
         fileMeta.userName = this.user.name;
         this.user.rtcPeer.send(JSON.stringify(fileMeta));
         this.showNewFileMessage(fileMeta.fileMeta, 'self');
     },
-    showNewMessage: function(recvMessage, type) {
+    showNewMessage: function (recvMessage, type) {
         // TODO 이거는 datachannelChatting 으로 넘어가야하는거...? 고민할것! => 넘어가는게 맞는듯ㅠ
         // 기본은 '나'가 보낸것
         type = type === undefined ? 'self' : type;
@@ -140,7 +154,7 @@ const dataChannel = {
             ].join(''));
         }
     },
-    showNewFileMessage : function(file, type){
+    showNewFileMessage: function (file, type) {
 
         // 이미지 요소 생성 및 설정
         var imgElement = $('<img>', {
@@ -155,7 +169,7 @@ const dataChannel = {
             class: 'btn fa fa-download',
             id: 'downBtn',
             name: file.fileName
-        }).on('click', function() {
+        }).on('click', function () {
             dataChannelFileUtil.downloadFile(file.fileName, file.filePath);
         });
 
