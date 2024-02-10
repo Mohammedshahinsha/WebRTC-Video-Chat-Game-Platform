@@ -84,19 +84,6 @@ function Participant(name) {
 		return audio;
 	}
 
-	// function switchContainerClass() {
-	// 	if (container.className === PARTICIPANT_CLASS) {
-	// 		let elements = Array.prototype.slice.call(document.getElementsByClassName(PARTICIPANT_MAIN_CLASS));
-	// 		elements.forEach(function(item) {
-	// 			item.className = PARTICIPANT_CLASS;
-	// 		});
-	//
-	// 		container.className = PARTICIPANT_MAIN_CLASS;
-	// 	} else {
-	// 		container.className = PARTICIPANT_CLASS;
-	// 	}
-	// }
-
 	this.offerToReceiveVideo = function(error, offerSdp, wp){
 		if (error) return console.error ("sdp offer error")
 		//console.log('Invoking SDP offer callback function');
@@ -141,21 +128,6 @@ function Participant(name) {
 		return document.getElementsByClassName(PARTICIPANT_MAIN_CLASS)[0].id;
 	}
 }
-
-// function toggleParticipantScreen(event) {
-// 	const participant = event.currentTarget;
-// 	if (participant.classList.contains('expanded')) {
-// 		participant.classList.remove('expanded');
-// 	} else {
-// 		participant.classList.add('expanded');
-// 	}
-// }
-
-// const participantList = document.querySelectorAll('.participant, .participant.main');
-// participantList.forEach(participant => {
-// 	participant.addEventListener('click', toggleParticipantScreen);
-// });
-
 
 function addVolumeControl(container, name){
 	// 복제하고자 하는 요소의 ID

@@ -47,50 +47,8 @@ const dataChannel = {
             this.showNewMessage(message, 'other');
             this.showNewFileMessage(file, 'other');
 
-        } else if (recvMessage.type === "gameMouseEvent") {
-            var canvas = document.getElementById('mycanvas');
-            var ctx = canvas.getContext('2d');
-
-            if (recvMessage.message.mouseInit) {
-                this.saveX = 0;
-                this.saveY = 0;
-                return;
-            }
-
-            if (this.saveX === 0 && this.saveY === 0) {
-                this.saveX = recvMessage.message.mouseX;
-                this.saveY = recvMessage.message.mouseY;
-            }
-
-            ctx.beginPath();
-            ctx.moveTo(this.saveX, this.saveY); // 시작점 설정
-
-            this.lastX = recvMessage.message.mouseX;
-            this.lastY = recvMessage.message.mouseY;
-            // console.log("x pos : ", this.lastX + " ::::: "+"y pos : ", this.lastY);
-
-            ctx.lineTo(this.lastX, this.lastY); // 끝점 설정 (여기서는 시작점에서 조금 떨어진 위치로 설정)
-            ctx.stroke(); // 선 그리기
-
-            this.saveX = this.lastX;
-            this.saveY = this.lastY;
-
-        } else if (recvMessage.type === 'gameRequest') { // TODO 변수명 변경 필요
-            // 모달창 표시
-            $('#gameRequestModal').modal('show');
-
-        } else if (recvMessage.type === 'newGame') { // TODO 변수명 변경 필요
-            debugger
-            // 새로운 게임 시작 후 선택된 주제 저장
-            subject = recvMessage.message;
-
-        } else if (recvMessage.type === 'gameLeaderChange') { // TODO 변수명 변경 필요
-            debugger
-            startNewGame();
-
-        } else if (recvMessage.type === 'canvasClean') {
-            debugger
-            cleanCanvas();
+        } else if (recvMessage.type === 'gameEvent') {
+            this.gameEvent(recvMessage.message);
         } else {
             // 일반 메시지 처리
             let message = recvMessage.userName + " : " + recvMessage.message;
@@ -179,5 +137,25 @@ const dataChannel = {
 
         // $messagesContainer에 contentElement 추가
         dataChannelChatting.$messagesContainer.append(contentElement);
+    },
+    gameEvent: function (event) { // TODO Else IF 에서 event 부분 모두 통일하기
+
+        if (event === 'gameRequest') {
+            // 모달창 표시
+            $('#gameRequestModal').modal('show');
+        } else if (event === 'rejectGame') {
+            catchMind.rejectGame();
+        } else if (event === 'addReadyUser') {
+            catchMind.addGameReady();
+        } else if (event.gameEvent === 'newGame') {
+            catchMind.subject = event.newSubject;
+        } else if (event === 'gameStart') {
+            catchMind.participantGameStartEvent();
+        } else if (event.gameEvent === 'mouseEvent') {
+            catchMind.canvasDrawingEvent(event);
+        } else if (event.gameEvent === 'newWiner') {
+            let winer = event.winer;
+            catchMind.speakWiner(winer);
+        }
     }
 }

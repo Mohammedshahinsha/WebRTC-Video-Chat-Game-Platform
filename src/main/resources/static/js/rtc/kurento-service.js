@@ -35,6 +35,7 @@ ws.onopen = () => {
     initTurnServer();
     register();
     initDataChannel();
+    initCatchMind();
 }
 
 var initTurnServer = function(){
@@ -59,6 +60,10 @@ var initDataChannel = function () {
     dataChannel.init();
     dataChannelChatting.init();
     dataChannelFileUtil.init();
+}
+
+var initCatchMind = function(){
+    catchMind.init();
 }
 
 let constraints = {
@@ -95,7 +100,7 @@ if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
     navigator.mediaDevices.getUserMedia = function (cs) {
         // 원래의 getUserMedia 메서드를 호출합니다.
         return customGetUserMedia(cs).catch(function (error) {
-            debugger
+
             // 비디오 요청이 실패한 경우
             if (cs.video) {
                 console.warn("Video error occurred, using dummy video instead.", error);
@@ -306,6 +311,8 @@ function receiveVideo(sender) {
         audio.srcObject = event.stream;
         video.srcObject = event.stream;
     };
+
+    catchMind.gameParticipants +=1;
 }
 
 var leftUserfunc = function(){

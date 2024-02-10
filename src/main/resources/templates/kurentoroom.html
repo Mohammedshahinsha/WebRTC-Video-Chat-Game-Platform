@@ -13,29 +13,19 @@
     <script src="https://cdn.WebRTC-Experiment.com/getScreenId.js"></script>
     <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
 
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+
     <link rel="styleSheet" href="/css/rtc/kurentostyle.css" type="text/css" media="screen">
     <link rel="styleSheet" href="/css/rtc/floating_chat.css" type="text/css" media="screen">
-    <link rel="styleSheet" href="/css/rtc/floating_game_canvas.css" type="text/css" media="screen">
-
     <link rel="styleSheet" href="/css/rtc/media_device.css" type="text/css" media="screen">
+    <link rel="styleSheet" href="/css/rtc/catch_mind.css" type="text/css" media="screen">
+
+    <script src="https://cdn.jsdelivr.net/npm/gasparesganga-jquery-loading-overlay@2.1.7/dist/loadingoverlay.min.js"></script>
+
 </head>
 <style>
-    #canvas {
-        border: 1px solid black;
-        cursor: url('https://cdn-icons-png.flaticon.com/512/481/481874.png'), auto; /* 초기 커서를 연필 아이콘으로 설정 */
-    }
 
-    #editor {
-        margin-top: 10px;
-    }
-
-    #myModal .modal-dialog {
-        max-width: 800px; /* 모달의 최대 너비 설정 */
-    }
-
-    #myModal .modal-content {
-        height: 600px; /* 모달 컨텐츠의 높이 설정 */
-    }
 </style>
 <body>
 <input type="hidden" id="roomId" th:value="${roomId}">
@@ -110,8 +100,8 @@
     </div>
 
     <div class="floating-game-canvas">
-        <button type="button" data-toggle="modal" data-target="#myModal">
-            <img src="/css/rtc/canvas-paint-svgrepo-com.svg" width="25px" height="25px" alt="">
+        <button type="button" data-toggle="modal" data-target="#subjectModal">
+            <img src="/images/canvas-paint-svgrepo-com.svg" width="25px" height="25px" alt="">
         </button>
     </div>
 
@@ -158,230 +148,11 @@
 <script src="/js/rtc/participant.js"></script>
 <script src="/js/rtc/kurento-utils.js"></script>
 <script src="/js/rtc/kurento-service.js"></script>
-<script>
-    var subject = '';
-    var gameLeader = false;
-    var gameStart = false;
-
-    $(document).ready(function () {
-        // 캔버스와 컨텍스트를 가져옵니다.
-        var canvas = document.getElementById('mycanvas');
-        var ctx = canvas.getContext('2d');
-
-        var drawing = false; // 그리기 상태를 추적하는 변수
-        var lastX = 0;
-        var lastY = 0;
-
-        // 마우스 위치를 설정하는 함수
-        function setMousePosition(e) {
-            var rect = canvas.getBoundingClientRect();
-            lastX = e.clientX - rect.left;
-            lastY = e.clientY - rect.top;
-        }
-
-        // 마우스 누를 때
-        canvas.addEventListener('mousedown', function (e) {
-            setMousePosition(e);
-            drawing = true;
-            const pos = {
-                "mouseInit": true
-            }
-
-            dataChannel.sendMessage(pos, 'gameMouseEvent');
-        });
-
-        // 마우스 움직일 때
-        canvas.addEventListener('mousemove', function (e) {
-            if (drawing && gameStart) {
-                ctx.beginPath();
-                ctx.moveTo(lastX, lastY);
-                setMousePosition(e);
-                ctx.lineTo(lastX, lastY);
-                ctx.stroke();
-
-                // console.log("x pos : ", lastX + " ::::: " + "y pos : ", lastY);
-
-                const pos = {
-                    "mouseX": lastX,
-                    "mouseY": lastY
-                }
-
-                dataChannel.sendMessage(pos, 'gameMouseEvent');
-            }
-        });
-
-        // 마우스 뗄 때와 캔버스 밖으로 나갈 때
-        canvas.addEventListener('mouseup', function () {
-            drawing = false;
-
-        });
-        canvas.addEventListener('mouseout', function () {
-            drawing = false;
-
-        });
-
-        // send image 클릭 이벤트
-        // $('#send_img').on('click', function(){
-        //     debugger
-        //     const canvasImg = canvas.toDataURL('image/jpeg', 1.0);
-        //
-        //     var img = new Image();
-        //     img.crossOrigin = "Anonymous";
-        //     img.id = "getshot";
-        //     img.src = canvasImg;
-        //     document.body.appendChild(img);
-        //
-        //     var a = document.createElement("a");
-        //     a.href = getshot.src;
-        //     a.download = fileName;
-        //     a.click();
-        //     document.body.removeChild(img);
-        // });
-
-        // game start btn
-        $('#startBtn').on('click', function() {
-            var timeLeft = 10; // 10초로 설정
-            gameStart = true;
-            gameLeader = true;
-
-            dataChannel.sendMessage('자동차', 'newGame');
-
-            // $('#startBtn').attr('disabled', false);
-            $('#answerBtn').attr('disabled', true);
-
-            // 타이머 표시 업데이트
-            var timerId = setInterval(function() {
-                var $timer = $('#timer');
-
-                if (timeLeft <= 0) {
-                    clearInterval(timerId);
-                    gameStart = false;
-                    $timer.text('00:00');
-                    $('#startBtn').attr('disabled', false);
-                    return;
-                }
-
-                var minutes = Math.floor(timeLeft / 60);
-                var seconds = timeLeft % 60;
-
-                // 분과 초가 10보다 작으면 앞에 0을 붙여서 표시
-                minutes = minutes < 10 ? '0' + minutes : minutes;
-                seconds = seconds < 10 ? '0' + seconds : seconds;
-
-                $timer.text(minutes + ":" + seconds);
-                timeLeft--;
-            }, 1000);
-        });
-
-        // answerBtn
-        $('#answerBtn').on('click', function(){
-
-            // SpeechRecognition 인터페이스 확인
-            window.SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-
-            // SpeechRecognition 객체 생성
-            const recognition = new SpeechRecognition();
-
-            // 영어 이외의 언어를 사용할 경우 언어 코드 설정
-            // 예를 들어, 한국어를 사용할 경우 'ko-KR'
-            recognition.lang = 'ko-KR';
-
-            // 결과를 실시간으로 반환하도록 설정
-            recognition.interimResults = false;
-
-            console.log("음성 인식 시작");
-
-            // 음성 인식 시작
-            recognition.start();
-
-            // 결과 처리를 위한 이벤트 리스너
-            recognition.addEventListener('result', e => {
-                // SpeechRecognitionResultList 객체에서 결과 추출
-                const transcript = Array.from(e.results)
-                    .map(result => result[0])
-                    .map(result => result.transcript)
-                    .join('');
-
-                // 결과 출력 (예: 페이지에 표시)
-                console.log(transcript);
-                recognition.stop();
-                console.log("음성 인식 종료");
-                // TTStest();
-
-                checkAnswer(transcript);
-            });
-
-        })
-    });
-
-    function checkAnswer(answer){
-        if(answer === subject){
-            gameLeader = false;
-            gameStart = false;
-            $('#answerBtn').attr('disabled', false);
-            $('#startBtn').attr('disabled', true);
-
-            // 여기서 이름대신 answer 을 던지면...?
-            const newGame = {
-                "user" : name,
-                "subject" : subject
-            }
-
-
-            dataChannel.sendMessage(newGame, 'gameLeaderChange');
-        }
-    }
-
-    function TTStest(){
-        // SpeechSynthesis 객체 확인
-        const synth = window.speechSynthesis;
-
-        // 음성 합성을 위한 함수
-        function speak(text) {
-            // 현재 음성이 진행 중인지 확인
-            if (synth.speaking) {
-                console.error('이미 음성이 진행 중입니다.');
-                return;
-            }
-
-            if (text !== '') {
-                // SpeechSynthesisUtterance 객체 생성
-                var utterThis = new SpeechSynthesisUtterance(text);
-
-                // 음성이 끝났을 때 실행할 콜백 함수
-                utterThis.onend = function(event) {
-                    console.log('음성 합성이 끝났습니다.');
-                };
-
-                // 오류가 발생했을 때 실행할 콜백 함수
-                utterThis.onerror = function(event) {
-                    console.error('음성 합성 중 오류가 발생했습니다.');
-                };
-
-                // 사용할 수 있는 음성 중 하나를 선택 (예: 첫 번째 음성)
-                var voices = synth.getVoices();
-                utterThis.voice = voices[0];
-
-                // 음성 속도와 피치 설정 (선택 사항)
-                utterThis.pitch = 1; // 기본값은 1
-                utterThis.rate = 1; // 기본값은 1
-
-                // 음성 합성 시작
-                synth.speak(utterThis);
-            }
-        }
-
-        // 텍스트를 음성으로 변환
-        speak('아쉽군요 정답이 아니에요!');
-
-    }
-
-</script>
-
 <script src="/js/rtc/dataChannel.js"></script>
 <script src="/js/rtc/dataChannelChatting.js"></script>
 <script src="/js/rtc/dataChannelFileUtil.js"></script>
 <script src="/js/rtc/mediaDevice.js"></script>
+<script src="/js/rtc/catchMind.js"></script>
 </body>
 </html>
 
@@ -435,25 +206,110 @@
 </div>
 
 
-<!-- Modal -->
-<div id="myModal" class="modal" tabindex="-1" role="dialog">
+<!-- catchMind Canvas Modal -->
+<div id="catchMindCanvas" class="modal" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">나만의 캐치마인드!</h5>
+<!--                <button type="button" class="close" data-dismiss="modal" aria-label="Close">-->
+<!--                    <span aria-hidden="true">&times;</span>-->
+<!--                </button>-->
+            </div>
+            <div>
+                <span id="timer">01:00</span> <!-- 타이머 표시 -->
+            </div>
+            <div>
+                <button type="button" id="clearCanvasBtn" class="btn btn-warning">Clear Canvas</button>
+                <button type="button" id="answerBtn" class="btn btn-success">Tell your answer</button>
+            </div>
+            <div class="modal-body">
+                <canvas id="mycanvas" width="800" height="600"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- game subject modal -->
+<div class="modal fade" id="subjectModal" tabindex="-1" role="dialog" aria-labelledby="subjectModalLabel" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <!-- 모달 헤더 -->
+            <div class="modal-header">
+                <h5 class="modal-title" id="subjectModalLabel">게임 정보</h5>
+<!--                <button type="button" class="close" data-dismiss="modal" aria-label="Close">-->
+<!--                    <span aria-hidden="true">&times;</span>-->
+<!--                </button>-->
+            </div>
+
+            <!-- 탭 메뉴 -->
+            <ul class="nav nav-tabs" id="myTab" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" id="gameSubject-tab" data-toggle="tab" href="#gameSubject" role="tab" aria-controls="gameSubject" aria-selected="true">주제 선택</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="gameTip-tab" data-toggle="tab" href="#gameTip" role="tab" aria-controls="gameTip" aria-selected="false">게임 방법 & 팁</a>
+                </li>
+            </ul>
+
+            <!-- 탭 내용 -->
+            <div class="tab-content" id="myTabContent">
+                <div class="tab-pane fade show active" id="gameSubject" role="tabpanel" aria-labelledby="gameSubject-tab">
+                    <!-- 주제 선택 버튼들 -->
+                    <div class="modal-body" style="text-align: center;">
+                        <button class="btn btn-outline-primary topic-btn">사과</button>
+                        <button class="btn btn-outline-primary topic-btn">자동차</button>
+                        <button class="btn btn-outline-primary topic-btn">고양이</button>
+                        <button class="btn btn-outline-primary topic-btn">비행기</button>
+                        <p id="selectedTopic" style="margin-top: 20px;"></p>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="gameTip" role="tabpanel" aria-labelledby="gameTip-tab">
+                    <!-- 게임 방법 & 팁 -->
+                    <div class="modal-body">
+                        <h5>게임 방법</h5>
+                        <p>1. 그림을 그리는 사람은 30초 동안 정해진 주제에 관해 그림을 그려야합니다.</p>
+                        <p>2. 정답을 맞추기 위해서는 Tell Your Answer 버튼을 클릭해 음성을 정답을 외쳐야합니다. </p>
+                        <h5>팁</h5>
+                        <p>1. 그림을 그릴 수 있는 시간은 한정되어있습니다. 소중하게 사용하세요!</p>
+                        <p>2. 음성인식은 오직 정답만 말씀하시면 됩니다. 앞에 '정답!'은 안 붙여도 되요.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 모달 푸터 -->
+            <div class="modal-footer">
+                <button class='start-btn' id="exitBtn" data-dismiss="modal">EXIT</button>
+                <button class='start-btn' id="readyBtn" disabled>GAME READY</button>
+                <!-- 로딩 인디케이터 숨김 처리 -->
+                <div id="loadingIndicator" style="display: none;">
+                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                    다른 참여자를 기다리는 중입니다.
+                    <span id="loadingUser"></span>
+                </div>
+                <span id="readyUser"></span>
+                <button class='start-btn' id="startBtn" hidden disabled>GAME START</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 게임 참여 요청 모달 -->
+<div class="modal" id="gameRequestModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">게임 참여 요청</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <div>
-                <button type="button" id="startBtn" class="btn-blue">game start</button>
-                <span id="timer">00:00</span> <!-- 타이머 표시 -->
-            </div>
-            <div>
-                <button type="button" id="answerBtn" class="btn-blue">Tell your answer</button>
-            </div>
             <div class="modal-body">
-                <canvas id="mycanvas" width="800" height="600"></canvas>
+                <p>게임에 참여하시겠습니까?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="rejectGameRequest" data-dismiss="modal">아니오</button>
+                <button type="button" class="btn btn-primary" id="acceptGameRequest">예</button>
             </div>
         </div>
     </div>
