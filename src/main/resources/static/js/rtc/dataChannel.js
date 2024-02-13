@@ -145,8 +145,10 @@ const dataChannel = {
             $('#gameRequestModal').modal('show');
         } else if (event === 'rejectGame') {
             catchMind.rejectGame();
-        } else if (event === 'addReadyUser') {
-            catchMind.addGameReady();
+        } else if (event.gameEvent === 'addReadyUser') {
+            let gameUser = event.gameUser;
+            let nickName = event.nickName;
+            catchMind.addGameReady('participant', gameUser, nickName);
         } else if (event.gameEvent === 'newGame') {
             catchMind.subject = event.newSubject;
         } else if (event === 'gameStart') {

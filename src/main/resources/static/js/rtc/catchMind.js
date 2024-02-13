@@ -13,12 +13,14 @@ const catchMind = {
     canvas: null,
     ctx: null,
     subject: '', // 선택된 주제
+    nickName : '', // 게임 닉네임
     isGameLeader: false, // 게임 진행자 여부
     isGameParticipant: false, // 게임 참여자 여부
     isGameStart: false, // 게임 시작 여부
     isGameReady: false, // 게임 준비 여부
     gameReadyUser: 0, // 게임준비를 누른 유저 수
     gameParticipants: 1, // 게임 참여자 수 : 기본 1명
+    gameUserList : [], // 게임 유저 정보(리스트)
     drawing: false, // 그리기 상태를 추적하는 변수
     mouseInit: false,
     lastX: 0,
@@ -106,8 +108,13 @@ const catchMind = {
                     "newSubject": self.subject
                 }
                 dataChannel.sendMessage(newGame, 'gameEvent');
-                self.addGameReady();
-                dataChannel.sendMessage("addReadyUser", 'gameEvent');
+                self.addGameReady('self');
+                const addReadyUser = {
+                    "gameEvent" : "addReadyUser",
+                    "gameUser" : name,
+                    "nickName" : self.nickName
+                }
+                dataChannel.sendMessage(addReadyUser, 'gameEvent');
                 self.sendGameRequest();
                 self.gameReadyToast('leader');
 
@@ -116,8 +123,13 @@ const catchMind = {
                 $('#startBtn').removeAttr('hidden');
 
             } else if (self.isGameParticipant) {
-                self.addGameReady();
-                dataChannel.sendMessage("addReadyUser", 'gameEvent');
+                self.addGameReady('self');
+                const addReadyUser = {
+                    "gameEvent" : "addReadyUser",
+                    "gameUser" : name,
+                    "nickName" : self.nickName
+                }
+                dataChannel.sendMessage(addReadyUser, 'gameEvent');
 
                 // 'GAME READY' 버튼 숨기기
                 $("#readyBtn").hide();
@@ -259,12 +271,23 @@ const catchMind = {
         // TODO 게임 참여 요청 이벤트 보내기
         dataChannel.sendMessage('gameRequest', 'gameEvent');
     },
-    // addGameParticipant: function () {
-    //     this.gameParticipants += 1;
-    // },
-    addGameReady: function () {
+    addGameReady: function (type, userName, nickName) {
         this.gameReadyUser += 1;
-        if (!this.isGameLeader) { //
+        if (type === 'self') {
+            let gameUser = {
+                "userName" : type,
+                "nickName" : this.nickName
+            }
+            this.gameUserList.push(gameUser);
+        } else {
+            let gameUser = {
+                "userName" : userName,
+                "nickName" : nickName
+            }
+            this.gameUserList.push(gameUser);
+        }
+
+        if (!this.isGameLeader) {
             $('#loadingUser').text(this.gameReadyUser + "/" + this.gameParticipants);
         } else {
             if (this.isAllUserReady()) {
@@ -273,7 +296,6 @@ const catchMind = {
             } else {
                 $('#readyUser').text(this.gameReadyUser + "/" + this.gameParticipants);
             }
-
         }
     },
     rejectGame: function () {

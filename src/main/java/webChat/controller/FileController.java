@@ -23,7 +23,7 @@ public class FileController {
     @PostMapping("/upload")
     public FileDto uploadFile(
             @RequestPart("file") MultipartFile file,
-            @RequestParam("roomId")String roomId){
+            @RequestParam("roomId") String roomId){
 
         FileDto uploadFile = fileService.uploadFile(file, roomId);
         log.info("최종 upload Data {}", uploadFile);

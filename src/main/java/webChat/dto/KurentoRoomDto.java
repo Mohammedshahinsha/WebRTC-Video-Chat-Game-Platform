@@ -34,9 +34,7 @@ import webChat.rtc.KurentoUserSession;
 import javax.annotation.PreDestroy;
 import java.io.Closeable;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ConcurrentMap;
 
 /**
@@ -62,10 +60,10 @@ public class KurentoRoomDto extends ChatRoomDto implements Closeable {
   private String roomName; // 채팅방 이름
   private int userCount; // 채팅방 인원수
   private int maxUserCnt; // 채팅방 최대 인원 제한
-
   private String roomPwd; // 채팅방 삭제시 필요한 pwd
   private boolean secretChk; // 채팅방 잠금 여부
   private ChatType chatType; //  채팅 타입 여부
+  private Map<String, CatchMindUser> catchMindUserMap; // catchmind 게임 정보를 저장하기 위한 map
 
   /**
    * @desc 참여자를 저장하기 위한 Map
@@ -320,4 +318,10 @@ public class KurentoRoomDto extends ChatRoomDto implements Closeable {
     log.debug("Room {} closed", this.roomId);
   }
 
+  public Map<String, CatchMindUser> getCatchMindUserMap(){
+    if (Objects.isNull(this.catchMindUserMap)) {
+      return new HashMap<>();
+    }
+    return this.catchMindUserMap;
+  }
 }
