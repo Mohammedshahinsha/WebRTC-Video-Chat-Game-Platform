@@ -8,6 +8,7 @@ function ajax(url, method, async, data, successCallback, errorCallback, complete
         type: method,
         data: data,
         async: async !== undefined ? async : true,
+        contentType : 'application/json; charset=UTF-8',
         success: function (data) {
             successCallback(data);
         },

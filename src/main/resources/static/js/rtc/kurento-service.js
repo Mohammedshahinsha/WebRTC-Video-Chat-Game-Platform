@@ -18,7 +18,7 @@
 let locationHost = location.host
 let participants = {};
 
-let name = null;
+let userId = null;
 let roomId = null;
 let roomName = null;
 
@@ -180,7 +180,7 @@ ws.onmessage = function (message) {
 
 function register() {
 
-    name = $("#uuid").val();
+    userId = $("#uuid").val();
     roomId = $("#roomId").val();
     roomName = $("#roomName").val();
 
@@ -219,8 +219,8 @@ function callResponse(message) {
 
 function onExistingParticipants(msg) {
 
-    var participant = new Participant(name);
-    participants[name] = participant;
+    var participant = new Participant(userId);
+    participants[userId] = participant;
     dataChannel.initDataChannelUser(participant);
     var video = participant.getVideoElement();
     var audio = participant.getAudioElement();
@@ -312,6 +312,7 @@ function receiveVideo(sender) {
         video.srcObject = event.stream;
     };
 
+    // game 참여 가능한 유저 +1
     catchMind.gameParticipants +=1;
 }
 
@@ -348,6 +349,13 @@ function leaveRoom(type) {
         sendDataChannelMessage(" 님이 떠나셨습니다ㅠㅠ");
     }
 
+    // 다른 유저들의 gameParticipants 에서 방을 떠난 유저 삭제
+    // TODO 추후 삭제된 유저를 정의해서 특정 유저를 삭제할 필요 있음
+    let leftGame = {
+        "gameEvent" : "left"
+    }
+    dataChannel.sendMessage(leftGame, 'gameEvent');
+
     setTimeout(leftUserfunc, 10); // 퇴장 메시지 전송을 위해 timeout 설정
 }
 
@@ -367,7 +375,7 @@ function sendMessageToServer(message) {
 
 // 메시지를 데이터 채널을 통해 전송하는 함수
 function sendDataChannelMessage(message){
-    if (participants[name].rtcPeer.dataChannel.readyState === 'open') {
+    if (participants[userId].rtcPeer.dataChannel.readyState === 'open') {
         dataChannel.sendMessage(message);
     } else {
         console.warn("Data channel is not open. Cannot send message.");
@@ -456,7 +464,7 @@ function ScreenHandler() {
  */
 async function startScreenShare() {
     await screenHandler.start(); // 화면 공유를 위해 ScreenHandler.start() 함수 호출
-    let participant = participants[name];
+    let participant = participants[userId];
     let video = participant.getVideoElement();
     participant.setLocalSteam(video.srcObject);
     video.srcObject = shareView; // 본인의 화면에 화면 공유 화면 표시
@@ -480,7 +488,7 @@ async function startScreenShare() {
  */
 async function stopScreenShare() {
     await screenHandler.end(); // 화면 공유를 중지하기 위해 ScreenHandler.end() 함수 호출
-    let participant = participants[name];
+    let participant = participants[userId];
     let video = participant.getVideoElement();
     video.srcObject = participant.getLocalStream(); // 본인의 화면을 원래의 원격 화면으로 복원
 

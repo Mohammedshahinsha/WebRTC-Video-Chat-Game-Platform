@@ -42,6 +42,12 @@ const catchMind = {
             this.recognition = new SpeechRecognition()
             this.synth = window.speechSynthesis;
 
+            debugger
+            // 게임 관련 변수 초기화
+            this.gameReadyUser = 0 // 게임준비를 누른 유저 수
+            this.gameParticipants = 1 // 게임 참여자 수 : 기본 1명
+            this.gameUserList = [] // 게임 유저 정보(리스트)
+
             this.isInit = true;
         }
     },
@@ -101,6 +107,8 @@ const catchMind = {
             }
 
             if (self.isGameLeader) {
+
+                self.nickName = $('#nickName_ld').val();
                 // self.addGameParticipant();
                 // dataChannel.sendMessage("addParticipant", "gameEvent");
                 const newGame = {
@@ -111,7 +119,7 @@ const catchMind = {
                 self.addGameReady('self');
                 const addReadyUser = {
                     "gameEvent" : "addReadyUser",
-                    "gameUser" : name,
+                    "gameUser" : userId,
                     "nickName" : self.nickName
                 }
                 dataChannel.sendMessage(addReadyUser, 'gameEvent');
@@ -126,7 +134,7 @@ const catchMind = {
                 self.addGameReady('self');
                 const addReadyUser = {
                     "gameEvent" : "addReadyUser",
-                    "gameUser" : name,
+                    "gameUser" : userId,
                     "nickName" : self.nickName
                 }
                 dataChannel.sendMessage(addReadyUser, 'gameEvent');
@@ -148,6 +156,8 @@ const catchMind = {
 
         // '예' 버튼 클릭 이벤트 핸들러
         $('#acceptGameRequest').click(function () {
+
+            self.nickName = $('#nickName_pt').val();
             // 게임 참여 수락 처리 로직
             self.isGameParticipant = true;
             // self.addGameParticipant();
@@ -169,7 +179,10 @@ const catchMind = {
         });
 
         $('#rejectGameRequest').on('click', function () {
-            dataChannel.sendMessage("rejectGame", 'gameEvent');
+            const rejectGame = {
+                "gameEvent" : "rejectGame"
+            }
+            dataChannel.sendMessage(rejectGame, 'gameEvent');
         });
 
         // game start btn
@@ -177,12 +190,28 @@ const catchMind = {
             $('#subjectModal').modal('hide');
             $('#catchMindCanvas').modal('show');
 
+            let url = '/catchmind/participants';
+            let data = {
+                "roomId" : roomId,
+                "gameUserList" : self.gameUserList
+            };
+
+            let successCallback = function(data){
+
+            };
+
+            let errorCallback = function(error){
+
+            };
+
+            ajax(url, 'POST', '', JSON.stringify(data), successCallback, errorCallback);
+
             // self.timeLeft = 60; // N초로 설정
             self.isGameStart = true;
             self.isGameLeader = true;
 
             // 게임 시작 이벤트 send
-            dataChannel.sendMessage('gameStart', 'gameEvent')
+            dataChannel.sendMessage('gameStart', 'gameEvent');
 
             $('#answerBtn').attr('disabled', true);
 
@@ -268,20 +297,24 @@ const catchMind = {
         }).showToast();
     },
     sendGameRequest: function () {
-        // TODO 게임 참여 요청 이벤트 보내기
-        dataChannel.sendMessage('gameRequest', 'gameEvent');
+        const gameRequest = {
+            "gameEvent" : "gameRequest"
+        }
+        dataChannel.sendMessage(gameRequest, 'gameEvent');
     },
     addGameReady: function (type, userName, nickName) {
         this.gameReadyUser += 1;
         if (type === 'self') {
             let gameUser = {
-                "userName" : type,
+                "roomId" : roomId,
+                "userId" : userId,
                 "nickName" : this.nickName
             }
             this.gameUserList.push(gameUser);
         } else {
             let gameUser = {
-                "userName" : userName,
+                "roomId" : roomId,
+                "userId" : userName,
                 "nickName" : nickName
             }
             this.gameUserList.push(gameUser);
@@ -300,7 +333,11 @@ const catchMind = {
     },
     rejectGame: function () {
         this.gameParticipants -= 1;
-        $('#loadingUser').text(this.gameReadyUser + "/" + this.gameParticipants)
+        if (this.isGameLeader) {
+            $('#readyUser').text(this.gameReadyUser + "/" + this.gameParticipants);
+        } else {
+            $('#loadingUser').text(this.gameReadyUser + "/" + this.gameParticipants);
+        }
     },
     isAllUserReady: function () {
         return this.gameReadyUser === this.gameParticipants;
@@ -344,13 +381,13 @@ const catchMind = {
         if(answer === this.subject){
             let gameWiner = {
                 "gameEvent" : "newWiner",
-                "winer" : name
+                "winer" : userId
             }
 
             dataChannel.sendMessage(gameWiner, 'gameEvent');
 
             $('#answerBtn').attr('disabled', true);
-            this.speakWiner(name)
+            this.speakWiner(userId)
         }
     },
     speakWiner : function(winerName){
@@ -381,6 +418,8 @@ const catchMind = {
             // 음성 합성 시작
             this.synth.speak(utterThis);
         }
+    },
+    leftGameParticipants : function() {
+        this.gameParticipants -= 1;
     }
-
 }

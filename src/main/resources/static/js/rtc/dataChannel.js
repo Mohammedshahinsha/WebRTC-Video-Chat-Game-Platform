@@ -140,11 +140,13 @@ const dataChannel = {
     },
     gameEvent: function (event) { // TODO Else IF 에서 event 부분 모두 통일하기
 
-        if (event === 'gameRequest') {
+        if (event.gameEvent === 'gameRequest') {
             // 모달창 표시
             $('#gameRequestModal').modal('show');
-        } else if (event === 'rejectGame') {
+        } else if (event.gameEvent === 'rejectGame') {
             catchMind.rejectGame();
+        } else if(event.gameEvent === 'left'){
+            catchMind.leftGameParticipants();
         } else if (event.gameEvent === 'addReadyUser') {
             let gameUser = event.gameUser;
             let nickName = event.nickName;

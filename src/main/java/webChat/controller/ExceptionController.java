@@ -56,7 +56,7 @@ public class ExceptionController {
         this.printErrorLog(e);
 
         Map<String, String> result = new HashMap<>();
-        result.put("code", "500");
+        result.put("code", "400");
         result.put("message", "Required header is missing :: " + e.getMessage());
 
         return "error/403"; // 403 에러 페이지로 리디렉션

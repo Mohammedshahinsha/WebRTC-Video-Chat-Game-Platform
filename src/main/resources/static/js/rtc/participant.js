@@ -160,7 +160,7 @@ function addVolumeControl(container, name){
 $(".localVideoToggle").on("click", function(){
 	let videoBtn = $('.localVideoToggle');
 	let isVideo = videoBtn.data("flag");
-	let videoTrack = participants[name].rtcPeer.getLocalStream().getTracks().filter(track => track.kind === 'video')[0];
+	let videoTrack = participants[userId].rtcPeer.getLocalStream().getTracks().filter(track => track.kind === 'video')[0];
 
 	if (isVideo) { // 비디오가 사용중이라면 비디오 off
 		videoTrack.enabled = false;
@@ -179,7 +179,7 @@ $(".localVideoToggle").on("click", function(){
 $(".localAudioToggle").on("click", function(){
 	let audioBtn = $(".localAudioToggle");
 	let useAudio = audioBtn.data("flag");
-	let audioTrack = participants[name].rtcPeer.getLocalStream().getTracks().filter(track => track.kind === 'audio')[0];
+	let audioTrack = participants[userId].rtcPeer.getLocalStream().getTracks().filter(track => track.kind === 'audio')[0];
 
 	if (useAudio) { // 오디오가 사용중이라면 오디오 off
 		audioTrack.enabled = false;

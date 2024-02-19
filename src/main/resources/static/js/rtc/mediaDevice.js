@@ -94,7 +94,7 @@ const mediaDevice = {
     setOutputAudioDevice: function (device, event) {
         const self = this;
         Object.entries(participants).forEach(([key, value]) => {
-            if (key !== name) {
+            if (key !== userId) {
                 value.getAudioElement().setSinkId(device.deviceId);
                 self.setDisplayText('output', device.label);
             }
@@ -111,7 +111,7 @@ const mediaDevice = {
                 const newAudioTrack = newStream.getAudioTracks()[0];
 
                 // 참가자의 RTCPeerConnection에서 모든 전송기를 가져옴
-                const senders = participants[name].rtcPeer.peerConnection.getSenders();
+                const senders = participants[userId].rtcPeer.peerConnection.getSenders();
 
                 // 오디오 트랙을 가진 전송기 찾기
                 const audioSender = senders.find(sender => sender.track && sender.track.kind === 'audio');
