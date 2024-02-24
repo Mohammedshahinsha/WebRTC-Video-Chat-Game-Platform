@@ -35,6 +35,7 @@ import javax.annotation.PreDestroy;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
@@ -56,24 +57,21 @@ public class KurentoRoomDto extends ChatRoomDto implements Closeable {
   private MediaPipeline pipeline;
 
   @NotNull
-  private String roomId; // 채팅방 아이디
+  private String roomId; // 채팅방 고유번호
   private String roomName; // 채팅방 이름
   private int userCount; // 채팅방 인원수
   private int maxUserCnt; // 채팅방 최대 인원 제한
   private String roomPwd; // 채팅방 삭제시 필요한 pwd
   private boolean secretChk; // 채팅방 잠금 여부
   private ChatType chatType; //  채팅 타입 여부
-  private Map<String, CatchMindUser> catchMindUserMap; // catchmind 게임 정보를 저장하기 위한 map
 
   /**
    * @desc 참여자를 저장하기 위한 Map
    * TODO ConcurrentHashMap 에 대해서도 공부해둘 것!
    * */
-  private ConcurrentMap<String, KurentoUserSession> participants;
+  private Map<String, KurentoUserSession> participants;
 
-
-//  // 채팅룸 이름?
-//  private final String roomId;
+  private GameSettingInfos gameSettingInfos; // 해당 방의 게임 정보 세팅
 
   // 룸 정보 set
   public void setRoomInfo(String roomId, String roomName, String roomPwd, boolean secure, int userCount, int maxUserCnt, ChatType chatType, KurentoClient kurento){
@@ -318,10 +316,4 @@ public class KurentoRoomDto extends ChatRoomDto implements Closeable {
     log.debug("Room {} closed", this.roomId);
   }
 
-  public Map<String, CatchMindUser> getCatchMindUserMap(){
-    if (Objects.isNull(this.catchMindUserMap)) {
-      return new HashMap<>();
-    }
-    return this.catchMindUserMap;
-  }
 }

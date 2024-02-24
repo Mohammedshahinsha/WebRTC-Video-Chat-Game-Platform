@@ -13,23 +13,23 @@ const catchMind = {
     canvas: null,
     ctx: null,
     subject: '', // 선택된 주제
-    nickName : '', // 게임 닉네임
+    nickName: '', // 게임 닉네임
     isGameLeader: false, // 게임 진행자 여부
     isGameParticipant: false, // 게임 참여자 여부
     isGameStart: false, // 게임 시작 여부
     isGameReady: false, // 게임 준비 여부
     gameReadyUser: 0, // 게임준비를 누른 유저 수
     gameParticipants: 1, // 게임 참여자 수 : 기본 1명
-    gameUserList : [], // 게임 유저 정보(리스트)
+    gameUserList: [], // 게임 유저 정보(리스트)
     drawing: false, // 그리기 상태를 추적하는 변수
     mouseInit: false,
     lastX: 0,
     lastY: 0,
-    saveX : 0,
-    saveY : 0,
+    saveX: 0,
+    saveY: 0,
     timeLeft: 60, // 그림 시간 제한
-    recognition : null, // 음성 인식 객체
-    synth : null,
+    recognition: null, // 음성 인식 객체
+    synth: null,
     init: function () {
         this.canvas = document.getElementById('mycanvas');
         this.ctx = this.canvas.getContext('2d');
@@ -39,10 +39,9 @@ const catchMind = {
 
             // SpeechRecognition 인터페이스 확인
             window.SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            this.recognition = new SpeechRecognition()
+            this.recognition = new SpeechRecognition();
             this.synth = window.speechSynthesis;
 
-            debugger
             // 게임 관련 변수 초기화
             this.gameReadyUser = 0 // 게임준비를 누른 유저 수
             this.gameParticipants = 1 // 게임 참여자 수 : 기본 1명
@@ -76,14 +75,16 @@ const catchMind = {
 
         // 마우스 누를 때
         self.canvas.addEventListener('mousedown', function (e) {
-            self.setMousePosition(e);
-            self.drawing = true;
-            const pos = {
-                "gameEvent": "mouseEvent",
-                "mouseInit": true
-            }
+            if (self.timeLeft > 0) { // 게임 시간이 남아있다면
+                self.drawing = true;
+                self.setMousePosition(e);
+                const pos = {
+                    "gameEvent": "mouseEvent",
+                    "mouseInit": true
+                }
 
-            dataChannel.sendMessage(pos, 'gameEvent');
+                dataChannel.sendMessage(pos, 'gameEvent');
+            }
         });
 
         // 마우스 뗄 때와 캔버스 밖으로 나갈 때
@@ -108,7 +109,13 @@ const catchMind = {
 
             if (self.isGameLeader) {
 
-                self.nickName = $('#nickName_ld').val();
+                let $nickName = $('#nickName_ld').val();
+                if (!$nickName) {
+                    alert("게임 닉네임은 필수값입니다!");
+                    return;
+                }
+
+                self.nickName = $nickName;
                 // self.addGameParticipant();
                 // dataChannel.sendMessage("addParticipant", "gameEvent");
                 const newGame = {
@@ -118,9 +125,9 @@ const catchMind = {
                 dataChannel.sendMessage(newGame, 'gameEvent');
                 self.addGameReady('self');
                 const addReadyUser = {
-                    "gameEvent" : "addReadyUser",
-                    "gameUser" : userId,
-                    "nickName" : self.nickName
+                    "gameEvent": "addReadyUser",
+                    "gameUser": userId,
+                    "nickName": self.nickName
                 }
                 dataChannel.sendMessage(addReadyUser, 'gameEvent');
                 self.sendGameRequest();
@@ -133,9 +140,9 @@ const catchMind = {
             } else if (self.isGameParticipant) {
                 self.addGameReady('self');
                 const addReadyUser = {
-                    "gameEvent" : "addReadyUser",
-                    "gameUser" : userId,
-                    "nickName" : self.nickName
+                    "gameEvent": "addReadyUser",
+                    "gameUser": userId,
+                    "nickName": self.nickName
                 }
                 dataChannel.sendMessage(addReadyUser, 'gameEvent');
 
@@ -157,7 +164,12 @@ const catchMind = {
         // '예' 버튼 클릭 이벤트 핸들러
         $('#acceptGameRequest').click(function () {
 
-            self.nickName = $('#nickName_pt').val();
+            let $nickName = $('#nickName_pt').val();
+            if (!$nickName) {
+                alert("게임 닉네임은 필수값입니다!");
+                return;
+            }
+            self.nickName = $nickName;
             // 게임 참여 수락 처리 로직
             self.isGameParticipant = true;
             // self.addGameParticipant();
@@ -180,7 +192,7 @@ const catchMind = {
 
         $('#rejectGameRequest').on('click', function () {
             const rejectGame = {
-                "gameEvent" : "rejectGame"
+                "gameEvent": "rejectGame"
             }
             dataChannel.sendMessage(rejectGame, 'gameEvent');
         });
@@ -192,16 +204,17 @@ const catchMind = {
 
             let url = '/catchmind/participants';
             let data = {
-                "roomId" : roomId,
-                "gameUserList" : self.gameUserList
+                "roomId": roomId,
+                "gameUserList": self.gameUserList
             };
 
-            let successCallback = function(data){
+            let successCallback = function (data) {
 
             };
 
-            let errorCallback = function(error){
-
+            let errorCallback = function (error) {
+                debugger
+                // TODO 실패한 경우 모든 이벤트 초기화 필요
             };
 
             ajax(url, 'POST', '', JSON.stringify(data), successCallback, errorCallback);
@@ -222,6 +235,7 @@ const catchMind = {
                 if (self.timeLeft <= 0) {
                     clearInterval(timerId);
                     self.gameStart = false;
+                    self.drawing = false;
                     $timer.text('00:00');
                     return;
                 }
@@ -238,7 +252,10 @@ const catchMind = {
             }, 1000);
         });
 
-        $('#answerBtn').on('click', function(){
+        $('#answerBtn').on('click', function () {
+            $('#answerBtn').attr('disabled', true);
+            let text = "이제 정답을 외쳐주세요!";
+            self.showToast(text);
             // 영어 이외의 언어를 사용할 경우 언어 코드 설정
             // 예를 들어, 한국어를 사용할 경우 'ko-KR'
             self.recognition.lang = 'ko-KR';
@@ -248,26 +265,41 @@ const catchMind = {
 
             console.log("음성 인식 시작");
 
-            // 음성 인식 시작
+            // // 음성 인식 시작
             self.recognition.start();
 
-            // 결과 처리를 위한 이벤트 리스너
-            self.recognition.addEventListener('result', e => {
-                // SpeechRecognitionResultList 객체에서 결과 추출
-                const transcript = Array.from(e.results)
+            // 이벤트 리스너 설정
+            self.recognition.onresult = function(event) {
+                // 결과 처리
+                var transcript = Array.from(event.results)
                     .map(result => result[0])
                     .map(result => result.transcript)
                     .join('');
 
-                // 결과 출력 (예: 페이지에 표시)
                 console.log(transcript);
-                self.recognition.stop();
-                console.log("음성 인식 종료");
-                // TTStest();
 
-                debugger
+                // 결과 처리 후 음성 인식 종료
+                self.recognition.stop();
+
                 self.checkAnswer(transcript);
-            });
+            };
+
+            // 결과 처리를 위한 이벤트 리스너
+            // self.recognition.addEventListener('result', e => {
+            //     // SpeechRecognitionResultList 객체에서 결과 추출
+            //     const transcript = Array.from(e.results)
+            //         .map(result => result[0])
+            //         .map(result => result.transcript)
+            //         .join('');
+            //
+            //     // 결과 출력 (예: 페이지에 표시)
+            //     console.log(transcript);
+            //     self.recognition.stop();
+            //     console.log("음성 인식 종료");
+            //     // TTStest();
+            //
+            //     self.checkAnswer(transcript);
+            // });
         });
     },
     setMousePosition: function (e) {
@@ -282,23 +314,11 @@ const catchMind = {
             text = "게임에 참여하셨습니다. 모든 유저가 준비를 마치면 start 버튼을 눌러주세요.";
         }
 
-        Toastify({
-            text: text,
-            duration: 3000,
-            // destination: "https://github.com/apvarun/toastify-js",
-            newWindow: true,
-            close: true,
-            gravity: "bottom", // `top` or `bottom`
-            position: "center", // `left`, `center` or `right`
-            stopOnFocus: true, // Prevents dismissing of toast on hover
-            style: {
-                background: "linear-gradient(to right, #00b09b, #96c93d)",
-            },
-        }).showToast();
+        this.showToast(text);
     },
     sendGameRequest: function () {
         const gameRequest = {
-            "gameEvent" : "gameRequest"
+            "gameEvent": "gameRequest"
         }
         dataChannel.sendMessage(gameRequest, 'gameEvent');
     },
@@ -306,16 +326,16 @@ const catchMind = {
         this.gameReadyUser += 1;
         if (type === 'self') {
             let gameUser = {
-                "roomId" : roomId,
-                "userId" : userId,
-                "nickName" : this.nickName
+                "roomId": roomId,
+                "userId": userId,
+                "nickName": this.nickName
             }
             this.gameUserList.push(gameUser);
         } else {
             let gameUser = {
-                "roomId" : roomId,
-                "userId" : userName,
-                "nickName" : nickName
+                "roomId": roomId,
+                "userId": userName,
+                "nickName": nickName
             }
             this.gameUserList.push(gameUser);
         }
@@ -348,7 +368,7 @@ const catchMind = {
 
         $('#clearCanvasBtn').hide();
     },
-    canvasDrawingEvent : function(event){
+    canvasDrawingEvent: function (event) {
 
         let mouseX = event.mouseX;
         let mouseY = event.mouseY;
@@ -377,33 +397,60 @@ const catchMind = {
         this.saveX = this.lastX;
         this.saveY = this.lastY;
     },
-    checkAnswer : function(answer){
-        if(answer === this.subject){
+    checkAnswer: function (answer) {
+        let self = this;
+        if (answer !== this.subject) {
+            $('#answerBtn').attr('disabled', false);
+            this.showToast("아쉽지만 정답이 아니에요");
+            return;
+        }
+
+        const gameData = {
+            gameStatus: "WINNER",
+            "roomId": roomId,
+            "userId": userId
+        };
+
+        let successCallback = function (data) {
+            debugger
+            let winnerNickName = data.nickName;
+
             let gameWiner = {
-                "gameEvent" : "newWiner",
-                "winer" : userId
+                "gameEvent": "newWiner",
+                "winer": winnerNickName
             }
 
             dataChannel.sendMessage(gameWiner, 'gameEvent');
 
             $('#answerBtn').attr('disabled', true);
-            this.speakWiner(userId)
-        }
+            self.speakWiner(winnerNickName);
+        };
+
+        let errorCallback = function (data) {
+
+        };
+
+        ajax('/catchmind/updateGameStatus', 'POST', '', JSON.stringify(gameData), successCallback, errorCallback);
+
+
     },
-    speakWiner : function(winerName){
+    speakWiner: function (winerName) {
 
         if (winerName !== '') {
-            speakText = winerName + "님이 정답을 맞췄습니다"
+            var speakText = winerName + "님이 정답을 맞췄습니다";
+
+            this.showToast(speakText);
+
             // SpeechSynthesisUtterance 객체 생성
             var utterThis = new SpeechSynthesisUtterance(speakText);
 
             // 음성이 끝났을 때 실행할 콜백 함수
-            utterThis.onend = function(event) {
+            utterThis.onend = function (event) {
                 console.log('음성 합성이 끝났습니다.');
             };
 
             // 오류가 발생했을 때 실행할 콜백 함수
-            utterThis.onerror = function(event) {
+            utterThis.onerror = function (event) {
                 console.error('음성 합성 중 오류가 발생했습니다.');
             };
 
@@ -419,7 +466,22 @@ const catchMind = {
             this.synth.speak(utterThis);
         }
     },
-    leftGameParticipants : function() {
+    leftGameParticipants: function () {
         this.gameParticipants -= 1;
+    },
+    showToast: function (text) {
+        Toastify({
+            text: text,
+            duration: 3000,
+            // destination: "https://github.com/apvarun/toastify-js",
+            newWindow: true,
+            close: true,
+            gravity: "top", // `top` or `bottom`
+            position: "center", // `left`, `center` or `right`
+            stopOnFocus: true, // Prevents dismissing of toast on hover
+            style: {
+                background: "linear-gradient(to right, #00b09b, #96c93d)",
+            },
+        }).showToast();
     }
 }

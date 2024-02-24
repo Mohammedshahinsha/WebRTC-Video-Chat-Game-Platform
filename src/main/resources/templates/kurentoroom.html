@@ -254,15 +254,32 @@
 
             <!-- 탭 내용 -->
             <div class="tab-content" id="myTabContent">
+<!--                <div class="tab-pane fade show active" id="gameSubject" role="tabpanel" aria-labelledby="gameSubject-tab">-->
+<!--                    &lt;!&ndash; 주제 선택 버튼들 &ndash;&gt;-->
+<!--                    <div class="modal-body" style="text-align: center;">-->
+<!--                        <input type="text" class="form-control" id="nickName_ld" width="300px;" placeholder="게임에 참여하기 위한 닉네임을 입력해주세요.">-->
+<!--                        <button class="btn btn-outline-primary topic-btn">사과</button>-->
+<!--                        <button class="btn btn-outline-primary topic-btn">자동차</button>-->
+<!--                        <button class="btn btn-outline-primary topic-btn">고양이</button>-->
+<!--                        <button class="btn btn-outline-primary topic-btn">비행기</button>-->
+<!--                        <p id="selectedTopic" style="margin-top: 20px;"></p>-->
+<!--                    </div>-->
+<!--                </div>-->
                 <div class="tab-pane fade show active" id="gameSubject" role="tabpanel" aria-labelledby="gameSubject-tab">
                     <!-- 주제 선택 버튼들 -->
                     <div class="modal-body" style="text-align: center;">
-                        <input type="text" class="form-control" id="nickName_ld" placeholder="게임에 참여하기 위한 닉네임을 입력해주세요.">
+                        <label for="nickName_ld">게임 닉네임</label>
+                        <input type="text" class="form-control" id="nickName_ld" style="width: 300px; display: block; margin: 0 auto;" placeholder="게임에 참여하기 위한 닉네임을 입력해주세요.">
+                        <p style="margin-top: 20px;"><strong>주제 선택:</strong></p>
                         <button class="btn btn-outline-primary topic-btn">사과</button>
                         <button class="btn btn-outline-primary topic-btn">자동차</button>
                         <button class="btn btn-outline-primary topic-btn">고양이</button>
                         <button class="btn btn-outline-primary topic-btn">비행기</button>
                         <p id="selectedTopic" style="margin-top: 20px;"></p>
+                        <div style="margin-top: 20px;">
+                            <label for="maxGameCount">최대 게임 횟수:</label>
+                            <input type="number" class="form-control" id="maxGameCount" style="width: 100px; display: inline-block;" placeholder="최대 횟수">
+                        </div>
                     </div>
                 </div>
                 <div class="tab-pane fade" id="gameTip" role="tabpanel" aria-labelledby="gameTip-tab">
@@ -307,7 +324,7 @@
             </div>
             <div class="modal-body">
                 <p>게임에 참여하시겠습니까?</p>
-                <input type="text" class="form-control" id="nickName_pt" placeholder="게임에 참여하기 위한 닉네임을 입력해주세요.">
+                <input type="text" class="form-control" id="nickName_pt" width="300px;" placeholder="게임에 참여하기 위한 닉네임을 입력해주세요.">
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" id="rejectGameRequest" data-dismiss="modal">아니오</button>
