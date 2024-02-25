@@ -138,28 +138,37 @@ const dataChannel = {
         // $messagesContainer에 contentElement 추가
         dataChannelChatting.$messagesContainer.append(contentElement);
     },
-    gameEvent: function (event) { // TODO Else IF 에서 event 부분 모두 통일하기
-
-        if (event.gameEvent === 'gameRequest') {
-            // 모달창 표시
-            $('#gameRequestModal').modal('show');
-        } else if (event.gameEvent === 'rejectGame') {
-            catchMind.rejectGame();
-        } else if(event.gameEvent === 'left'){
-            catchMind.leftGameParticipants();
-        } else if (event.gameEvent === 'addReadyUser') {
-            let gameUser = event.gameUser;
-            let nickName = event.nickName;
-            catchMind.addGameReady('participant', gameUser, nickName);
-        } else if (event.gameEvent === 'newGame') {
-            catchMind.subject = event.newSubject;
-        } else if (event === 'gameStart') {
-            catchMind.participantGameStartEvent();
-        } else if (event.gameEvent === 'mouseEvent') {
-            catchMind.canvasDrawingEvent(event);
-        } else if (event.gameEvent === 'newWiner') {
-            let winer = event.winer;
-            catchMind.speakWiner(winer);
+    gameEvent: function (event) {
+        switch (event.gameEvent) {
+            case 'gameRequest':
+                $('#gameRequestModal').modal('show');
+                break;
+            case 'rejectGame':
+                catchMind.rejectGame();
+                break;
+            case 'left':
+                catchMind.leftGameParticipants();
+                break;
+            case 'addReadyUser':
+                catchMind.addGameReady('participant', event.gameUser, event.nickName);
+                break;
+            case 'newGame':
+                catchMind.subject = event.newSubject;
+                break;
+            case 'mouseEvent':
+                catchMind.canvasDrawingEvent(event);
+                break;
+            case 'newWiner':
+                catchMind.speakWiner(event.winer);
+                break;
+            case 'clearCanvas':
+                catchMind.clearCanvas();
+                break;
+            default:
+                if (event === 'gameStart') {
+                    catchMind.participantGameStartEvent();
+                }
+                break;
         }
     }
 }
