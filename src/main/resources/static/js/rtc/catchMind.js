@@ -27,7 +27,8 @@ const catchMind = {
     lastY: 0,
     saveX: 0,
     saveY: 0,
-    timeLeft: 60, // 그림 시간 제한
+    totalTime: 60, // 그림 시간 제한
+    maxClearCount : 3, // 캔버스 클리어 최대 횟수
     recognition: null, // 음성 인식 객체
     synth: null,
     init: function () {
@@ -75,7 +76,7 @@ const catchMind = {
 
         // 마우스 누를 때
         self.canvas.addEventListener('mousedown', function (e) {
-            if (self.timeLeft > 0) { // 게임 시간이 남아있다면
+            if (self.totalTime > 0) { // 게임 시간이 남아있다면
                 self.drawing = true;
                 self.setMousePosition(e);
                 const pos = {
@@ -94,10 +95,30 @@ const catchMind = {
         self.canvas.addEventListener('mouseout', function () {
             self.drawing = false;
         });
-
     },
     initClickEvent: function () {
         let self = this;
+
+        $('#clearCanvasBtn').on('click', function () {
+            if (self.maxClearCount <= 0) {
+                self.showToast("더 이상 캔버스 초기화가 불가능해요!!");
+            }
+
+            self.clearCanvas();
+            if (self.isGameLeader) { // 게임 리더면 maxclearCanvas -=1
+                if (self.maxClearCount -= 1 > 0) {
+                    $('#maxClearCount').text("캔버스 초기화 기회 : " + self.maxClearCount);
+                } else {
+                    $('#clearCanvasBtn').prop('disabled', true);
+                    $('#maxClearCount').text("이제 캔버스 초기화는 할 수 없어요!!");
+                }
+            }
+
+            const clearCanvasEvent = {
+                "gameEvent": "clearCanvas"
+            };
+            dataChannel.sendMessage(clearCanvasEvent, 'gameEvent');
+        });
 
         // game start btn
         $('#readyBtn').on('click', function () {
@@ -217,7 +238,7 @@ const catchMind = {
                 // TODO 실패한 경우 모든 이벤트 초기화 필요
             };
 
-            ajax(url, 'POST', '', JSON.stringify(data), successCallback, errorCallback);
+            ajaxToJson(url, 'POST', '', JSON.stringify(data), successCallback, errorCallback);
 
             // self.timeLeft = 60; // N초로 설정
             self.isGameStart = true;
@@ -228,28 +249,53 @@ const catchMind = {
 
             $('#answerBtn').attr('disabled', true);
 
-            // 타이머 표시 업데이트
-            var timerId = setInterval(function () {
-                var $timer = $('#timer');
+            // 캔버스 초기화
+            $('#maxClearCount').text("캔버스 초기화 기회 : " + self.maxClearCount);
 
-                if (self.timeLeft <= 0) {
-                    clearInterval(timerId);
-                    self.gameStart = false;
-                    self.drawing = false;
-                    $timer.text('00:00');
-                    return;
+            var totalTime = 60;
+            var timeLeft = totalTime; // 남은 시간을 설정합니다.
+            var timerId;
+
+            // ProgressBar.js를 사용한 타이머 표시 업데이트
+            var bar = new ProgressBar.Line('#progress-container', {
+                strokeWidth: 2,
+                color: '#FFEA82',
+                trailColor: '#eee',
+                trailWidth: 1,
+                easing: 'easeInOut',
+                duration: 1000, // 각 갱신에 걸리는 시간을 1초로 설정하여 더 자연스러운 전환을 만듭니다.
+                svgStyle: null,
+                // from: {color: '#0408f8'}, // 시작 색상
+                // to: {color: '#5153c4'}, // 종료 색상
+                step: function(state, bar, attachment) {
+                    // 남은 시간에 따라 색상을 동적으로 계산
+                    var progress = (totalTime - timeLeft) / totalTime;
+                    var red = Math.round(4 + progress * (248 - 4)); // 4에서 248로 변화
+                    var green = Math.round(8 + progress * (4 - 8)); // 8에서 4로 변화
+                    var blue = Math.round(248 + progress * (4 - 248)); // 248에서 4로 변화
+
+                    var color = `rgb(${red}, ${green}, ${blue})`;
+                    bar.path.setAttribute('stroke', color);
                 }
+            });
 
-                var minutes = Math.floor(self.timeLeft / 60);
-                var seconds = self.timeLeft % 60;
+            function startTimer() {
+                timerId = setInterval(function() {
+                    timeLeft--;
+                    var timeFraction = timeLeft / totalTime;
 
-                // 분과 초가 10보다 작으면 앞에 0을 붙여서 표시
-                minutes = minutes < 10 ? '0' + minutes : minutes;
-                seconds = seconds < 10 ? '0' + seconds : seconds;
+                    // 매 초마다 프로그레스 바 업데이트
+                    bar.animate(timeFraction, {duration: 1000});
 
-                $timer.text(minutes + ":" + seconds);
-                self.timeLeft--;
-            }, 1000);
+                    if (timeLeft <= 0) {
+                        clearInterval(timerId);
+                        console.log("타이머 종료");
+                    }
+                }, 1000);
+            }
+
+            startTimer();
+
         });
 
         $('#answerBtn').on('click', function () {
@@ -430,9 +476,7 @@ const catchMind = {
 
         };
 
-        ajax('/catchmind/updateGameStatus', 'POST', '', JSON.stringify(gameData), successCallback, errorCallback);
-
-
+        ajaxToJson('/catchmind/updateGameStatus', 'POST', '', JSON.stringify(gameData), successCallback, errorCallback);
     },
     speakWiner: function (winerName) {
 
@@ -468,6 +512,10 @@ const catchMind = {
     },
     leftGameParticipants: function () {
         this.gameParticipants -= 1;
+    },
+    clearCanvas : function(){
+        // 캔버스 초기화
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     },
     showToast: function (text) {
         Toastify({

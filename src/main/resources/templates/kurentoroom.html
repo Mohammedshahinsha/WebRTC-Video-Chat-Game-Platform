@@ -22,10 +22,10 @@
     <link rel="styleSheet" href="/css/rtc/catch_mind.css" type="text/css" media="screen">
 
     <script src="https://cdn.jsdelivr.net/npm/gasparesganga-jquery-loading-overlay@2.1.7/dist/loadingoverlay.min.js"></script>
+    <script src="https://cdn.rawgit.com/kimmobrunfeldt/progressbar.js/0.5.6/dist/progressbar.js"></script>
 
 </head>
 <style>
-
 </style>
 <body>
 <input type="hidden" id="roomId" th:value="${roomId}">
@@ -37,11 +37,15 @@
             <div class="justify-content-around mb-3">
                 <h2 class="row justify-content-md-center" id="room-header"></h2>
                 <div class="row justify-content-md-center">
-                    <img class="col-md-1" src="/images/webrtc/screen-share-on.svg" width="24px" height="24px" alt="" id="screenShareBtn"
+                    <img class="col-md-1" src="/images/webrtc/screen-share-on.svg" width="24px" height="24px" alt=""
+                         id="screenShareBtn"
                          data-flag="false" onclick="screenShare()">
-                    <img src="/images/webrtc/video-on.svg" class="col-md-1 localVideoToggle" width="24px" height="24px" alt="" id="videoBtn" data-flag="true" >
-                    <img src="/images/webrtc/audio-speaker-on.svg" class="col-md-1 localAudioToggle" width="24px" height="24px" alt="" id="audioBtn" data-flag="true">
-                    <img src="/images/webrtc/setting.svg" class="col-md-1" width="24px" height="24px" id="userSetting" alt="userSetting"
+                    <img src="/images/webrtc/video-on.svg" class="col-md-1 localVideoToggle" width="24px" height="24px"
+                         alt="" id="videoBtn" data-flag="true">
+                    <img src="/images/webrtc/audio-speaker-on.svg" class="col-md-1 localAudioToggle" width="24px"
+                         height="24px" alt="" id="audioBtn" data-flag="true">
+                    <img src="/images/webrtc/setting.svg" class="col-md-1" width="24px" height="24px" id="userSetting"
+                         alt="userSetting"
                          data-toggle="modal" data-target="#userSettingsModal">
                 </div>
             </div>
@@ -51,7 +55,8 @@
                         <img src="/images/webrtc/speaker.svg" width="24px" height="24px">
                         <span id="output_displayText"></span>
                         <div id="bottomArrow">
-                            <svg fill="#000000" height="15px" width="15px" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                            <svg fill="#000000" height="15px" width="15px" version="1.1" id="Layer_1"
+                                 xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
                                  viewBox="0 0 512 512" xml:space="preserve">
                                  <g>
                                      <path d="M256,0C114.618,0,0,114.618,0,256s114.618,256,256,256s256-114.618,256-256S397.382,0,256,0z M256,469.333
@@ -73,7 +78,8 @@
                         <img src="/images/webrtc/headphone.svg" width="24px" height="24px">
                         <span id="input_displayText"></span>
                         <div id="bottomArrow">
-                            <svg fill="#000000" height="15px" width="15px" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                            <svg fill="#000000" height="15px" width="15px" version="1.1" id="Layer_1"
+                                 xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
                                  viewBox="0 0 512 512" xml:space="preserve">
                                  <g>
                                      <path d="M256,0C114.618,0,0,114.618,0,256s114.618,256,256,256s256-114.618,256-256S397.382,0,256,0z M256,469.333
@@ -153,6 +159,8 @@
 <script src="/js/rtc/dataChannelFileUtil.js"></script>
 <script src="/js/rtc/mediaDevice.js"></script>
 <script src="/js/rtc/catchMind.js"></script>
+<script>
+</script>
 </body>
 </html>
 
@@ -212,12 +220,12 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">나만의 캐치마인드!</h5>
-<!--                <button type="button" class="close" data-dismiss="modal" aria-label="Close">-->
-<!--                    <span aria-hidden="true">&times;</span>-->
-<!--                </button>-->
             </div>
-            <div>
-                <span id="timer">01:00</span> <!-- 타이머 표시 -->
+            <!-- 상태 표시 바 추가 -->
+            <div class="status-bar">
+                <div id="progress-container" style="height: 20px;"></div>
+                <!--                    <span id="timer"></span> &lt;!&ndash; 타이머 표시 &ndash;&gt;-->
+                <span id="maxClearCount"></span>
             </div>
             <div>
                 <button type="button" id="clearCanvasBtn" class="btn btn-warning">Clear Canvas</button>
@@ -231,45 +239,40 @@
 </div>
 
 <!-- game subject modal -->
-<div class="modal fade" id="subjectModal" tabindex="-1" role="dialog" aria-labelledby="subjectModalLabel" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+<div class="modal fade" id="subjectModal" tabindex="-1" role="dialog" aria-labelledby="subjectModalLabel"
+     aria-hidden="true" data-backdrop="static" data-keyboard="false">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <!-- 모달 헤더 -->
             <div class="modal-header">
                 <h5 class="modal-title" id="subjectModalLabel">게임 정보</h5>
-<!--                <button type="button" class="close" data-dismiss="modal" aria-label="Close">-->
-<!--                    <span aria-hidden="true">&times;</span>-->
-<!--                </button>-->
+                <!--                <button type="button" class="close" data-dismiss="modal" aria-label="Close">-->
+                <!--                    <span aria-hidden="true">&times;</span>-->
+                <!--                </button>-->
             </div>
 
             <!-- 탭 메뉴 -->
             <ul class="nav nav-tabs" id="myTab" role="tablist">
                 <li class="nav-item">
-                    <a class="nav-link active" id="gameSubject-tab" data-toggle="tab" href="#gameSubject" role="tab" aria-controls="gameSubject" aria-selected="true">주제 선택</a>
+                    <a class="nav-link active" id="gameSubject-tab" data-toggle="tab" href="#gameSubject" role="tab"
+                       aria-controls="gameSubject" aria-selected="true">주제 선택</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" id="gameTip-tab" data-toggle="tab" href="#gameTip" role="tab" aria-controls="gameTip" aria-selected="false">게임 방법 & 팁</a>
+                    <a class="nav-link" id="gameTip-tab" data-toggle="tab" href="#gameTip" role="tab"
+                       aria-controls="gameTip" aria-selected="false">게임 방법 & 팁</a>
                 </li>
             </ul>
 
             <!-- 탭 내용 -->
             <div class="tab-content" id="myTabContent">
-<!--                <div class="tab-pane fade show active" id="gameSubject" role="tabpanel" aria-labelledby="gameSubject-tab">-->
-<!--                    &lt;!&ndash; 주제 선택 버튼들 &ndash;&gt;-->
-<!--                    <div class="modal-body" style="text-align: center;">-->
-<!--                        <input type="text" class="form-control" id="nickName_ld" width="300px;" placeholder="게임에 참여하기 위한 닉네임을 입력해주세요.">-->
-<!--                        <button class="btn btn-outline-primary topic-btn">사과</button>-->
-<!--                        <button class="btn btn-outline-primary topic-btn">자동차</button>-->
-<!--                        <button class="btn btn-outline-primary topic-btn">고양이</button>-->
-<!--                        <button class="btn btn-outline-primary topic-btn">비행기</button>-->
-<!--                        <p id="selectedTopic" style="margin-top: 20px;"></p>-->
-<!--                    </div>-->
-<!--                </div>-->
-                <div class="tab-pane fade show active" id="gameSubject" role="tabpanel" aria-labelledby="gameSubject-tab">
+                <div class="tab-pane fade show active" id="gameSubject" role="tabpanel"
+                     aria-labelledby="gameSubject-tab">
                     <!-- 주제 선택 버튼들 -->
                     <div class="modal-body" style="text-align: center;">
                         <label for="nickName_ld">게임 닉네임</label>
-                        <input type="text" class="form-control" id="nickName_ld" style="width: 300px; display: block; margin: 0 auto;" placeholder="게임에 참여하기 위한 닉네임을 입력해주세요.">
+                        <input type="text" class="form-control" id="nickName_ld"
+                               style="width: 300px; display: block; margin: 0 auto;"
+                               placeholder="게임에 참여하기 위한 닉네임을 입력해주세요.">
                         <p style="margin-top: 20px;"><strong>주제 선택:</strong></p>
                         <button class="btn btn-outline-primary topic-btn">사과</button>
                         <button class="btn btn-outline-primary topic-btn">자동차</button>
@@ -278,7 +281,8 @@
                         <p id="selectedTopic" style="margin-top: 20px;"></p>
                         <div style="margin-top: 20px;">
                             <label for="maxGameCount">최대 게임 횟수:</label>
-                            <input type="number" class="form-control" id="maxGameCount" style="width: 100px; display: inline-block;" placeholder="최대 횟수">
+                            <input type="number" class="form-control" id="maxGameCount"
+                                   style="width: 100px; display: inline-block;" placeholder="최대 횟수">
                         </div>
                     </div>
                 </div>
@@ -324,7 +328,8 @@
             </div>
             <div class="modal-body">
                 <p>게임에 참여하시겠습니까?</p>
-                <input type="text" class="form-control" id="nickName_pt" width="300px;" placeholder="게임에 참여하기 위한 닉네임을 입력해주세요.">
+                <input type="text" class="form-control" id="nickName_pt" width="300px;"
+                       placeholder="게임에 참여하기 위한 닉네임을 입력해주세요.">
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" id="rejectGameRequest" data-dismiss="modal">아니오</button>
