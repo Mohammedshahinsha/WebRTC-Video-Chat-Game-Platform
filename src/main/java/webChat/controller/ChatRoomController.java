@@ -1,5 +1,6 @@
 package webChat.controller;
 
+import com.google.gson.JsonObject;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -79,9 +80,9 @@ public class ChatRoomController {
     }
 
     // 채팅방 비밀번호 확인
-    @PostMapping("/chat/confirmPwd/{roomId}")
+    @PostMapping(value = "/chat/confirmPwd/{roomId}")
     @ResponseBody
-    public boolean confirmPwd(@PathVariable String roomId, @RequestParam String roomPwd){
+    public boolean confirmPwd(@PathVariable String roomId, @RequestParam("roomPwd") String roomPwd){
 
         // 넘어온 roomId 와 roomPwd 를 이용해서 비밀번호 찾기
         // 찾아서 입력받은 roomPwd 와 room pwd 와 비교해서 맞으면 true, 아니면  false

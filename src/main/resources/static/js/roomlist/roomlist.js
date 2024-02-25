@@ -213,10 +213,7 @@ function enterRoom() {
         // console.log("확인 : "+chkRoomUserCnt(roomId))
 
         if (result) {
-            let enterRoomFnc = function(){
-                location.href = '/chat/room?roomId=' + roomId;
-            }
-            chkRoomUserCnt(roomId, enterRoomFnc);
+            chkRoomUserCnt(roomId);
 
         } else {
             alert("비밀번호가 틀립니다. \n 비밀번호를 확인해주세요");
@@ -235,7 +232,7 @@ function delRoom() {
 }
 
 // 채팅방 입장 시 인원 수에 따라서 입장 여부 결정
-function chkRoomUserCnt(roomId, enterRoom) {
+function chkRoomUserCnt(roomId) {
     let url = '/chat/chkUserCnt/' + roomId;
     let successCallback = function (result) {
         // console.log("여기가 먼저")
@@ -244,7 +241,7 @@ function chkRoomUserCnt(roomId, enterRoom) {
             return;
         }
 
-        enterRoom();
+        location.href = '/chat/room?roomId=' + roomId;
     };
     let errorCallback = function (error) {
         console.error(error);

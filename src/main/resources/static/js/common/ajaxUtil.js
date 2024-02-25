@@ -8,6 +8,26 @@ function ajax(url, method, async, data, successCallback, errorCallback, complete
         type: method,
         data: data,
         async: async !== undefined ? async : true,
+        success: function (data) {
+            successCallback(data);
+        },
+        error: function (error) {
+            errorCallback(error)
+        },
+        complete : function(result){
+            if (completeCallback !== undefined && typeof completeCallback === "function") {
+                completeCallback(result);
+            }
+        }
+    })
+}
+
+function ajaxToJson(url, method, async, data, successCallback, errorCallback, completeCallback) {
+    $.ajax({
+        url: url,
+        type: method,
+        data: data,
+        async: async !== undefined ? async : true,
         contentType : 'application/json; charset=UTF-8',
         success: function (data) {
             successCallback(data);
