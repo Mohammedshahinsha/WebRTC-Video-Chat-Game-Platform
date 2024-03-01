@@ -69,11 +69,11 @@ public class ChatRoomController {
         if (ChatType.MSG.equals(room.getChatType())) {
             return "chatroom";
         }else{
+            // TODO uuid 대신 guest1 2 3 4  로 지정?
             String uuid = UUID.randomUUID().toString().split("-")[0];
             model.addAttribute("uuid", uuid);
             model.addAttribute("roomId", room.getRoomId());
             model.addAttribute("roomName", room.getRoomName());
-//            return "rtcroom";
 
             return "kurentoroom";
         }

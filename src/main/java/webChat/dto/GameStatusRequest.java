@@ -1,4 +1,4 @@
-package webChat.controller;
+package webChat.dto;
 
 import lombok.Data;
 import webChat.dto.GameStatus;

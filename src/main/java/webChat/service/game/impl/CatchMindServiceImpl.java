@@ -54,7 +54,6 @@ public class CatchMindServiceImpl implements CatchMindService {
 
         CatchMindUser catchMindUser = user.get();
         switch (gameStatus){
-
             case WINNER:
                 updateUserScore(catchMindUser, this.WINNER_SCORE);
                 int updatedWinCount = catchMindUser.getWinCount()+1;

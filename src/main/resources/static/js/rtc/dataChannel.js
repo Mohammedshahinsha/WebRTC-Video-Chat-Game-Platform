@@ -5,10 +5,6 @@ let chanId = 0;
 
 const dataChannel = {
     user: null,
-    lastX: 0,
-    lastY: 0,
-    saveX: 0,
-    saveY: 0,
     init: function () {
         // 핸들러들을 바인딩하여 'this'가 항상 dataChannel 객체를 참조하도록 보장하기 위함
         this.handleDataChannelOpen = this.handleDataChannelOpen.bind(this);

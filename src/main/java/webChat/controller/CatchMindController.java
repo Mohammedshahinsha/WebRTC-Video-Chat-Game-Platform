@@ -1,13 +1,12 @@
 package webChat.controller;
 
-import com.google.gson.JsonObject;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 import webChat.dto.CatchMindUser;
 import webChat.dto.GameSettingInfos;
-import webChat.dto.GameStatus;
+import webChat.dto.GameStatusRequest;
 import webChat.service.game.CatchMindService;
 
 import java.util.Map;
@@ -27,7 +26,7 @@ public class CatchMindController {
         catchMindService.setGameParticipants(gameSettingInfos);
         Map<String, String> result = new ConcurrentHashMap<>();
         result.put("result", "success");
-        result.put("info", "gameSetting Success");
+        result.put("info", ">>>>>>> gameSetting Success!! <<<<<<<");
         return result;
     }
 

@@ -45,8 +45,6 @@ public class AdminController {
         } catch (Exception e) {
             throw new ExceptionController.InternalServerError(e.getMessage());
         }
-
-
     }
 
     /**
