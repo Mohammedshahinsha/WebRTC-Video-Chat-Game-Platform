@@ -19,6 +19,7 @@ let locationHost = location.host
 let participants = {};
 
 let userId = null;
+let nickName = null;
 let roomId = null;
 let roomName = null;
 
@@ -181,6 +182,7 @@ ws.onmessage = function (message) {
 function register() {
 
     userId = $("#uuid").val();
+    nickName = $("#nickName").val();
     roomId = $("#roomId").val();
     roomName = $("#roomName").val();
 
@@ -188,16 +190,18 @@ function register() {
     document.getElementById('room').style.display = 'block';
 
 
-    var message = {
+    let message = {
         id: 'joinRoom',
-        name: $("#uuid").val(),
+        nickName : nickName,
+        userId: userId,
         room: roomId,
     }
     sendMessageToServer(message);
 }
 
 function onNewParticipant(request) {
-    receiveVideo(request.name);
+    let newParticipant = request.data;
+    receiveVideo(newParticipant);
 }
 
 function receiveVideoResponse(result) {
@@ -218,8 +222,7 @@ function callResponse(message) {
 }
 
 function onExistingParticipants(msg) {
-
-    var participant = new Participant(userId);
+    var participant = new Participant(userId, nickName);
     participants[userId] = participant;
     dataChannel.initDataChannelUser(participant);
     var video = participant.getVideoElement();
@@ -262,8 +265,7 @@ function onExistingParticipants(msg) {
                 this.generateOffer(participant.offerToReceiveVideo.bind(participant));
                 mediaDevice.init(); // video 와 audio 장비를 모두 가져온 후 mediaDvice 장비 영역 세팅
             });
-
-        msg.data.forEach(receiveVideo);
+        msg.data.forEach(receiveVideo)
     }
 
     navigator.mediaDevices.getUserMedia(constraints)
@@ -271,8 +273,8 @@ function onExistingParticipants(msg) {
 }
 
 function receiveVideo(sender) {
-    var participant = new Participant(sender);
-    participants[sender] = participant;
+    var participant = new Participant(sender.userId, sender.nickName);
+    participants[sender.userId] = participant;
     var video = participant.getVideoElement();
     var audio = participant.getAudioElement();
 

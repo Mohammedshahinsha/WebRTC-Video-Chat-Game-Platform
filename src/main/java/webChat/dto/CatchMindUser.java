@@ -7,6 +7,8 @@ import lombok.*;
  */
 @Getter
 @Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class CatchMindUser extends User {
     private int score;
     private int winCount;

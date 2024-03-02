@@ -14,23 +14,24 @@
  * limitations under the License.
  *
  */
-
+// TODO userName -> userID 로 변경 필요, 중간중간 진짜 name 이 필요한 부분만 nickName 을 사용할 것
 const PARTICIPANT_MAIN_CLASS = 'participant main';
 const PARTICIPANT_CLASS = 'participant';
 
 /**
  * Creates a video element for a new participant
  *
- * @param {String} name - the name of the new participant, to be used as tag
- *                        name of the video element.
- *                        The tag of the new element will be 'video<name>'
+ * @param {String} userId - the userId of the new participant, to be used as tag
+ *                        userId of the video element.
+ *                        The tag of the new element will be 'video<userId>'
  * @return
  */
 
-function Participant(name) {
-	//console.log("참여자명 : "+name)
+function Participant(userId, nickName) {
+	//console.log("참여자명 : "+userId)
+	this.userId = userId;
+	this.nickName = nickName;
 
-	this.name = name;
 	let rtcPeer = null;
 	let localStream = null; // 유저의 로컬 스트림
 	let container = document.createElement('div');
@@ -39,7 +40,7 @@ function Participant(name) {
 		return (($("#"+PARTICIPANT_MAIN_CLASS)).length === 0);
 	}
 	container.className = isMainParticipant() ?  PARTICIPANT_MAIN_CLASS : PARTICIPANT_CLASS;
-	container.id = name;
+	container.id = userId;
 
 	let span = document.createElement('span');
 	let video = document.createElement('video');
@@ -48,16 +49,16 @@ function Participant(name) {
 	container.appendChild(video);
 	container.appendChild(span);
 	container.appendChild(audio);
-	addVolumeControl(container, name);
+	addVolumeControl(container, userId);
 
 	// container.onclick = switchContainerClass;
 	// document.getElementById('participants').appendChild(container);
 	$('#participants').append(container);
 	updateGridLayout();
 
-	span.appendChild(document.createTextNode(name));
+	span.appendChild(document.createTextNode(nickName));
 
-	video.id = 'video-' + name;
+	video.id = 'video-' + userId;
 	video.autoplay = true;
 	video.controls = true;
 	audio.autoplay = true;
@@ -87,8 +88,10 @@ function Participant(name) {
 	this.offerToReceiveVideo = function(error, offerSdp, wp){
 		if (error) return console.error ("sdp offer error")
 		//console.log('Invoking SDP offer callback function');
-		let msg =  { id : "receiveVideoFrom",
-			sender : name,
+		let msg =  {
+			id : "receiveVideoFrom",
+			sender : userId,
+			nickName : nickName,
 			sdpOffer : offerSdp
 		};
 		sendMessageToServer(msg);
@@ -97,11 +100,11 @@ function Participant(name) {
 
 	this.onIceCandidate = function (candidate, wp) {
 		//console.log("Local candidate" + JSON.stringify(candidate));
-
 		let message = {
 			id: 'onIceCandidate',
 			candidate: candidate,
-			name: name
+			name: userId,
+			nickName : nickName
 		};
 		sendMessageToServer(message);
 	}
@@ -109,7 +112,7 @@ function Participant(name) {
 	Object.defineProperty(this, 'rtcPeer', { writable: true});
 
 	this.dispose = function() {
-		//console.log('Disposing participant ' + this.name);
+		//console.log('Disposing participant ' + this.userId);
 		this.rtcPeer.dispose();
 		container.parentNode.removeChild(container);
 	};
@@ -129,7 +132,7 @@ function Participant(name) {
 	}
 }
 
-function addVolumeControl(container, name){
+function addVolumeControl(container, userId){
 	// 복제하고자 하는 요소의 ID
 	const originalElement = $('#volumeControl');
 
@@ -139,17 +142,17 @@ function addVolumeControl(container, name){
 	volumeControl.type = 'range';
 
 	// 복제된 요소의 ID를 변경 :: 고유한 ID 부여
-	volumeControl.id = 'volumeControl_' + name;
+	volumeControl.id = 'volumeControl_' + userId;
 
 	// 복제된 요소에 사용자 이름을 설정합니다.
-	volumeControl.setAttribute('data-user-name', name);
+	volumeControl.setAttribute('data-userId', userId);
 
 	volumeControl.onchange = function(event) {
 
-		let userName = this.getAttribute('data-user-name');
+		let userId = this.getAttribute('data-userId');
 
 		const volumeLevel = parseFloat(this.value); // 슬라이더 값은 문자열이므로 숫자로 변환
-		participants[userName].setVolume(volumeLevel); // 해당 참가자에 대해 음량을 조절
+		participants[userId].setVolume(volumeLevel); // 해당 참가자에 대해 음량을 조절
 	};
 
 	// 복제된 요소를 해당 위치에 추가합니다.
@@ -200,22 +203,22 @@ $('#userSetting').on('click', function (e) {
 	participantsList.empty(); // 기존 목록을 비웁니다.
 
 	// participants 객체를 반복하여 각 참가자에 대한 정보를 목록에 추가합니다.
-	$.each(participants, function (name, participant) {
+	$.each(participants, function (userId, participant) {
 		let listItem = $('<li class="list-group-item d-flex justify-content-between align-items-center"></li>');
 		let localUser = participant.getLocalUser(); // 로컬 user 의 id 확인
 
 		// 볼륨 조절 슬라이더의 ID
-		let volumeSliderId = 'volumeControl_' + name;
+		let volumeSliderId = 'volumeControl_' + userId;
 		// 기존의 볼륨 컨트롤을 찾아서 복사합니다.
 		let existingVolumeSlider = $('#' + volumeSliderId);
 		// 기존의 볼륨 컨트롤이 있으면 복사하여 사용합니다.
 		let volumeSlider = existingVolumeSlider.clone(true);
 
 		// 비디오 및 오디오 컨트롤 버튼 복사 및 ID 수정
-		let videoButtonId = 'videoBtn_' + name;
-		let audioButtonId = 'audioBtn_' + name;
+		let videoButtonId = 'videoBtn_' + userId;
+		let audioButtonId = 'audioBtn_' + userId;
 
-		if (localUser === name) { // 사용자 본인의 video, audio 설정
+		if (localUser === userId) { // 사용자 본인의 video, audio 설정
 			listItem.text('You');
 
 			let videoButton = $('#videoBtn').clone(true).attr('id', videoButtonId);
@@ -226,7 +229,7 @@ $('#userSetting').on('click', function (e) {
 
 			listItem.append(videoButton, audioButton, volumeSlider);
 		} else { // 다른 유저의 video, audio 설정
-			listItem.text(name);
+			listItem.text(participant.nickName);
 
 			// 비디오 컨트롤 버튼 clone 및 이벤트 할당
 			let remoteVideoButton = $('#videoBtn').clone().attr('id', videoButtonId);

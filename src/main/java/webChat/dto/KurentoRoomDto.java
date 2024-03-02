@@ -28,6 +28,7 @@ import org.kurento.client.KurentoClient;
 import org.kurento.client.MediaPipeline;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.socket.WebSocketSession;
 import webChat.rtc.KurentoUserSession;
 
@@ -132,18 +133,18 @@ public class KurentoRoomDto extends ChatRoomDto implements Closeable {
    * @Param String userName, WebSocketSession session
    * @return UserSession 객체
    * */
-  public KurentoUserSession join(String userName, WebSocketSession session) throws IOException {
+  public KurentoUserSession join(String userId, String nickName, WebSocketSession session) throws IOException {
 
-    log.info("ROOM {}: adding participant {}", this.roomId, userName);
+    log.info("ROOM {}: adding participant {}", this.roomId, userId);
 
     // UserSession 은 유저명, room명, 유저 세션정보, pipline 파라미터로 받음
-    final KurentoUserSession participant = new KurentoUserSession(userName, this.roomId, session, this.pipeline);
+    final KurentoUserSession participant = new KurentoUserSession(userId, nickName, this.roomId, session, this.pipeline);
 
     //
     joinRoom(participant);
 
     // 참여자 map 에 유저명과 유저에 관한 정보를 갖는 userSession 객체를 저장
-    participants.put(participant.getName(), participant);
+    participants.put(participant.getUserId(), participant);
 
     // 참여자 정보를 기존 참여자들에게 알림?
     sendParticipantNames(participant);
@@ -157,8 +158,8 @@ public class KurentoRoomDto extends ChatRoomDto implements Closeable {
   }
 
   public void leave(KurentoUserSession user) throws IOException {
-    log.debug("PARTICIPANT {}: Leaving room {}", user.getName(), this.roomId);
-    this.removeParticipant(user.getName());
+    log.debug("PARTICIPANT {}: Leaving room {}", user.getUserId(), this.roomId);
+    this.removeParticipant(user.getUserId());
 
     user.close();
   }
@@ -175,15 +176,18 @@ public class KurentoRoomDto extends ChatRoomDto implements Closeable {
     // 유저가 참여했음을 알리는 jsonObject
     // newParticipantMsg : { "id" : "newParticipantArrived", "name" : "참여자 유저명"}
     newParticipantMsg.addProperty("id", "newParticipantArrived");
-    newParticipantMsg.addProperty("name", newParticipant.getName());
+    JsonObject joNewParticipant = new JsonObject();
+    joNewParticipant.addProperty("userId", newParticipant.getUserId());
+    joNewParticipant.addProperty("nickName", newParticipant.getNickName());
+    newParticipantMsg.add("data", joNewParticipant);
 
     // participants 를 list 형태로 변환 => 이때 list 는 한명의 유저가 새로 들어올 때마다
     // 즉 joinRoom 이 실행될 때마다 새로 생성 && return 됨
     final List<String> participantsList = new ArrayList<>(participants.values().size());
 //    log.debug("ROOM {}: notifying other participants of new participant {}", name,
 //        newParticipant.getName());
-    log.debug("ROOM {}: 다른 참여자들에게 새로운 참여자가 들어왔음을 알림 {}", roomId,
-            newParticipant.getName());
+    log.debug("ROOM {}: 다른 참여자들에게 새로운 참여자가 들어왔음을 알림 {} :: {}", roomId,
+            newParticipant.getUserId(), newParticipant.getNickName());
 
     // participants 의 value 로 for 문 돌림
     for (final KurentoUserSession participant : participants.values()) {
@@ -192,11 +196,11 @@ public class KurentoRoomDto extends ChatRoomDto implements Closeable {
         // 즉, newParticipantMsg 를 send함
         participant.sendMessage(newParticipantMsg);
       } catch (final IOException e) {
-        log.error("ROOM {}: participant {} could not be notified", roomId, participant.getName(), e);
+        log.error("ROOM {}: participant {} could not be notified", roomId, participant.getUserId(), e);
       }
 
       // list 에 유저명 추가
-      participantsList.add(participant.getName());
+      participantsList.add(participant.getUserId());
     }
 
     // 유저 리스트를 return
@@ -236,7 +240,7 @@ public class KurentoRoomDto extends ChatRoomDto implements Closeable {
         participant.sendMessage(participantLeftJson);
 
       } catch (final IOException e) {
-        unNotifiedParticipants.add(participant.getName());
+        unNotifiedParticipants.add(participant.getUserId());
       }
     }
 
@@ -254,29 +258,35 @@ public class KurentoRoomDto extends ChatRoomDto implements Closeable {
    * @Return none
    * */
   public void sendParticipantNames(KurentoUserSession user) throws IOException {
+
+    // json 오브젝트 생성
+    final JsonObject existingParticipantsMsg = new JsonObject();
+
     // jsonArray 객체 생성
+    // TODO 추후 DTO 객체로 변경 필요
     final JsonArray participantsArray = new JsonArray();
 
     // participants 의 value 만 return 받아서 => this.getParticipants() for 문 돌림
     for (final KurentoUserSession participant : this.getParticipants()) {
       // 만약 참여자의 정보가 파라미터로 넘어온 user 와 같지 않다면
-      if (!participant.equals(user)) {
-        // TODO 여기는 추가 정리
-        final JsonElement participantName = new JsonPrimitive(participant.getName());
-        participantsArray.add(participantName);
+      if (!participant.getUserId().equals(user.getUserId())) {
+        JsonObject exisingUser = new JsonObject();
+        exisingUser.addProperty("userId", participant.getUserId());
+        exisingUser.addProperty("nickName", participant.getNickName());
+
+        participantsArray.add(exisingUser);
       }
     }
 
-    // json 오브젝트 생성
-    final JsonObject existingParticipantsMsg = new JsonObject();
+//    // json 오브젝트 생성
+//    final JsonObject existingParticipantsMsg = new JsonObject();
 
     // 현재 존재하는 참여자들에 대한 정보를 담는 json Msg 생성
     // id : existingParticipants
     // data : 현재 방 안에 존재하는 유저만을 담은 array
     existingParticipantsMsg.addProperty("id", "existingParticipants");
     existingParticipantsMsg.add("data", participantsArray);
-    log.debug("PARTICIPANT {}: sending a list of {} participants", user.getName(),
-        participantsArray.size());
+    log.debug("PARTICIPANT {}: sending a list of {} participants", user.getUserId(), participantsArray.size());
 
     // user 에게 existingParticipantsMsg 전달
     user.sendMessage(existingParticipantsMsg);
@@ -292,7 +302,7 @@ public class KurentoRoomDto extends ChatRoomDto implements Closeable {
         // 유저 close
         user.close();
       } catch (IOException e) {
-        log.debug("ROOM {}: Could not invoke close on participant {}", this.roomId, user.getName(), e);
+        log.debug("ROOM {}: Could not invoke close on participant {}", this.roomId, user.getUserId(), e);
       }
     } // for 문 끝
 

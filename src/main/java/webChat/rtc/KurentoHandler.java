@@ -43,7 +43,7 @@ public class KurentoHandler extends TextWebSocketHandler {
         final KurentoUserSession user = registry.getBySession(session);
 
         if (user != null) {
-            log.debug("Incoming message from user '{}': {}", user.getName(), jsonMessage);
+            log.debug("Incoming message from user '{}': {}", user.getUserId(), jsonMessage);
         } else {
             log.debug("Incoming message from new user: {}", jsonMessage);
         }
@@ -101,16 +101,18 @@ public class KurentoHandler extends TextWebSocketHandler {
 
     // 유저가 Room 에 입장했을 때
     private void joinRoom(JsonObject params, WebSocketSession session) throws IOException {
-        // json 형태의 params 에서 room 과 name 을 분리해온다
+        // json 형태의 params 에서 room 과 userId, nickName 을 분리해온다
         final String roomName = params.get("room").getAsString();
-        final String name = params.get("name").getAsString();
-        log.info("PARTICIPANT {}: trying to join room {}", name, roomName);
+        final String userId = params.get("userId").getAsString();
+        final String nickName = params.get("nickName").getAsString();
+
+        log.info("PARTICIPANT {}: trying to join room {}", userId, roomName);
 
         // roomName 를 기준으로 room 으 ㄹ가져온다
         KurentoRoomDto room = roomManager.getRoom(roomName);
 
         // 유저명과 session 을 room 에 넘겨서 room 에 유저 저장
-        final KurentoUserSession user = room.join(name, session);
+        final KurentoUserSession user = room.join(userId, nickName, session);
 
         // 단순히 room 에 저장하는 것 외에도 user 를 저장하기 위한 메서드?
         registry.register(user);
@@ -145,5 +147,4 @@ public class KurentoHandler extends TextWebSocketHandler {
         user.sendMessage(message);
 
     }
-
 }

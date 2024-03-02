@@ -63,14 +63,14 @@ const dataChannel = {
         if (this.isNullOrUndefined(message)) return;
         let messageData = {
             type: type,
-            userName: this.user.name,
+            userName: this.user.nickName,
             message: message
         }
 
         this.user.rtcPeer.send(JSON.stringify(messageData));
     },
     sendFileMessage: function (fileMeta) {
-        fileMeta.userName = this.user.name;
+        fileMeta.userName = this.user.nickName;
         this.user.rtcPeer.send(JSON.stringify(fileMeta));
         this.showNewFileMessage(fileMeta.fileMeta, 'self');
     },

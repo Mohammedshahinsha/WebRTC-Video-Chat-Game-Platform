@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
+import webChat.dto.User;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -39,11 +40,10 @@ import java.util.concurrent.ConcurrentMap;
  * 새로운 유저가 들어왔을 때 이를 나의 map 에 저장하고, 다른 사람들과 이를 동기화 해서 일치 시키는 것?
  */
 @RequiredArgsConstructor
-public class KurentoUserSession implements Closeable {
+public class KurentoUserSession extends User implements Closeable {
 
   private static final Logger log = LoggerFactory.getLogger(KurentoUserSession.class);
 
-  private final String name;
   private final WebSocketSession session;
 
   private final MediaPipeline pipeline;
@@ -65,11 +65,11 @@ public class KurentoUserSession implements Closeable {
   /**
    * @Param String 유저명, String 방이름, WebSocketSession 세션객체, MediaPipline (kurento)mediaPipeline 객체
    */
-  public KurentoUserSession(String name, String roomName, WebSocketSession session,
+  public KurentoUserSession(String userId, String nickName, String roomName, WebSocketSession session,
                             MediaPipeline pipeline) {
 
+    super(userId, nickName);
     this.pipeline = pipeline;
-    this.name = name;
     this.session = session;
     this.roomName = roomName;
 
@@ -90,7 +90,8 @@ public class KurentoUserSession implements Closeable {
         // id : iceCnadidate, id 는 ice후보자 선정
         response.addProperty("id", "iceCandidate");
         // name : 유저명
-        response.addProperty("name", name);
+        response.addProperty("name", userId);
+        response.addProperty("nickName", nickName);
 
         // add 랑 addProperty 랑 차이점?
         // candidate 를 key 로 하고, IceCandidateFoundEvent 객체를 JsonUtils 를 이용해
@@ -129,10 +130,11 @@ public class KurentoUserSession implements Closeable {
   }
 
   /**
-   * @desc 이름 return
+   * @desc return userId
    * */
-  public String getName() {
-    return name;
+  @Override
+  public String getUserId() {
+    return super.getUserId();
   }
 
   /**
@@ -157,10 +159,10 @@ public class KurentoUserSession implements Closeable {
    * */
   public void receiveVideoFrom(KurentoUserSession sender, String sdpOffer) throws IOException {
     // 유저가 room 에 들어왓음을 알림
-    log.info("USER {}: connecting with {} in room {}", this.name, sender.getName(), this.roomName);
+    log.info("USER {}: connecting with {} in room {}", this.getUserId(), sender.getUserId(), this.roomName);
 
     // 들어온 유저가 Sdp 제안
-    log.trace("USER {}: SdpOffer for {} is {}", this.name, sender.getName(), sdpOffer);
+    log.trace("USER {}: SdpOffer for {} is {}", this.getUserId(), sender.getUserId(), sdpOffer);
 
     /**
      *
@@ -170,10 +172,11 @@ public class KurentoUserSession implements Closeable {
 
     final JsonObject scParams = new JsonObject();
     scParams.addProperty("id", "receiveVideoAnswer");
-    scParams.addProperty("name", sender.getName());
+    scParams.addProperty("name", sender.getUserId());
+    scParams.addProperty("nickName", sender.getNickName());
     scParams.addProperty("sdpAnswer", ipSdpAnswer);
 
-    log.trace("USER {}: SdpAnswer for {} is {}", this.name, sender.getName(), ipSdpAnswer);
+    log.trace("USER {}: SdpAnswer for {} is {}", this.getUserId(), sender.getUserId(), ipSdpAnswer);
     this.sendMessage(scParams);
     log.debug("gather candidates");
     this.getEndpointForUser(sender).gatherCandidates();
@@ -187,22 +190,22 @@ public class KurentoUserSession implements Closeable {
   private WebRtcEndpoint getEndpointForUser(final KurentoUserSession sender) {
     // 만약 sender 명이 현재 user명과 일치한다면, 즉 sdpOffer 제안을 보내는 쪽과 받는 쪽이 동일하다면?
     // loopback 임을 찍고, 그대로 outgoinMedia 를 return
-    if (sender.getName().equals(name)) {
-      log.debug("PARTICIPANT {}: configuring loopback", this.name);
+    if (sender.getUserId().equals(this.getUserId())) {
+      log.debug("PARTICIPANT {}: configuring loopback", this.getUserId());
       return outgoingMedia;
     }
 
     // 참여자 name 이 sender 로부터 비디오를 받음을 확인
-    log.debug("PARTICIPANT {}: receiving video from {}", this.name, sender.getName());
+    log.debug("PARTICIPANT {}: receiving video from {}", this.getUserId(), sender.getUserId());
 
     // sender 의 이름으로 나의 incomingMedia 에서 sender 의 webrtcEndpoint 객체를 가져옴
-    WebRtcEndpoint incomingMedia = this.incomingMedia.get(sender.getName());
+    WebRtcEndpoint incomingMedia = this.incomingMedia.get(sender.getUserId());
 
     // 만약 가져온 incomingMedia 이 null 이라면
     // 즉 현재 내가 갖고 있는 incomingMedia 에 sender 의 webrtcEndPoint 객체가 없다면
     if (incomingMedia == null) {
       // 새로운 endpoint 가 만들어졌음을 확인
-      log.debug("PARTICIPANT {}: creating new endpoint for {}", this.name, sender.getName());
+      log.debug("PARTICIPANT {}: creating new endpoint for {}", this.getUserId(), sender.getUserId());
 
       // 새로 incomingMedia , 즉 webRtcEndpoint 를 만들고
       incomingMedia = new WebRtcEndpoint.Builder(pipeline)
@@ -220,7 +223,7 @@ public class KurentoUserSession implements Closeable {
           // { id : "iceCandidate"}
           response.addProperty("id", "iceCandidate");
           // { name : sender 의 유저명}
-          response.addProperty("name", sender.getName());
+          response.addProperty("name", sender.getUserId());
           // {candidate : { event.getCandidate 를 json 으로 만든 형태 }
           response.add("candidate", JsonUtils.toJsonObject(event.getCandidate()));
           try {
@@ -237,10 +240,10 @@ public class KurentoUserSession implements Closeable {
       });
 
       // incomingMedia 에 유저명과 새로 생성된 incomingMedia - webrtcEndPoint 객체 - 을 넣어준다
-      this.incomingMedia.put(sender.getName(), incomingMedia);
+      this.incomingMedia.put(sender.getUserId(), incomingMedia);
     }
 
-    log.debug("PARTICIPANT {}: obtained endpoint for {}", this.name, sender.getName());
+    log.debug("PARTICIPANT {}: obtained endpoint for {}", this.getUserId(), sender.getUserId());
 
     /** 여기가 이해가 안갔었음 */
     // sender 기존에 갖고 있던 webRtcEndPoint 와 새로 생성된 incomingMedia 을 연결한다
@@ -250,25 +253,25 @@ public class KurentoUserSession implements Closeable {
   }
 
   public void cancelVideoFrom(final KurentoUserSession sender) {
-    this.cancelVideoFrom(sender.getName());
+    this.cancelVideoFrom(sender.getUserId());
   }
 
   public void cancelVideoFrom(final String senderName) {
-    log.debug("PARTICIPANT {}: canceling video reception from {}", this.name, senderName);
+    log.debug("PARTICIPANT {}: canceling video reception from {}", this.getUserId(), senderName);
     final WebRtcEndpoint incoming = incomingMedia.remove(senderName);
 
-    log.debug("PARTICIPANT {}: removing endpoint for {}", this.name, senderName);
+    log.debug("PARTICIPANT {}: removing endpoint for {}", this.getUserId(), senderName);
     if (Objects.nonNull(incoming)) {
       incoming.release(new Continuation<Void>() {
         @Override
         public void onSuccess(Void result) throws Exception {
           log.trace("PARTICIPANT {}: Released successfully incoming EP for {}",
-                  KurentoUserSession.this.name, senderName);
+                  KurentoUserSession.this.getUserId(), senderName);
         }
 
         @Override
         public void onError(Throwable cause) throws Exception {
-          log.warn("PARTICIPANT {}: Could not release incoming EP for {}", KurentoUserSession.this.name,
+          log.warn("PARTICIPANT {}: Could not release incoming EP for {}", KurentoUserSession.this.getUserId(),
                   senderName);
         }
       });
@@ -277,10 +280,10 @@ public class KurentoUserSession implements Closeable {
 
   @Override
   public void close() throws IOException {
-    log.debug("PARTICIPANT {}: Releasing resources", this.name);
+    log.debug("PARTICIPANT {}: Releasing resources", this.getUserId());
     for (final String remoteParticipantName : incomingMedia.keySet()) {
 
-      log.trace("PARTICIPANT {}: Released incoming EP for {}", this.name, remoteParticipantName);
+      log.trace("PARTICIPANT {}: Released incoming EP for {}", this.getUserId(), remoteParticipantName);
 
       final WebRtcEndpoint ep = this.incomingMedia.get(remoteParticipantName);
 
@@ -289,12 +292,12 @@ public class KurentoUserSession implements Closeable {
         @Override
         public void onSuccess(Void result) throws Exception {
           log.trace("PARTICIPANT {}: Released successfully incoming EP for {}",
-                  KurentoUserSession.this.name, remoteParticipantName);
+                  KurentoUserSession.this.getUserId(), remoteParticipantName);
         }
 
         @Override
         public void onError(Throwable cause) throws Exception {
-          log.warn("PARTICIPANT {}: Could not release incoming EP for {}", KurentoUserSession.this.name,
+          log.warn("PARTICIPANT {}: Could not release incoming EP for {}", KurentoUserSession.this.getUserId(),
                   remoteParticipantName);
         }
       });
@@ -304,18 +307,18 @@ public class KurentoUserSession implements Closeable {
 
       @Override
       public void onSuccess(Void result) throws Exception {
-        log.trace("PARTICIPANT {}: Released outgoing EP", KurentoUserSession.this.name);
+        log.trace("PARTICIPANT {}: Released outgoing EP", KurentoUserSession.this.getUserId());
       }
 
       @Override
       public void onError(Throwable cause) throws Exception {
-        log.warn("USER {}: Could not release outgoing EP", KurentoUserSession.this.name);
+        log.warn("USER {}: Could not release outgoing EP", KurentoUserSession.this.getUserId());
       }
     });
   }
 
   public void sendMessage(JsonObject message) throws IOException {
-    log.debug("USER {}: Sending message {}", name, message);
+    log.debug("USER {}: Sending message {}", getUserId(), message);
     synchronized (session) {
       try {
         session.sendMessage(new TextMessage(message.toString()));
@@ -328,7 +331,7 @@ public class KurentoUserSession implements Closeable {
   }
 
   public void addCandidate(IceCandidate candidate, String name) {
-    if (this.name.compareTo(name) == 0) {
+    if (this.getUserId().compareTo(name) == 0) {
       outgoingMedia.addIceCandidate(candidate);
     } else {
       WebRtcEndpoint webRtc = incomingMedia.get(name);
@@ -353,7 +356,8 @@ public class KurentoUserSession implements Closeable {
       return false;
     }
     KurentoUserSession other = (KurentoUserSession) obj;
-    boolean eq = name.equals(other.name);
+    String userId = this.getUserId();
+    boolean eq = userId.equals(other.getUserId());
     eq &= roomName.equals(other.roomName);
     return eq;
   }
@@ -366,7 +370,7 @@ public class KurentoUserSession implements Closeable {
   @Override
   public int hashCode() {
     int result = 1;
-    result = 31 * result + name.hashCode();
+    result = 31 * result + this.getUserId().hashCode();
     result = 31 * result + roomName.hashCode();
     return result;
   }
