@@ -19,8 +19,10 @@ const catchMind = {
     isGameStart: false, // 게임 시작 여부
     isGameReady: false, // 게임 준비 여부
     gameReadyUser: 0, // 게임준비를 누른 유저 수
-    gameParticipants: 1, // 게임 참여자 수 : 기본 1명
+    gameUserCount: 1, // 게임 참여자 수 : 기본 1명
     gameUserList: [], // 게임 유저 정보(리스트)
+    totalGameRound : 1, // 게임 라운드 min 1, max 5 로 고정
+    gameRound : 1,
     drawing: false, // 그리기 상태를 추적하는 변수
     mouseInit: false,
     lastX: 0,
@@ -45,7 +47,7 @@ const catchMind = {
 
             // 게임 관련 변수 초기화
             this.gameReadyUser = 0 // 게임준비를 누른 유저 수
-            this.gameParticipants = 1 // 게임 참여자 수 : 기본 1명
+            this.gameUserCount = 1 // 게임 참여자 수 : 기본 1명
             this.gameUserList = [] // 게임 유저 정보(리스트)
 
             this.isInit = true;
@@ -144,7 +146,9 @@ const catchMind = {
                     "newSubject": self.subject
                 }
                 dataChannel.sendMessage(newGame, 'gameEvent');
+
                 self.addGameReady('self');
+
                 const addReadyUser = {
                     "gameEvent": "addReadyUser",
                     "gameUser": userId,
@@ -196,12 +200,12 @@ const catchMind = {
             // self.addGameParticipant();
             // dataChannel.sendMessage("addParticipant", "gameEvent");
 
-            $('#gameSubject-tab').hide(); // 주제 선택 탭 숨김
-            $('#gameTiptab').tab('show'); // 게임 방법 & 팁 탭을 활성화
-
             // 게임 방법 & 팁 탭을 기본적으로 표시
-            $('#gameSubject').removeClass('show active');
-            $('#gameTip').addClass('show active'); // 주제 선택 탭 내용 숨김
+            $('#gameSubject').removeClass('show active'); // 주제 선택 탭 내용 숨김
+            $('#gameTip').addClass('show active');
+
+            $('#gameSubject-tab').hide(); // 주제 선택 탭 숨김
+            $('#gameTip-tab').tab('show'); // 게임 방법 & 팁 탭을 활성화
 
             $('#gameRequestModal').modal('hide');
             $('#subjectModal').modal('show');
@@ -387,26 +391,26 @@ const catchMind = {
         }
 
         if (!this.isGameLeader) {
-            $('#loadingUser').text(this.gameReadyUser + "/" + this.gameParticipants);
+            $('#loadingUser').text('다른 참여자를 기다리는 중입니다. : ' + this.gameReadyUser + "/" + this.gameUserCount);
         } else {
             if (this.isAllUserReady()) {
                 $('#readyUser').text("모든 유저가 준비를 완료했습니다. 게임을 시작해주세요!");
                 $('#startBtn').attr('disabled', false);
             } else {
-                $('#readyUser').text(this.gameReadyUser + "/" + this.gameParticipants);
+                $('#readyUser').text(this.gameReadyUser + "/" + this.gameUserCount);
             }
         }
     },
     rejectGame: function () {
-        this.gameParticipants -= 1;
+        this.gameUserCount -= 1;
         if (this.isGameLeader) {
-            $('#readyUser').text(this.gameReadyUser + "/" + this.gameParticipants);
+            $('#readyUser').text(this.gameReadyUser + "/" + this.gameUserCount);
         } else {
-            $('#loadingUser').text(this.gameReadyUser + "/" + this.gameParticipants);
+            $('#loadingUser').text(this.gameReadyUser + "/" + this.gameUserCount);
         }
     },
     isAllUserReady: function () {
-        return this.gameReadyUser === this.gameParticipants;
+        return this.gameReadyUser === this.gameUserCount;
     },
     participantGameStartEvent: function () {
         $('#subjectModal').modal('hide');
@@ -459,17 +463,17 @@ const catchMind = {
 
         let successCallback = function (data) {
             debugger
-            let winnerNickName = data.nickName;
 
             let gameWiner = {
                 "gameEvent": "newWiner",
-                "winer": winnerNickName
+                "winer": data.nickName
             }
 
             dataChannel.sendMessage(gameWiner, 'gameEvent');
 
             $('#answerBtn').attr('disabled', true);
-            self.speakWiner(winnerNickName);
+            self.speakWiner(data.nickName);
+            self.resetGameRound(data.nickName);
         };
 
         let errorCallback = function (data) {
@@ -511,7 +515,7 @@ const catchMind = {
         }
     },
     leftGameParticipants: function () {
-        this.gameParticipants -= 1;
+        this.gameUserCount -= 1;
     },
     clearCanvas : function(){
         // 캔버스 초기화
@@ -531,5 +535,59 @@ const catchMind = {
                 background: "linear-gradient(to right, #00b09b, #96c93d)",
             },
         }).showToast();
+    },
+    resetGameRound : function(winner){
+        let self = this;
+
+        // 게임 상태 초기화
+        self.isGameStart = false;
+        self.isGameReady = false;
+        self.drawing = false;
+        // self.gameReadyUser = 0; // 게임 준비 상태인 유저 수 초기화
+
+        // 캔버스 초기화
+        self.clearCanvas();
+
+        $('#catchMindCanvas').modal('hide');
+
+        // 최대 캔버스 클리어 횟수 재설정
+        self.maxClearCount = 3;
+        if (winner === self.nickName) {
+            self.isGameLeader = true;
+            self.isGameParticipant = false;
+
+            $('#gameSubject').addClass('show active');  // 주제 선택 탭 내용 숨김
+            $('#gameTip').removeClass('show active')
+
+            $('#gameSubject-tab').show();
+            $('#gameSubject-tab').tab('show');
+
+            $('#nickName_ld').val(self.nickName);
+            $('#nickName_ld').attr('disabled', true);
+
+            $('#startBtn').removeAttr('hidden');
+            $('#startBtn').attr('disabled', false);
+
+        } else {
+            self.isGameLeader = false;
+            self.isGameParticipant = true;
+
+            $('#gameSubject-tab').hide(); // 주제 선택 탭 숨김
+            $('#gameTip-tab').tab('show'); // 게임 방법 & 팁 탭을 활성화
+
+            // 게임 방법 & 팁 탭을 기본적으로 표시
+            $('#gameSubject').removeClass('show active');  // 주제 선택 탭 내용 숨김
+            $('#gameTip').addClass('show active');
+
+            $('#startBtn').hide();
+            $('#readyUser').hide();
+
+            $("#loadingIndicator").show();
+            $('#loadingUser').removeAttr('hidden');
+            $('#loadingUser').text('승리자의 주제 선택을 기다리는 중...!! : ' + this.gameReadyUser + "/" + this.gameUserCount);
+        }
+
+        $('#subjectModal').modal('show');
+
     }
 }

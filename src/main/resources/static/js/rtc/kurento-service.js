@@ -315,7 +315,7 @@ function receiveVideo(sender) {
     };
 
     // game 참여 가능한 유저 +1
-    catchMind.gameParticipants +=1;
+    catchMind.gameUserCount +=1;
 }
 
 var leftUserfunc = function(){

@@ -71,7 +71,6 @@ public class CatchMindServiceImpl implements CatchMindService {
                 updateUserScore(catchMindUser, this.TOO_MANY_FAIL_SCORE);
                 break;
         }
-
         return catchMindUser;
     }
 
@@ -90,8 +89,8 @@ public class CatchMindServiceImpl implements CatchMindService {
 
     private void updateUserScore(CatchMindUser catchMindUser, int score){
         int updatedScore = catchMindUser.getScore()+score;
-
         catchMindUser.setScore(updatedScore);
+        log.info(">>>> Round Winner and Get Score!! => {} :: {}", catchMindUser.getNickName(), catchMindUser.getScore());
     }
 
 }

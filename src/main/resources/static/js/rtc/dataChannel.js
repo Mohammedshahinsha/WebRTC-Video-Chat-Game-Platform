@@ -156,6 +156,7 @@ const dataChannel = {
                 break;
             case 'newWiner':
                 catchMind.speakWiner(event.winer);
+                catchMind.resetGameRound(event.winer);
                 break;
             case 'clearCanvas':
                 catchMind.clearCanvas();
