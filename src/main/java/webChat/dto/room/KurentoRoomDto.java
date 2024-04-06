@@ -15,12 +15,10 @@
  *
  */
 
-package webChat.dto;
+package webChat.dto.room;
 
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
 import com.sun.istack.NotNull;
 import lombok.*;
 import org.kurento.client.Continuation;
@@ -28,15 +26,15 @@ import org.kurento.client.KurentoClient;
 import org.kurento.client.MediaPipeline;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.CollectionUtils;
 import org.springframework.web.socket.WebSocketSession;
+import webChat.dto.ChatType;
+import webChat.dto.game.GameSettingInfos;
 import webChat.rtc.KurentoUserSession;
 
 import javax.annotation.PreDestroy;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**

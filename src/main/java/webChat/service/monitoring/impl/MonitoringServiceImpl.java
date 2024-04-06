@@ -8,7 +8,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.HandlerInterceptor;
 import webChat.controller.ExceptionController;
-import webChat.dto.ClientInfo;
+import webChat.dto.log.ClientInfo;
 import webChat.service.monitoring.ClientCheckService;
 import webChat.service.monitoring.MonitoringService;
 import webChat.service.monitoring.PrometheusService;

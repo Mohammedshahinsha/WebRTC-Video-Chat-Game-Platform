@@ -1,4 +1,4 @@
-package webChat.dto;
+package webChat.dto.chat;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

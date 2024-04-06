@@ -1,6 +1,7 @@
-package webChat.dto;
+package webChat.dto.game;
 
 import lombok.*;
+import webChat.dto.User;
 
 /**
  * catchMind 게임 유저 정보를 저장하기 위한 map

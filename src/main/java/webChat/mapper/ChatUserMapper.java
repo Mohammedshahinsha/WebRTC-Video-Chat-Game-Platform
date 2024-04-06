@@ -3,7 +3,7 @@ package webChat.mapper;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 import webChat.Entity.ChatUser;
-import webChat.dto.ChatUserDto;
+import webChat.dto.chat.ChatUserDto;
 
 @Mapper(componentModel = "spring")
 public interface ChatUserMapper {

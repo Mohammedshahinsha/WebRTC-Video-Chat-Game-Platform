@@ -3,8 +3,8 @@ package webChat.service.chat;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import webChat.dto.ChatRoomDto;
-import webChat.dto.ChatRoomMap;
+import webChat.dto.room.ChatRoomDto;
+import webChat.dto.room.ChatRoomMap;
 import webChat.dto.ChatType;
 import webChat.service.file.FileService;
 

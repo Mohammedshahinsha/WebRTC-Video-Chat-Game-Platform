@@ -1,8 +1,8 @@
 package webChat.service.game;
 
-import webChat.dto.CatchMindUser;
-import webChat.dto.GameStatus;
-import webChat.dto.GameSettingInfos;
+import webChat.dto.game.CatchMindUser;
+import webChat.dto.game.GameStatus;
+import webChat.dto.game.GameSettingInfos;
 
 import java.util.List;
 

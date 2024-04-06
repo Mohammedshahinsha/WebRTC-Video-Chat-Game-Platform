@@ -4,12 +4,12 @@ import javax.annotation.Generated;
 import org.springframework.stereotype.Component;
 import webChat.Entity.ChatUser;
 import webChat.Entity.ChatUser.ChatUserBuilder;
-import webChat.dto.ChatUserDto;
-import webChat.dto.ChatUserDto.ChatUserDtoBuilder;
+import webChat.dto.chat.ChatUserDto;
+import webChat.dto.chat.ChatUserDto.ChatUserDtoBuilder;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2024-02-13T18:19:20+0900",
+    date = "2024-04-06T17:56:14+0900",
     comments = "version: 1.4.2.Final, compiler: javac, environment: Java 11.0.11 (AdoptOpenJDK)"
 )
 @Component

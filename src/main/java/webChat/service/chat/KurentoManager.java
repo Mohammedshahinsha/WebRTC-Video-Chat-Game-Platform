@@ -21,9 +21,9 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import webChat.dto.ChatRoomDto;
-import webChat.dto.ChatRoomMap;
-import webChat.dto.KurentoRoomDto;
+import webChat.dto.room.ChatRoomDto;
+import webChat.dto.room.ChatRoomMap;
+import webChat.dto.room.KurentoRoomDto;
 
 import java.util.concurrent.ConcurrentMap;
 

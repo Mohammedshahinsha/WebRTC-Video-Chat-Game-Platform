@@ -1,9 +1,10 @@
-package webChat.dto;
+package webChat.dto.log;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import webChat.dto.ChatType;
 
 import java.time.LocalDate;
 

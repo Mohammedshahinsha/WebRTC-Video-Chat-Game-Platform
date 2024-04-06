@@ -1,6 +1,6 @@
 package webChat.service.monitoring;
 
-import webChat.dto.ClientInfo;
+import webChat.dto.log.ClientInfo;
 
 public interface PrometheusService {
 

@@ -11,7 +11,7 @@ import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
-import webChat.dto.KurentoRoomDto;
+import webChat.dto.room.KurentoRoomDto;
 import webChat.service.chat.KurentoManager;
 import webChat.service.chat.KurentoUserRegistry;
 

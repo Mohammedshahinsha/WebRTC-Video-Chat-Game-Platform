@@ -1,4 +1,4 @@
-package webChat.dto;
+package webChat.dto.room;
 
 import lombok.Getter;
 import lombok.Setter;

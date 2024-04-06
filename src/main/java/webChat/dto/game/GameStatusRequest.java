@@ -1,7 +1,6 @@
-package webChat.dto;
+package webChat.dto.game;
 
 import lombok.Data;
-import webChat.dto.GameStatus;
 
 @Data
 public class GameStatusRequest {

@@ -1,4 +1,4 @@
-package webChat.dto;
+package webChat.dto.log;
 
 import io.micrometer.core.instrument.Tag;
 import lombok.Builder;

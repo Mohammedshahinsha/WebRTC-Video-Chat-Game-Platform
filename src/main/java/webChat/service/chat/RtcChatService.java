@@ -5,9 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.kurento.client.KurentoClient;
 import org.springframework.stereotype.Service;
 import org.springframework.web.socket.WebSocketSession;
-import webChat.dto.ChatRoomMap;
+import webChat.dto.room.ChatRoomMap;
 import webChat.dto.ChatType;
-import webChat.dto.KurentoRoomDto;
+import webChat.dto.room.KurentoRoomDto;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;

@@ -1,6 +1,6 @@
 package webChat.service.monitoring;
 
-import webChat.dto.ClientInfo;
+import webChat.dto.log.ClientInfo;
 
 /**
  * clientinfo 객체로 여러 체크 로직 구현하기 위한 서비스

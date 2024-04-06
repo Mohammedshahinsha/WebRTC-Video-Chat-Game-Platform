@@ -4,9 +4,9 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
-import webChat.dto.CatchMindUser;
-import webChat.dto.GameSettingInfos;
-import webChat.dto.GameStatusRequest;
+import webChat.dto.game.CatchMindUser;
+import webChat.dto.game.GameSettingInfos;
+import webChat.dto.game.GameStatusRequest;
 import webChat.service.game.CatchMindService;
 
 import java.util.Map;

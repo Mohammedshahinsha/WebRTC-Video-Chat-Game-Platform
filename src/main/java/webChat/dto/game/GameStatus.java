@@ -1,4 +1,4 @@
-package webChat.dto;
+package webChat.dto.game;
 
 public enum GameStatus {
     WINNER,
