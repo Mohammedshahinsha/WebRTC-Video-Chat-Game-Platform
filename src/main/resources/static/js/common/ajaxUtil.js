@@ -9,13 +9,17 @@ function ajax(url, method, async, data, successCallback, errorCallback, complete
         data: data,
         async: async !== undefined ? async : true,
         success: function (data) {
-            successCallback(data);
+            if (successCallback && typeof successCallback === 'function') {
+                successCallback(data);
+            }
         },
         error: function (error) {
-            errorCallback(error)
+            if (errorCallback && typeof errorCallback === 'function') {
+                errorCallback(error);
+            }
         },
         complete : function(result){
-            if (completeCallback !== undefined && typeof completeCallback === "function") {
+            if (completeCallback && typeof completeCallback === "function") {
                 completeCallback(result);
             }
         }
@@ -26,17 +30,21 @@ function ajaxToJson(url, method, async, data, successCallback, errorCallback, co
     $.ajax({
         url: url,
         type: method,
-        data: data,
+        data: JSON.stringify(data),
         async: async !== undefined ? async : true,
         contentType : 'application/json; charset=UTF-8',
         success: function (data) {
-            successCallback(data);
+            if (successCallback && typeof successCallback === 'function') {
+                successCallback(data);
+            }
         },
         error: function (error) {
-            errorCallback(error)
+            if (errorCallback && typeof errorCallback === 'function') {
+                errorCallback(error);
+            }
         },
         complete : function(result){
-            if (completeCallback !== undefined && typeof completeCallback === "function") {
+            if (completeCallback && typeof completeCallback === "function") {
                 completeCallback(result);
             }
         }
@@ -52,11 +60,15 @@ function fileUploadAjax(url, method, async, data, successCallback, errorCallback
         processData: false,
         contentType: false,
         success: function (data) {
-            successCallback(data);
+            if (successCallback && typeof successCallback === 'function') {
+                successCallback(data);
+            }
         },
         error: function (error) {
-            errorCallback(error)
-        },
+            if (errorCallback && typeof errorCallback === 'function') {
+                errorCallback(error);
+            }
+        }
     })
 }
 
@@ -71,10 +83,14 @@ function fileDownloadAjax(url, method, async, data, successCallback, errorCallba
             'responseType': 'blob' // 여기도 마찬가지
         },
         success: function (data) {
-            successCallback(data);
+            if (successCallback && typeof successCallback === 'function') {
+                successCallback(data);
+            }
         },
         error: function (error) {
-            errorCallback(error)
-        },
+            if (errorCallback && typeof errorCallback === 'function') {
+                errorCallback(error);
+            }
+        }
     })
 }
