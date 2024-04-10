@@ -5,7 +5,7 @@
 * 3. 게임 시작 : 마스터는 캔버스화면, 참여자도 캔버스화면
 * 4. 캔버스 초기화 : 캔버스 초기화 및 30 초 추가, 전체에게 해당 이벤트 전달
 * 5. 정답 이벤트 : 정답 맞췄을 때 캔버스 초기화 및 다른 사람에게 참여자 이벤트
-* 6. 게임 종료 이벤트 : 총 5번의 게임 후 전체 게임 종료
+* 6. 게임 종료 이벤트 : 총 N번의 게임 후 전체 게임 종료
 * */
 
 const catchMind = {
@@ -21,8 +21,10 @@ const catchMind = {
     gameReadyUser: 0, // 게임준비를 누른 유저 수
     gameUserCount: 1, // 게임 참여자 수 : 기본 1명
     gameUserList: [], // 게임 유저 정보(리스트)
-    totalGameRound : 1, // 게임 라운드 min 1, max 5 로 고정
-    gameRound : 1,
+    totalGameRound: 1, // 게임 라운드 min 1, max 5 로 고정
+    gameRound: 1,
+    timerBar: null,
+    timerId : null,
     drawing: false, // 그리기 상태를 추적하는 변수
     mouseInit: false,
     lastX: 0,
@@ -30,7 +32,7 @@ const catchMind = {
     saveX: 0,
     saveY: 0,
     totalTime: 60, // 그림 시간 제한
-    maxClearCount : 3, // 캔버스 클리어 최대 횟수
+    maxClearCount: 3, // 캔버스 클리어 최대 횟수
     recognition: null, // 음성 인식 객체
     synth: null,
     init: function () {
@@ -122,6 +124,105 @@ const catchMind = {
             dataChannel.sendMessage(clearCanvasEvent, 'gameEvent');
         });
 
+        $('#subjectModal').on('show.bs.modal', function () {
+            let $body =  $('body');
+            spinnerOpt.initByOption(20, 15, 4.0, 'shrink', '#ffffff', '50%' ,'50%');
+            spinnerOpt.start($body);
+
+            let $titleButtonContainer = $('#titleButtonContainer');
+            let $subjectButtonContainer = $('#subjectButtonContainer');
+
+            $titleButtonContainer.empty(); // 버튼 넣기 전 한번 비우기
+            $subjectButtonContainer.empty();
+            $titleButtonContainer.removeClass('d-none');
+
+            let url = "https://localhost:8443/catchmind/titles";
+
+            let successCallback = function (data) {
+                let titles = data.titles;
+                // 배열 순회
+                $.each(titles, function (index, title) {
+                    // 버튼 생성
+                    let button = $('<button>', {
+                        class: 'btn btn-outline-primary title-btn',
+                        text: title, // 버튼 내용으로 title 사용
+                        'data-title': title, // data-title 속성 설정
+                        value: title // value 속성 설정
+                    });
+
+                    // 스피너 중지
+                    spinnerOpt.stop();
+
+                    // 생성된 버튼을 컨테이너에 추가
+                    $titleButtonContainer.append(button);
+                });
+            };
+
+            let errorCallback = function (data) {
+                console.error("error :: ", data);
+                spinnerOpt.stop();
+            };
+
+            ajax(url, "GET", true, '', successCallback, errorCallback);
+
+        });
+
+        $('#titleButtonContainer').on('click', '.title-btn', function () {
+
+            let $subjectButtonContainer = $('#subjectButtonContainer');
+            let $titleButtonContainer = $('#titleButtonContainer');
+            $titleButtonContainer.addClass('d-none');
+            $subjectButtonContainer.removeClass('d-none');
+
+            spinnerOpt.init();
+            spinnerOpt.start($subjectButtonContainer);
+
+            let topic = $(this).attr('data-title');
+
+            let url = "http://localhost:8000/game_subjects"
+            const data = {
+                "title": topic
+            }
+
+            let successCallback = function (data) {
+                $subjectButtonContainer.empty();
+                let subjects = data.subjects;
+                // 배열 순회
+                $.each(subjects, function (index, subject) {
+                    // 버튼 생성
+                    let button = $('<button>', {
+                        class: 'btn btn-outline-primary subject-btn',
+                        text: subject, // 버튼 내용으로 title 사용
+                        'data-subject': subject, // data-title 속성 설정
+                        value: subject // value 속성 설정
+                    });
+
+                    // 스피너 중지
+                    spinnerOpt.stop();
+
+                    // 생성된 버튼을 컨테이너에 추가
+                    $subjectButtonContainer.append(button);
+                });
+            };
+
+            let errorCallback = function () {
+                // 스피너 중지
+                spinnerOpt.stop();
+            };
+
+            ajaxToJson(url, 'POST', true, data, successCallback, errorCallback);
+
+            $('#readyBtn').prop('disabled', false);
+        });
+
+        $('#subjectButtonContainer').on('click', '.subject-btn', function () {
+            console.log('data ::: ', $(this).attr('data-subject'));
+
+            $('.subject-btn').removeClass('active');
+            $(this).addClass('active');
+            self.subject = $(this).attr('data-subject');
+        });
+
         // game start btn
         $('#readyBtn').on('click', function () {
 
@@ -175,15 +276,9 @@ const catchMind = {
                 $("#readyBtn").hide();
                 // 로딩 인디케이터 표시
                 $("#loadingIndicator").show();
+
             }
 
-        });
-
-        $(".topic-btn").click(function () {
-            var topic = $(this).text();
-            self.subject = topic;
-            $('#selectedTopic').html('선택된 주제는 <b>' + topic + '</b>입니다.');
-            $('#readyBtn').prop('disabled', false);
         });
 
         // '예' 버튼 클릭 이벤트 핸들러
@@ -225,80 +320,52 @@ const catchMind = {
         // game start btn
         $('#startBtn').on('click', function () {
             $('#subjectModal').modal('hide');
-            $('#catchMindCanvas').modal('show');
+            $('#answerBtn').attr('disabled', true);
 
-            let url = '/catchmind/participants';
-            let data = {
-                "roomId": roomId,
-                "gameUserList": self.gameUserList
-            };
+            if (self.gameRound === 1) { // 1라운드 일때만 서버로 게임 정보 전달
+                let url = '/catchmind/participants';
+                let data = {
+                    "roomId": roomId,
+                    "gameUserList": self.gameUserList
+                };
 
-            let successCallback = function (data) {
+                let successCallback = function (data) {
 
-            };
+                };
 
-            let errorCallback = function (error) {
-                debugger
-                // TODO 실패한 경우 모든 이벤트 초기화 필요
-            };
+                let errorCallback = function (error) {
+                    // TODO 실패한 경우 모든 이벤트 초기화 필요
+                };
 
-            ajaxToJson(url, 'POST', '', JSON.stringify(data), successCallback, errorCallback);
+                ajaxToJson(url, 'POST', '', data);
+
+            }
 
             // self.timeLeft = 60; // N초로 설정
             self.isGameStart = true;
             self.isGameLeader = true;
 
-            // 게임 시작 이벤트 send
-            dataChannel.sendMessage('gameStart', 'gameEvent');
-
-            $('#answerBtn').attr('disabled', true);
-
             // 캔버스 초기화
             $('#maxClearCount').text("캔버스 초기화 기회 : " + self.maxClearCount);
 
-            var totalTime = 60;
-            var timeLeft = totalTime; // 남은 시간을 설정합니다.
-            var timerId;
+            let timeLeft = self.totalTime; // 남은 시간을 설정합니다.
+            let timerId;
 
-            // ProgressBar.js를 사용한 타이머 표시 업데이트
-            var bar = new ProgressBar.Line('#progress-container', {
-                strokeWidth: 2,
-                color: '#FFEA82',
-                trailColor: '#eee',
-                trailWidth: 1,
-                easing: 'easeInOut',
-                duration: 1000, // 각 갱신에 걸리는 시간을 1초로 설정하여 더 자연스러운 전환을 만듭니다.
-                svgStyle: null,
-                // from: {color: '#0408f8'}, // 시작 색상
-                // to: {color: '#5153c4'}, // 종료 색상
-                step: function(state, bar, attachment) {
-                    // 남은 시간에 따라 색상을 동적으로 계산
-                    var progress = (totalTime - timeLeft) / totalTime;
-                    var red = Math.round(4 + progress * (248 - 4)); // 4에서 248로 변화
-                    var green = Math.round(8 + progress * (4 - 8)); // 8에서 4로 변화
-                    var blue = Math.round(248 + progress * (4 - 248)); // 248에서 4로 변화
-
-                    var color = `rgb(${red}, ${green}, ${blue})`;
-                    bar.path.setAttribute('stroke', color);
+            if (self.gameRound > 1) {
+                // 새로운 라운드에 맞는 새로운 주제 선택 이벤트
+                const newRoundSubject = {
+                    'gameEvent': 'newRoundSubject',
+                    'subject': self.subject
                 }
-            });
-
-            function startTimer() {
-                timerId = setInterval(function() {
-                    timeLeft--;
-                    var timeFraction = timeLeft / totalTime;
-
-                    // 매 초마다 프로그레스 바 업데이트
-                    bar.animate(timeFraction, {duration: 1000});
-
-                    if (timeLeft <= 0) {
-                        clearInterval(timerId);
-                        console.log("타이머 종료");
-                    }
-                }, 1000);
+                dataChannel.sendMessage(newRoundSubject, 'gameEvent');
             }
 
-            startTimer();
+            dataChannel.sendMessage('gameStart', 'gameEvent');
+
+            $('#catchMindCanvas').modal('show');
+            $('#clearCanvasBtn').show();
+
+            self.startTimer();
 
         });
 
@@ -319,13 +386,14 @@ const catchMind = {
             self.recognition.start();
 
             // 이벤트 리스너 설정
-            self.recognition.onresult = function(event) {
+            self.recognition.onresult = function (event) {
                 // 결과 처리
-                var transcript = Array.from(event.results)
+                let transcript = Array.from(event.results)
                     .map(result => result[0])
                     .map(result => result.transcript)
                     .join('');
-
+                // 띄어쓰기 제거
+                transcript = transcript.replace(' ', '');
                 console.log(transcript);
 
                 // 결과 처리 후 음성 인식 종료
@@ -417,6 +485,7 @@ const catchMind = {
         $('#catchMindCanvas').modal('show');
 
         $('#clearCanvasBtn').hide();
+        $('#answerBtn').attr('disabled', false);
     },
     canvasDrawingEvent: function (event) {
 
@@ -462,7 +531,6 @@ const catchMind = {
         };
 
         let successCallback = function (data) {
-            debugger
 
             let gameWiner = {
                 "gameEvent": "newWiner",
@@ -480,7 +548,7 @@ const catchMind = {
 
         };
 
-        ajaxToJson('/catchmind/updateGameStatus', 'POST', '', JSON.stringify(gameData), successCallback, errorCallback);
+        ajaxToJson('/catchmind/updateGameStatus', 'POST', '', gameData, successCallback, errorCallback);
     },
     speakWiner: function (winerName) {
 
@@ -517,7 +585,12 @@ const catchMind = {
     leftGameParticipants: function () {
         this.gameUserCount -= 1;
     },
-    clearCanvas : function(){
+    clearCanvas: function () {
+        if (this.isGameParticipant && (this.maxClearCount -= 1 > 0)) {
+            $('#maxClearCount').text("진행자의 캔버스 초기화 기회 : " + self.maxClearCount);
+            this.showToast("진행자가 캔버스를 초기화 했습니다!")
+        }
+
         // 캔버스 초기화
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     },
@@ -525,7 +598,7 @@ const catchMind = {
         Toastify({
             text: text,
             duration: 3000,
-            // destination: "https://github.com/apvarun/toastify-js",
+            // destination: "",
             newWindow: true,
             close: true,
             gravity: "top", // `top` or `bottom`
@@ -536,7 +609,7 @@ const catchMind = {
             },
         }).showToast();
     },
-    resetGameRound : function(winner){
+    resetGameRound: function (winner) {
         let self = this;
 
         // 게임 상태 초기화
@@ -552,6 +625,11 @@ const catchMind = {
 
         // 최대 캔버스 클리어 횟수 재설정
         self.maxClearCount = 3;
+        // TODO 타이머 이벤트 초기화
+
+        $('#progress-container').empty();
+        self.resetTimer();
+
         if (winner === self.nickName) {
             self.isGameLeader = true;
             self.isGameParticipant = false;
@@ -567,6 +645,9 @@ const catchMind = {
 
             $('#startBtn').removeAttr('hidden');
             $('#startBtn').attr('disabled', false);
+
+            $("#loadingIndicator").hide();
+            $('#startBtn').show();
 
         } else {
             self.isGameLeader = false;
@@ -588,6 +669,65 @@ const catchMind = {
         }
 
         $('#subjectModal').modal('show');
+        self.gameRound += 1; // 게임 라운드 추가
+    },
+    newRoundSubject: function (subject) {
+        this.subject = subject;
+    },
+    /**
+     * 타이머 시작
+     */
+    startTimer: function () {
+        let self = this;
+        let totalTime = self.totalTime;
+        let timeLeft = self.totalTime;
+        // ProgressBar.js를 사용한 타이머 표시 업데이트
+        self.timerBar = new ProgressBar.Line('#progress-container', {
+            strokeWidth: 2,
+            color: '#FFEA82',
+            trailColor: '#eee',
+            trailWidth: 1,
+            easing: 'easeInOut',
+            duration: 1000, // 각 갱신에 걸리는 시간을 1초로 설정하여 더 자연스러운 전환을 만듭니다.
+            svgStyle: null,
+            // from: {color: '#0408f8'}, // 시작 색상
+            // to: {color: '#5153c4'}, // 종료 색상
+            step: function (state, bar, attachment) {
+                // 남은 시간에 따라 색상을 동적으로 계산
+                let progress = (totalTime - timeLeft) / totalTime;
+                let red = Math.round(4 + progress * (248 - 4)); // 4에서 248로 변화
+                let green = Math.round(8 + progress * (4 - 8)); // 8에서 4로 변화
+                let blue = Math.round(248 + progress * (4 - 248)); // 248에서 4로 변화
 
+                let color = `rgb(${red}, ${green}, ${blue})`;
+                bar.path.setAttribute('stroke', color);
+            }
+        });
+
+        self.timerId = setInterval(function () {
+            timeLeft--;
+            let timeFraction = timeLeft / self.totalTime;
+
+            // 매 초마다 프로그레스 바 업데이트
+            self.timerBar.animate(timeFraction, {duration: 1000});
+
+            if (timeLeft <= 0) {
+                clearInterval(self.timerId);
+                console.log("타이머 종료");
+            }
+        }, 1000);
+    },
+    /**
+     * 타이머 초기화
+     */
+    resetTimer : function(){
+        let self = this;
+        // 타이머 중지
+        clearInterval(self.timerId);
+
+        if (self.timerBar) {
+            // 프로그레스 바를 원래 상태로 재설정
+            self.timerBar.set(1);
+        }
     }
 }

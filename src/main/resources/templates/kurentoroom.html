@@ -21,8 +21,15 @@
     <link rel="styleSheet" href="/css/rtc/media_device.css" type="text/css" media="screen">
     <link rel="styleSheet" href="/css/rtc/catch_mind.css" type="text/css" media="screen">
 
+    <!-- 로딩 관련 -->
     <script src="https://cdn.jsdelivr.net/npm/gasparesganga-jquery-loading-overlay@2.1.7/dist/loadingoverlay.min.js"></script>
     <script src="https://cdn.rawgit.com/kimmobrunfeldt/progressbar.js/0.5.6/dist/progressbar.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/spin.js/2.3.2/spin.js"></script>
+    <link rel="stylesheet" href="/css/common/spin.css" type="text/css" media="screen">
+    <!-- 로딩 대체 -->
+    <!-- Pace.js 스크립트를 옵션 설정 다음에 포함시킵니다 -->
+<!--    <link href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.0.2/themes/blue/pace-theme-minimal.min.css" rel="stylesheet" />-->
+<!--    <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.0.2/pace.min.js"></script>-->
 
 </head>
 <style>
@@ -151,17 +158,18 @@
     </div>
     <!-- chatting end -->
 </div>
-<script src="/js/common/ajaxUtil.js"></script>
-<script src="/js/rtc/participant.js"></script>
-<script src="/js/rtc/kurento-utils.js"></script>
-<script src="/js/rtc/kurento-service.js"></script>
-<script src="/js/rtc/dataChannel.js"></script>
-<script src="/js/rtc/dataChannelChatting.js"></script>
-<script src="/js/rtc/dataChannelFileUtil.js"></script>
-<script src="/js/rtc/mediaDevice.js"></script>
-<script src="/js/rtc/catchMind.js"></script>
 <script>
 </script>
+    <script src="/js/common/spinnerOpt.js"></script>
+    <script src="/js/common/ajaxUtil.js"></script>
+    <script src="/js/rtc/participant.js"></script>
+    <script src="/js/rtc/kurento-utils.js"></script>
+    <script src="/js/rtc/kurento-service.js"></script>
+    <script src="/js/rtc/dataChannel.js"></script>
+    <script src="/js/rtc/dataChannelChatting.js"></script>
+    <script src="/js/rtc/dataChannelFileUtil.js"></script>
+    <script src="/js/rtc/mediaDevice.js"></script>
+    <script src="/js/rtc/catchMind.js"></script>
 </body>
 </html>
 
@@ -274,12 +282,12 @@
                         <input type="text" class="form-control" id="nickName_ld"
                                style="width: 300px; display: block; margin: 0 auto;"
                                placeholder="게임에 참여하기 위한 닉네임을 입력해주세요.">
-                        <p style="margin-top: 20px;"><strong>주제 선택:</strong></p>
-                        <button class="btn btn-outline-primary topic-btn">사과</button>
-                        <button class="btn btn-outline-primary topic-btn">자동차</button>
-                        <button class="btn btn-outline-primary topic-btn">고양이</button>
-                        <button class="btn btn-outline-primary topic-btn">비행기</button>
-                        <p id="selectedTopic" style="margin-top: 20px;"></p>
+                        <p style="margin-top: 20px;">
+                            <strong>주제 선택:</strong></p>
+                        <div class="d-none" id="titleButtonContainer"></div>
+                        <div class="d-none" id="subjectButtonContainer"></div>
+                        <p id="selectedSubject" style="margin-top: 20px;"></p>
+                        <p id="suggestedSubject" style="margin-top: 20px;"></p>
                         <div style="margin-top: 20px;">
                             <label for="maxGameCount">최대 게임 횟수:</label>
                             <input type="number" class="form-control" id="maxGameCount"

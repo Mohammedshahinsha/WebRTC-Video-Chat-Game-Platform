@@ -35,8 +35,7 @@ var ws = new WebSocket('wss://' + locationHost + '/signal');
 ws.onopen = () => {
     initTurnServer();
     register();
-    initDataChannel();
-    initCatchMind();
+    initScript();
 }
 
 var initTurnServer = function(){
@@ -57,13 +56,10 @@ var initTurnServer = function(){
         });
 }
 
-var initDataChannel = function () {
+var initScript = function () {
     dataChannel.init();
     dataChannelChatting.init();
     dataChannelFileUtil.init();
-}
-
-var initCatchMind = function(){
     catchMind.init();
 }
 
@@ -353,6 +349,7 @@ function leaveRoom(type) {
 
     // 다른 유저들의 gameParticipants 에서 방을 떠난 유저 삭제
     // TODO 추후 삭제된 유저를 정의해서 특정 유저를 삭제할 필요 있음
+    catchMind.gameUserCount -=1;
     let leftGame = {
         "gameEvent" : "left"
     }

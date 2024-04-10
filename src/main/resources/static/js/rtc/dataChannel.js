@@ -161,6 +161,9 @@ const dataChannel = {
             case 'clearCanvas':
                 catchMind.clearCanvas();
                 break;
+            case 'newRoundSubject':
+                catchMind.newRoundSubject(event.subject);
+                break;
             default:
                 if (event === 'gameStart') {
                     catchMind.participantGameStartEvent();
