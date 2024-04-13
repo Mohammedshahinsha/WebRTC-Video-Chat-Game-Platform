@@ -19,7 +19,7 @@ const catchMind = {
     isGameStart: false, // 게임 시작 여부
     isGameReady: false, // 게임 준비 여부
     gameReadyUser: 0, // 게임준비를 누른 유저 수
-    gameUserCount: 1, // 게임 참여자 수 : 기본 1명
+    gameUserCount: 1, // 게임 참여자 수
     gameUserList: [], // 게임 유저 정보(리스트)
     totalGameRound: 1, // 게임 라운드 min 1, max 5 로 고정
     gameRound: 1,
@@ -31,11 +31,13 @@ const catchMind = {
     lastY: 0,
     saveX: 0,
     saveY: 0,
-    totalTime: 60, // 그림 시간 제한
+    totalTime: 60, // 라운드 그림 시간 제한
+    isTimeRemain : false, // 라운드 남은 시간
     maxClearCount: 3, // 캔버스 클리어 최대 횟수
     recognition: null, // 음성 인식 객체
     synth: null,
     init: function () {
+        let self = this;
         this.canvas = document.getElementById('mycanvas');
         this.ctx = this.canvas.getContext('2d');
         if (!this.isInit) {
@@ -49,7 +51,6 @@ const catchMind = {
 
             // 게임 관련 변수 초기화
             this.gameReadyUser = 0 // 게임준비를 누른 유저 수
-            this.gameUserCount = 1 // 게임 참여자 수 : 기본 1명
             this.gameUserList = [] // 게임 유저 정보(리스트)
 
             this.isInit = true;
@@ -80,7 +81,7 @@ const catchMind = {
 
         // 마우스 누를 때
         self.canvas.addEventListener('mousedown', function (e) {
-            if (self.totalTime > 0) { // 게임 시간이 남아있다면
+            if (self.isTimeRemain) { // 게임 시간이 남아있다면
                 self.drawing = true;
                 self.setMousePosition(e);
                 const pos = {
@@ -136,7 +137,7 @@ const catchMind = {
             $subjectButtonContainer.empty();
             $titleButtonContainer.removeClass('d-none');
 
-            let url = "https://localhost:8443/catchmind/titles";
+            let url = "/catchmind/titles";
 
             let successCallback = function (data) {
                 let titles = data.titles;
@@ -179,7 +180,7 @@ const catchMind = {
 
             let topic = $(this).attr('data-title');
 
-            let url = "http://localhost:8000/game_subjects"
+            let url = "/catchmind/subjects";
             const data = {
                 "title": topic
             }
@@ -225,7 +226,7 @@ const catchMind = {
 
         // game start btn
         $('#readyBtn').on('click', function () {
-
+            self.setGameUser(); // 게임 참여 가능 인원 세팅
             if (!self.isGameParticipant && !self.isGameReady && !self.isGameStart) {
                 self.isGameLeader = true;
                 self.isGameReady = true;
@@ -276,7 +277,6 @@ const catchMind = {
                 $("#readyBtn").hide();
                 // 로딩 인디케이터 표시
                 $("#loadingIndicator").show();
-
             }
 
         });
@@ -292,7 +292,8 @@ const catchMind = {
             self.nickName = $nickName;
             // 게임 참여 수락 처리 로직
             self.isGameParticipant = true;
-            // self.addGameParticipant();
+            // 게임 참여 가능한 총 인원 세팅(현재 방 인원과 동일)
+            self.setGameUser();
             // dataChannel.sendMessage("addParticipant", "gameEvent");
 
             // 게임 방법 & 팁 탭을 기본적으로 표시
@@ -344,12 +345,12 @@ const catchMind = {
             // self.timeLeft = 60; // N초로 설정
             self.isGameStart = true;
             self.isGameLeader = true;
+            self.isTimeRemain = true;
 
+            // 게임 진행자만 캔버스 초기화 기회
             // 캔버스 초기화
             $('#maxClearCount').text("캔버스 초기화 기회 : " + self.maxClearCount);
-
-            let timeLeft = self.totalTime; // 남은 시간을 설정합니다.
-            let timerId;
+            self.showRoundSubject();
 
             if (self.gameRound > 1) {
                 // 새로운 라운드에 맞는 새로운 주제 선택 이벤트
@@ -480,9 +481,11 @@ const catchMind = {
     isAllUserReady: function () {
         return this.gameReadyUser === this.gameUserCount;
     },
-    participantGameStartEvent: function () {
+    participantGameStartEvent: function () { // 참여자의 게임 시작 이벤트
         $('#subjectModal').modal('hide');
         $('#catchMindCanvas').modal('show');
+
+        this.showRoundSubject();
 
         $('#clearCanvasBtn').hide();
         $('#answerBtn').attr('disabled', false);
@@ -520,7 +523,8 @@ const catchMind = {
         let self = this;
         if (answer !== this.subject) {
             $('#answerBtn').attr('disabled', false);
-            this.showToast("아쉽지만 정답이 아니에요");
+            let text = "아쉽지만 " + answer + " 는(은) 정답이 아니에요";
+            this.showToast(text);
             return;
         }
 
@@ -531,7 +535,6 @@ const catchMind = {
         };
 
         let successCallback = function (data) {
-
             let gameWiner = {
                 "gameEvent": "newWiner",
                 "winer": data.nickName
@@ -582,12 +585,26 @@ const catchMind = {
             this.synth.speak(utterThis);
         }
     },
-    leftGameParticipants: function () {
-        this.gameUserCount -= 1;
+    showRoundSubject : function(resetFlag){
+        if(resetFlag){
+            $('#roundSubject').text('');
+        } else {
+            let text = '주제 : '+this.subject;
+            $('#roundSubject').text(text);
+        }
+    },
+    // leftGameParticipants: function () {
+    //     this.gameUserCount -= 1;
+    // },
+    // addGameParticipants : function(){
+    //     this.gameUserCount +=1;
+    // },
+    setGameUser : function(){
+        this.gameUserCount = Object.keys(participants).length;
     },
     clearCanvas: function () {
         if (this.isGameParticipant && (this.maxClearCount -= 1 > 0)) {
-            $('#maxClearCount').text("진행자의 캔버스 초기화 기회 : " + self.maxClearCount);
+            $('#maxClearCount').text("진행자의 캔버스 초기화 기회 : " + this.maxClearCount);
             this.showToast("진행자가 캔버스를 초기화 했습니다!")
         }
 
@@ -616,7 +633,9 @@ const catchMind = {
         self.isGameStart = false;
         self.isGameReady = false;
         self.drawing = false;
+        self.isTimeRemain = false;
         // self.gameReadyUser = 0; // 게임 준비 상태인 유저 수 초기화
+        self.showRoundSubject(true);
 
         // 캔버스 초기화
         self.clearCanvas();
@@ -672,7 +691,8 @@ const catchMind = {
         self.gameRound += 1; // 게임 라운드 추가
     },
     newRoundSubject: function (subject) {
-        this.subject = subject;
+        // 모든 띄어쓰기 제거
+        this.subject = subject.replace(' ', '');
     },
     /**
      * 타이머 시작
@@ -713,6 +733,7 @@ const catchMind = {
 
             if (timeLeft <= 0) {
                 clearInterval(self.timerId);
+                self.isTimeRemain = false;
                 console.log("타이머 종료");
             }
         }, 1000);
