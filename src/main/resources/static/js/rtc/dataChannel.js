@@ -142,14 +142,12 @@ const dataChannel = {
             case 'rejectGame':
                 catchMind.rejectGame();
                 break;
-            case 'left':
-                catchMind.leftGameParticipants();
-                break;
             case 'addReadyUser':
                 catchMind.addGameReady('participant', event.gameUser, event.nickName);
                 break;
             case 'newGame':
                 catchMind.subject = event.newSubject;
+                catchMind.title = event.newTitle;
                 break;
             case 'mouseEvent':
                 catchMind.canvasDrawingEvent(event);
@@ -161,8 +159,8 @@ const dataChannel = {
             case 'clearCanvas':
                 catchMind.clearCanvas();
                 break;
-            case 'newRoundSubject':
-                catchMind.newRoundSubject(event.subject);
+            case 'newRoundSetting':
+                catchMind.newRoundSubject(event);
                 break;
             default:
                 if (event === 'gameStart') {

@@ -168,6 +168,7 @@ ws.onmessage = function (message) {
             // 모달의 확인 버튼에 클릭 이벤트 핸들러를 연결
             $('#reconnectButton').click(function() {
                 leaveRoom('error');
+                window.location.reload();  // 프로미스 완료 후 페이지 새로고침
             });
             break;
         default:
@@ -309,9 +310,6 @@ function receiveVideo(sender) {
         audio.srcObject = event.stream;
         video.srcObject = event.stream;
     };
-
-    // game 참여 가능한 유저 +1
-    catchMind.gameUserCount +=1;
 }
 
 var leftUserfunc = function(){
@@ -349,11 +347,6 @@ function leaveRoom(type) {
 
     // 다른 유저들의 gameParticipants 에서 방을 떠난 유저 삭제
     // TODO 추후 삭제된 유저를 정의해서 특정 유저를 삭제할 필요 있음
-    catchMind.gameUserCount -=1;
-    let leftGame = {
-        "gameEvent" : "left"
-    }
-    dataChannel.sendMessage(leftGame, 'gameEvent');
 
     setTimeout(leftUserfunc, 10); // 퇴장 메시지 전송을 위해 timeout 설정
 }
