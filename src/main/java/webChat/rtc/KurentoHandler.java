@@ -142,7 +142,7 @@ public class KurentoHandler extends TextWebSocketHandler {
     private void connectException(KurentoUserSession user, Exception e) throws IOException {
         JsonObject message = new JsonObject();
         message.addProperty("id", "ConnectionFail");
-        message.addProperty("data", e.getMessage());
+        message.addProperty("data", "connection error");
 
         user.sendMessage(message);
 

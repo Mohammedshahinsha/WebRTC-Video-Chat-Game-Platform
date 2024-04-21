@@ -1,4 +1,4 @@
-# SpringBoot WebRTC Chatting Project
+# SpringBoot WebRTC Chatting And CatchMind Game Project
 [![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FSeJonJ%2FSpring-WebSocket-Chatting&count_bg=%233310C8&title_bg=%2316C86B&icon=&icon_color=%23E7E7E7&title=HITS&edge_flat=true)](https://hits.seeyoufarm.com)
 
 ## 0. Spring Boot 와 WebSocket 을 활용한 채팅 만들기 프로젝트
@@ -9,6 +9,7 @@
 - master : 기본 문자 채팅
 - master-Webrtc-jpa : 일반 채팅 + 실시간 화상 채팅, 화면 공유(P2P)
 - master-webrtc-kurento-jpa : kurento 미디어 서버를 활용한 webrtc 화상 채팅
+- catchmind : 화상채팅 + catchmind 게임
 
 ## 1. 사용기술
 - Java 11
@@ -134,6 +135,12 @@ https://github.com/Benkoff/WebRTC-SS
 https://github.com/codejs-kr/webrtc-lab
 
 https://doc-kurento.readthedocs.io/en/latest/index.html
+
+progress-bar  
+https://kimmobrunfeldt.github.io/progressbar.js/
+
+spinner
+https://spin.js.org/
 
 ## License
 * Copyright 2023 SejonJang (wkdtpwhs@gmail.com)  

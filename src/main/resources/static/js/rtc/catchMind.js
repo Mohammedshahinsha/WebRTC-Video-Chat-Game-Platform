@@ -12,6 +12,7 @@ const catchMind = {
     isInit: false,
     canvas: null,
     ctx: null,
+    title : '', // 선택된 대주제
     subject: '', // 선택된 주제
     nickName: '', // 게임 닉네임
     isGameLeader: false, // 게임 진행자 여부
@@ -21,7 +22,7 @@ const catchMind = {
     gameReadyUser: 0, // 게임준비를 누른 유저 수
     gameUserCount: 1, // 게임 참여자 수
     gameUserList: [], // 게임 유저 정보(리스트)
-    totalGameRound: 1, // 게임 라운드 min 1, max 5 로 고정
+    totalGameRound: 3, // 게임 라운드 min 1, max 5 로 고정
     gameRound: 1,
     timerBar: null,
     timerId : null,
@@ -105,6 +106,10 @@ const catchMind = {
         let self = this;
 
         $('#clearCanvasBtn').on('click', function () {
+            // 버튼 로딩 시작
+            spinnerOpt.init();
+            spinnerOpt.start(this);
+
             if (self.maxClearCount <= 0) {
                 self.showToast("더 이상 캔버스 초기화가 불가능해요!!");
             }
@@ -123,6 +128,8 @@ const catchMind = {
                 "gameEvent": "clearCanvas"
             };
             dataChannel.sendMessage(clearCanvasEvent, 'gameEvent');
+            // 버튼 로딩 종료
+            spinnerOpt.stop();
         });
 
         $('#subjectModal').on('show.bs.modal', function () {
@@ -178,11 +185,11 @@ const catchMind = {
             spinnerOpt.init();
             spinnerOpt.start($subjectButtonContainer);
 
-            let topic = $(this).attr('data-title');
+            self.title = $(this).attr('data-title');
 
             let url = "/catchmind/subjects";
             const data = {
-                "title": topic
+                "title": self.title
             }
 
             let successCallback = function (data) {
@@ -190,6 +197,8 @@ const catchMind = {
                 let subjects = data.subjects;
                 // 배열 순회
                 $.each(subjects, function (index, subject) {
+                    // 앞에 AI : 혹은 AI: 제거
+                    subject = subject.replace(/AI\s*:\s*/g, "");
                     // 버튼 생성
                     let button = $('<button>', {
                         class: 'btn btn-outline-primary subject-btn',
@@ -221,7 +230,9 @@ const catchMind = {
 
             $('.subject-btn').removeClass('active');
             $(this).addClass('active');
-            self.subject = $(this).attr('data-subject');
+            // self.subject = $(this).attr('data-subject');
+            let data = $(this).attr('data-subject');
+            self.subject = self.replaceStr(data);
         });
 
         // game start btn
@@ -245,6 +256,7 @@ const catchMind = {
                 // dataChannel.sendMessage("addParticipant", "gameEvent");
                 const newGame = {
                     "gameEvent": "newGame",
+                    "newTitle" : self.title,
                     "newSubject": self.subject
                 }
                 dataChannel.sendMessage(newGame, 'gameEvent');
@@ -354,11 +366,12 @@ const catchMind = {
 
             if (self.gameRound > 1) {
                 // 새로운 라운드에 맞는 새로운 주제 선택 이벤트
-                const newRoundSubject = {
-                    'gameEvent': 'newRoundSubject',
+                const newRoundSetting = {
+                    'gameEvent': 'newRoundSetting',
+                    'title' : self.title,
                     'subject': self.subject
                 }
-                dataChannel.sendMessage(newRoundSubject, 'gameEvent');
+                dataChannel.sendMessage(newRoundSetting, 'gameEvent');
             }
 
             dataChannel.sendMessage('gameStart', 'gameEvent');
@@ -394,7 +407,7 @@ const catchMind = {
                     .map(result => result.transcript)
                     .join('');
                 // 띄어쓰기 제거
-                transcript = transcript.replace(' ', '');
+                transcript = transcript.replaceAll(' ', '');
                 console.log(transcript);
 
                 // 결과 처리 후 음성 인식 종료
@@ -586,10 +599,15 @@ const catchMind = {
         }
     },
     showRoundSubject : function(resetFlag){
+        let text = '';
         if(resetFlag){
-            $('#roundSubject').text('');
+            $('#roundSubject').text(text);
         } else {
-            let text = '주제 : '+this.subject;
+            if (this.isGameLeader) {
+                text = '정답 : ' + this.subject;
+            } else {
+                text = '주제 : '+this.title;
+            }
             $('#roundSubject').text(text);
         }
     },
@@ -603,13 +621,27 @@ const catchMind = {
         this.gameUserCount = Object.keys(participants).length;
     },
     clearCanvas: function () {
-        if (this.isGameParticipant && (this.maxClearCount -= 1 > 0)) {
-            $('#maxClearCount').text("진행자의 캔버스 초기화 기회 : " + this.maxClearCount);
-            this.showToast("진행자가 캔버스를 초기화 했습니다!")
-        }
-
-        // 캔버스 초기화
+        this.maxClearCount-=1;
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+        if (this.isGameParticipant) {
+            if (this.maxClearCount === 0) {
+                $('#maxClearCount').text("진행자의 캔버스 초기화 기회 : " + this.maxClearCount);
+                this.showToast("진행자가 초기화 기회를 모두 소진했습니다!");
+            } else {
+                $('#maxClearCount').text("진행자가 캔버스를 초기화 했습니다!");
+                this.showToast("진행자가 캔버스를 초기화 했습니다!");
+            }
+        } else if (this.isGameLeader) { // 게임 리더면 maxclearCanvas -=1
+            if (this.maxClearCount === 0) {
+                $('#clearCanvasBtn').prop('disabled', true);
+                $('#maxClearCount').text("이제 캔버스 초기화는 할 수 없어요!!");
+            } else {
+                $('#maxClearCount').text("캔버스 초기화 기회 : " + this.maxClearCount);
+            }
+        }
+        // // 캔버스 초기화
+        // this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     },
     showToast: function (text) {
         Toastify({
@@ -628,6 +660,18 @@ const catchMind = {
     },
     resetGameRound: function (winner) {
         let self = this;
+        if ((self.totalGameRound -= 1) === 0) {
+            let url = '/catchmind/gameResult?';
+            let param = 'roomId='+roomId;
+            let successCallback = function(data){
+                alert(data)
+            };
+
+            let errorCallback = function(){
+
+            }
+            ajaxToJson(url+param, 'GET', '', '', successCallback, errorCallback);
+        }
 
         // 게임 상태 초기화
         self.isGameStart = false;
@@ -644,8 +688,8 @@ const catchMind = {
 
         // 최대 캔버스 클리어 횟수 재설정
         self.maxClearCount = 3;
-        // TODO 타이머 이벤트 초기화
 
+        // TODO 타이머 이벤트 초기화
         $('#progress-container').empty();
         self.resetTimer();
 
@@ -665,6 +709,9 @@ const catchMind = {
             $('#startBtn').removeAttr('hidden');
             $('#startBtn').attr('disabled', false);
 
+            // 캔버스 클리어 후 이벤트
+            $('#maxClearCount').text("캔버스 초기화 기회 : " + self.maxClearCount);
+
             $("#loadingIndicator").hide();
             $('#startBtn').show();
 
@@ -682,6 +729,9 @@ const catchMind = {
             $('#startBtn').hide();
             $('#readyUser').hide();
 
+            // 캔버스 클리어후 이벤트
+            $('#maxClearCount').text("진행자의 캔버스 초기화 기회 : " + this.maxClearCount);
+
             $("#loadingIndicator").show();
             $('#loadingUser').removeAttr('hidden');
             $('#loadingUser').text('승리자의 주제 선택을 기다리는 중...!! : ' + this.gameReadyUser + "/" + this.gameUserCount);
@@ -690,9 +740,9 @@ const catchMind = {
         $('#subjectModal').modal('show');
         self.gameRound += 1; // 게임 라운드 추가
     },
-    newRoundSubject: function (subject) {
-        // 모든 띄어쓰기 제거
-        this.subject = subject.replace(' ', '');
+    newRoundSubject: function (data) {
+        this.title = data.title;
+        this.subject = this.replaceStr(data.subject);
     },
     /**
      * 타이머 시작
@@ -750,5 +800,15 @@ const catchMind = {
             // 프로그레스 바를 원래 상태로 재설정
             self.timerBar.set(1);
         }
+    },
+    /**
+     * subject 의 각종 띄어쓰기 및 특수문자를 제거하기 위한 func
+     * @param {String}str
+     * @returns {String} str
+     */
+    replaceStr : function(str){
+        // let 정제된문자열 = 문자열.replace(/AI\s*:\s*/g, "");
+        str = str.replace(/['^\w\s]|_/g, '');
+        return str;
     }
 }
