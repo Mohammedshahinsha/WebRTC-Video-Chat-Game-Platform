@@ -1,13 +1,13 @@
 package webChat.service.game;
 
-import webChat.dto.game.CatchMindUser;
-import webChat.dto.game.GameStatus;
-import webChat.dto.game.GameSettingInfos;
+import webChat.dto.game.*;
 
 import java.util.List;
 
 public interface CatchMindService {
-    void setGameParticipants(GameSettingInfos gameSettingInfos);
+    GameTitles getTitles() throws Exception;
+    GameSubjects getSubjects(GameSubjects gameSubjects) throws Exception;
+    void setGameSettingInfo(GameSettingInfos gameSettingInfos);
 
     CatchMindUser updateUser(GameStatus gameStatus, String roomId, String userId);
 

@@ -51,6 +51,25 @@ function ajaxToJson(url, method, async, data, successCallback, errorCallback, co
     })
 }
 
+/**
+ * Promise 를 return 하는 ajax
+ * @param {String }url
+ * @param {String} method
+ * @param data
+ * @returns {Promise<unknown>}
+ */
+function ajaxToJsonPromise(url, method, data) {
+    return new Promise((resolve, reject) => {
+        $.ajax({
+            url: url,
+            method: method,
+            data: JSON.stringify(data),
+            success: resolve,
+            error: reject
+        });
+    });
+}
+
 function fileUploadAjax(url, method, async, data, successCallback, errorCallback) {
     $.ajax({
         url: url,
