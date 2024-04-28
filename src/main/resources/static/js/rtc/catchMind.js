@@ -45,12 +45,16 @@ const catchMind = {
         this.canvas = document.getElementById('mycanvas');
         this.ctx = this.canvas.getContext('2d');
         if (!this.isInit) {
-            this.initCanvasEvent();
+            if (isMobile()) {
+                this.initMobileCanvasEvents();
+            } else {
+                this.initCanvasEvent();
+            }
             this.initClickEvent();
 
             // SpeechRecognition 인터페이스 확인
-            window.SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            this.recognition = new SpeechRecognition();
+            // window.SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            this.recognition = new webkitSpeechRecognition() || new SpeechRecognition();
             this.synth = window.speechSynthesis;
 
             // 게임 관련 변수 초기화
@@ -104,6 +108,70 @@ const catchMind = {
         self.canvas.addEventListener('mouseout', function () {
             self.drawing = false;
         });
+
+        $('#answerBtn').text('Tell Your Answer!');
+    },
+    initMobileCanvasEvents: function () {
+        let self = this;
+
+        // 터치로 그리기 시작
+        self.canvas.addEventListener('touchstart', function (e) {
+            e.preventDefault();  // 기본 터치 스크롤 방지
+            if (self.isTimeRemain) {
+                let touch = e.touches[0];
+                self.setMousePosition(touch);  // 터치 위치 설정
+                self.drawing = true;
+
+                const pos = {
+                    "gameEvent": "mouseEvent",
+                    "mouseInit": true,
+                    "mouseX": self.lastX,
+                    "mouseY": self.lastY
+                };
+                dataChannel.sendMessage(pos, 'gameEvent');
+            }
+        }, { passive: false });
+
+        // 터치로 그리기
+        self.canvas.addEventListener('touchmove', function (e) {
+            e.preventDefault(); // 기본 터치 스크롤 방지
+            if (self.drawing && self.isGameStart) {
+                let touch = e.touches[0];
+                self.ctx.beginPath();
+                self.ctx.moveTo(self.lastX, self.lastY);
+                self.setMousePosition(touch);
+                self.ctx.lineTo(self.lastX, self.lastY);
+                self.ctx.stroke();
+
+                const pos = {
+                    "gameEvent": "mouseEvent",
+                    "mouseX": self.lastX,
+                    "mouseY": self.lastY
+                };
+                dataChannel.sendMessage(pos, 'gameEvent');
+            }
+        }, { passive: false });
+
+        // 터치 끝
+        self.canvas.addEventListener('touchend', function (e) {
+            self.drawing = false;
+        });
+
+        self.canvas.addEventListener('touchcancel', function (e) {
+            self.drawing = false;
+        });
+
+        $('#answerBtn').text('Type Your Answer!');
+    },
+    setMousePosition: function (e) {
+        let rect = this.canvas.getBoundingClientRect();
+        if (e.clientX) {
+            this.lastX = e.clientX - rect.left;
+            this.lastY = e.clientY - rect.top;
+        } else if (e.touches) {
+            this.lastX = e.touches[0].clientX - rect.left;
+            this.lastY = e.touches[0].clientY - rect.top;
+        }
     },
     initClickEvent: function () {
         let self = this;
@@ -387,60 +455,85 @@ const catchMind = {
         });
 
         $('#answerBtn').off('click').on('click', function () {
-            $('#answerBtn').attr('disabled', true);
-            let text = "이제 정답을 외쳐주세요!";
-            self.showToast(text);
-
-            // 음성 인식 언어 설정
-            self.recognition.lang = 'ko-KR';
-
-            // 결과를 실시간으로 반환하지 않도록 설정
-            self.recognition.interimResults = false;
-
-            // console.log("음성 인식 시작");
-            self.recognition.start();
-
-            // 3초 동안 음성이 감지되지 않으면 인식 종료
-            var recognitionTimeout = setTimeout(function() {
-                self.recognition.stop();
-                $('#answerBtn').attr('disabled', false);
-                // console.log("3초 동안 음성을 감지하지 못했습니다. 음성 인식을 종료합니다.");
-                self.showToast("음성을 감지하지 못했습니다. 음성 인식을 종료합니다.");
-            }, 3000);
-
-            // 음성 인식 결과 이벤트
-            self.recognition.onresult = function (event) {
-                // 타이머 취소
-                clearTimeout(recognitionTimeout);
-
-                // 결과 처리
-                let transcript = Array.from(event.results)
-                    .map(result => result[0])
-                    .map(result => result.transcript)
-                    .join('');
-
-                transcript = transcript.replaceAll(' ', '');
-                console.log(transcript);
-
-                self.checkAnswer(transcript);
-
-                // 음성 인식 종료
-                self.recognition.stop();
-                $('#answerBtn').attr('disabled', false);
-            };
-
-            // 음성 인식 에러 이벤트
-            self.recognition.onerror = function() {
-                // 타이머 취소
-                clearTimeout(recognitionTimeout);
-                $('#answerBtn').attr('disabled', false);
-            };
+            if (isMobile()) {
+                self.mobileAnswerEvent();
+            } else {
+                self.answerEvent();
+            }
         });
+
+        if (isMobile()) {
+            $('#submitAnswer').on('click', function() {
+                let $userAnswer = $('#userAnswer');
+                // 사용자가 입력한 정답 가져오기
+                let answer = self.replaceStr($userAnswer.val());
+                console.log("사용자가 입력한 정답:", answer);
+                // 정답 처리 로직
+                self.checkAnswer(answer);
+
+                // 입력 필드 초기화 및 모달 닫기
+                $userAnswer.val('');
+                $('#answerInputModal').modal('hide');
+            });
+        }
+
     },
-    setMousePosition: function (e) {
-        var rect = this.canvas.getBoundingClientRect();
-        this.lastX = e.clientX - rect.left;
-        this.lastY = e.clientY - rect.top;
+    answerEvent : function(){
+        let self = this;
+        $('#answerBtn').attr('disabled', true);
+        let text = "이제 정답을 외쳐주세요!";
+        self.showToast(text);
+
+        // 음성 인식 언어 설정
+        self.recognition.lang = 'ko-KR';
+
+        // 결과를 실시간으로 반환하지 않도록 설정
+        self.recognition.interimResults = false;
+
+        self.recognition.maxAlternatives = 1000; // maxAlternatives가 숫자가 작을수록 발음대로 적고, 크면 문장의 적합도에 따라 알맞은 단어로 대체
+
+        // console.log("음성 인식 시작");
+        self.recognition.start();
+
+        // 3초 동안 음성이 감지되지 않으면 인식 종료
+        let recognitionTimeout = setTimeout(function() {
+            self.recognition.stop();
+            $('#answerBtn').attr('disabled', false);
+            // console.log("3초 동안 음성을 감지하지 못했습니다. 음성 인식을 종료합니다.");
+            self.showToast("음성을 감지하지 못했습니다. 음성 인식을 종료합니다.");
+        }, 3000);
+
+        // 음성 인식 결과 이벤트
+        self.recognition.onresult = function (event) {
+            // 타이머 취소
+            clearTimeout(recognitionTimeout);
+
+            // 결과 처리
+            let transcript = Array.from(event.results)
+                .map(result => result[0])
+                .map(result => result.transcript)
+                .join('');
+
+            transcript = transcript.replaceAll(' ', '');
+            console.log(transcript);
+
+            self.checkAnswer(transcript);
+
+            // 음성 인식 종료
+            self.recognition.stop();
+            $('#answerBtn').attr('disabled', false);
+        };
+
+        // 음성 인식 에러 이벤트
+        self.recognition.onerror = function() {
+            // 타이머 취소
+            clearTimeout(recognitionTimeout);
+            $('#answerBtn').attr('disabled', false);
+        };
+    },
+    mobileAnswerEvent : function(){
+        // 모달을 띄우는 코드
+        $('#answerInputModal').modal('show');
     },
     gameReadyToast: function (type) {
         let text = "게임에 참여하셨습니다. 게임 규칙을 숙지한 후 ready 를 클릭해주세요.";
