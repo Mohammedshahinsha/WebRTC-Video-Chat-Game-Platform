@@ -78,16 +78,6 @@
   color: #28a745; /* 컨테이너 내 텍스트 색상 */
 }
 
-#gameResultsList .list-group-item {
-  font-weight: bold;
-  color: #333;
-}
-
-#gameResultsList .list-group-item:nth-child(1) { /* 우승자 스타일링 */
-  background-color: #4CAF50;
-  color: white;
-}
-
 /*
 캔버스 모달 css
  */
@@ -111,3 +101,41 @@ canvas#mycanvas {
   background-color: #fff; /* 캔버스 배경색 설정 */
   border: 1px solid #ccc; /* 캔버스 테두리 설정 */
 }
+
+/*
+  모든 게임 종료 후 결과 모달 css
+ */
+
+#gameResultsList .list-group-item {
+  font-weight: bold;
+  color: #333;
+}
+
+#gameResultsList .list-group-item:nth-child(1) { /* 우승자 스타일링 */
+  background-color: #4CAF50; /* 녹색 배경 */
+  color: white; /* 흰색 글씨 */
+  border: 2px solid gold; /* 금색 테두리 */
+  font-size: 1.2em; /* 큰 글씨 */
+  font-weight: bold; /* 굵은 글씨체 */
+}
+
+  /*
+    정답 입력 모달
+   */
+  #answerInputModal .modal-content {
+    border-radius: 8px;
+  }
+
+  #answerInputModal .modal-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+  }
+
+  #answerInputModal .modal-footer {
+    border-top: 1px solid #dee2e6;
+  }
+
+  #answerInputModal #userAnswer {
+    margin-top: 15px;
+    margin-bottom: 20px;
+  }

@@ -127,7 +127,7 @@ const catchMind = {
             spinnerOpt.stop();
         });
 
-        $('#subjectModal').on('show.bs.modal', function () {
+        $('#subjectModal').on('shown.bs.modal', function (e) {
             let $body = $('body');
             spinnerOpt.initByOption(20, 15, 4.0, 'shrink', '#ffffff', '50%', '50%');
             spinnerOpt.start($body);
@@ -139,7 +139,7 @@ const catchMind = {
             $subjectButtonContainer.empty();
             $titleButtonContainer.removeClass('d-none');
 
-            let url = "/catchmind/titles";
+            let url = `/catchmind/titles?roomId=${roomId}`;
 
             let successCallback = function (data) {
                 let titles = data.titles;
@@ -162,8 +162,12 @@ const catchMind = {
             };
 
             let errorCallback = function (data) {
-                console.error("error :: ", data);
+                let result = data?.responseJSON;
+                console.error("error :: ", result);
+                alert(result.message);
                 spinnerOpt.stop();
+                self.preventGameEvent();
+                return false;
             };
 
             ajax(url, "GET", true, '', successCallback, errorCallback);
@@ -665,16 +669,16 @@ const catchMind = {
         $('#catchMindCanvas').modal('hide');
 
         if (self.gameRound === self.totalGameRound) {
-            let url = '/catchmind/gameResult?';
-            let param = 'roomId=' + roomId;
+            let url = `/catchmind/gameResult?roomId=${roomId}`;
             try {
-                let data = await ajaxToJsonPromise(url + param, 'GET');
+                let data = await ajaxToJsonPromise(url, 'GET');
                 if (data.result === 'SyncGameRound') {
                     console.log(data.message);
                     self.gameRound = data.gameRound;
                 } else {
                     let gameResult = data.gameResult;
                     self.displayGameResults(gameResult);
+                    // self.preventGameEvent();
                     return;
                 }
             } catch (error) {
@@ -865,17 +869,27 @@ const catchMind = {
     // }
     // 게임 참여자 데이터를 기반으로 모달 내용을 동적으로 생성
     displayGameResults: function (data) {
-        const listElement = document.getElementById('gameResultsList');
-        listElement.innerHTML = ''; // 이전 내용 초기화
+        let self = this;
+        // 모달 헤더에 총 게임 라운드 수 표시
+        document.getElementById('totalGameRounds').textContent = `총 게임 라운드: ${data.totalGameRound}`;
 
-        // 목록 생성
-        data.gameUserList.forEach(user => {
-            const userElement = document.createElement('li');
-            userElement.className = 'list-group-item';
-            userElement.textContent = `${user.nickName} - 점수: ${user.score} ${user.winer ? '(우승자)' : ''}`;
-            listElement.appendChild(userElement);
+        // 게임 결과 목록 업데이트
+        let list = document.getElementById('gameResultsList');
+        list.innerHTML = ''; // 목록 초기화
+        data.gameUserList.forEach((user, index) => {
+            let item = document.createElement('li');
+            item.className = 'list-group-item';
+            if (index === 0) { // 첫 번째 항목이 우승자
+                item.classList.add('winner');
+                self.showToast(`최종 우승자는 ${user.nickName} 입니다!`);
+            }
+            item.textContent = `${user.nickName} - 점수: ${user.score}`;
+            list.appendChild(item);
         });
 
-        $('#gameResultsModal').modal('show'); // 모달 표시
+        $('#gameResultsModal').modal('show');
+    },
+    preventGameEvent : function (){
+        $('#subjectModal').modal('hide').attr('disabled', true);
     }
 }

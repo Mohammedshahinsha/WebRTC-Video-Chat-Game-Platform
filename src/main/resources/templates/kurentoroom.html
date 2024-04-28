@@ -236,7 +236,7 @@
                 </div>
                 <div>
                     <button type="button" id="clearCanvasBtn" class="btn btn-warning">Clear Canvas</button>
-                    <button type="button" id="answerBtn" class="btn btn-success">Tell your answer</button>
+                    <button type="button" id="answerBtn" class="btn btn-success"></button>
                 </div>
             </div>
             <div class="modal-body">
@@ -353,6 +353,8 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="gameResultsModalLabel">게임 결과</h5>
+                <!-- 게임 라운드 수 표시 -->
+                <span id="totalGameRounds" class="ml-auto"></span>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -363,6 +365,27 @@
                 </ul>
             </div>
             <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">닫기</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 정답 입력 모달 -->
+<div id="answerInputModal" class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">정답 입력</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <input type="text" class="form-control" id="userAnswer" placeholder="여기에 정답을 입력하세요">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="submitAnswer">제출</button>
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">닫기</button>
             </div>
         </div>
