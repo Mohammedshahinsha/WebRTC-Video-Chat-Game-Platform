@@ -9,6 +9,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import webChat.config.CatchMindConfig;
+import webChat.controller.ExceptionController;
 import webChat.dto.game.*;
 import webChat.dto.room.ChatRoomMap;
 import webChat.dto.room.KurentoRoomDto;
@@ -39,6 +40,19 @@ public class CatchMindServiceImpl implements CatchMindService {
     private final List<String> TITLES_EX = Lists.newArrayList("동물","식물","애니메이션","게임","영화");
 
     private static final Logger log = LoggerFactory.getLogger(CatchMindServiceImpl.class);
+
+    @Override
+    public boolean chkAlradyPlayedGame(String roomId) {
+        KurentoRoomDto room = (KurentoRoomDto)ChatRoomMap.getInstance().getChatRooms().get(roomId);
+        if (Objects.isNull(room)) {
+            // TODO 예외처리
+
+        }
+        if (Objects.nonNull(room.getGameSettingInfos()) && room.getGameSettingInfos().isAlreadyPlayedGame()) {
+            return true;
+        }
+        return false;
+    }
 
     @Override
     public GameTitles getTitles() {
@@ -128,6 +142,36 @@ public class CatchMindServiceImpl implements CatchMindService {
     @Override
     public boolean chkDuplicateNickName(String nickName) {
         return false;
+    }
+
+    @Override
+    public GameSettingInfos getGameResult(String roomId) {
+        KurentoRoomDto room = (KurentoRoomDto) ChatRoomMap.getInstance().getChatRooms().get(roomId);
+
+        // 게임 라운드 확인 및 결과 보내주기
+        GameSettingInfos gameSettingInfos = room.getGameSettingInfos();
+        if (CollectionUtils.isEmpty(gameSettingInfos.getGameUserList())) {
+            // TODO 예외처리 필요
+        }
+
+        // 게임 라운드와 전체 라운드가 일치하지 않는 경우
+        // 프론트와 서버 간 라운드 정보가 일치하지 않는 경우 일치를 위한  Exception
+        if (gameSettingInfos.getGameRound() != gameSettingInfos.getTotalGameRound()) {
+            throw new ExceptionController.SyncGameRound(String.valueOf(gameSettingInfos.getGameRound()));
+        }
+
+        // score 비교 로직 수행
+        // score 와 wincount 에 가산해서 비교
+        gameSettingInfos.getGameUserList().sort((u1, u2) -> {
+            int score1 = u1.getScore() + u1.getWinCount() * 100;
+            int score2 = u2.getScore() + u2.getWinCount() * 100;
+            return Integer.compare(score2, score1); // 내림차순 정렬
+        });
+
+        gameSettingInfos.getGameUserList().get(0).setWiner(true);
+        gameSettingInfos.setAlreadyPlayedGame(true);
+
+        return gameSettingInfos;
     }
 
     private void updateUserScore(CatchMindUser catchMindUser, int score){

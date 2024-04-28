@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import webChat.utils.HttpUtil;
 import webChat.utils.StringUtil;
 
 import javax.servlet.http.HttpServlet;
@@ -168,4 +169,37 @@ public class ExceptionController {
         }
         e.printStackTrace();
     }
+
+    public static class AlreadyPlayedGameException extends BadRequestException {
+
+        public AlreadyPlayedGameException(String message) {
+            super(message);
+        }
+    }
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(AlreadyPlayedGameException.class)
+    public @ResponseBody Map<String, String> alreadyPlayedGameException(Exception e){
+        Map<String, String> result = new HashMap<>();
+        result.put("code", "40040");
+        result.put("message", "이미 게임을 플레이하셨기에 더 이상 게임을 실행할 수 없습니다.");
+        return result;
+    }
+
+    public static class SyncGameRound extends BadRequestException {
+
+        public SyncGameRound(String message) {
+            super(message);
+        }
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(SyncGameRound.class)
+    public @ResponseBody Map<String, Object> syncGameRound(String gameRound){
+        Map<String, Object> result = new HashMap<>();
+        result.put("code", "40040");
+        result.put("message", "Syncing game round info.");
+        result.put("data", Integer.parseInt(gameRound));
+        return result;
+    }
+
 }
