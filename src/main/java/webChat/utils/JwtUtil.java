@@ -51,6 +51,7 @@ public class JwtUtil {
             Jwts.parser().setSigningKey(JwtUtil.SECRET_KEY).parseClaimsJws(token);
             return true;
         } catch (Exception e) {
+            e.printStackTrace();
             return false;
         }
     }

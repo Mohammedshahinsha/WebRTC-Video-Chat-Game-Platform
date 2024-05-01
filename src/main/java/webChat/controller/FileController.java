@@ -43,8 +43,7 @@ public class FileController {
             // 변환된 byte, httpHeader 와 HttpStatus 가 포함된 ResponseEntity 객체를 return 한다.
             return fileService.getObject(fileName, filePath);
         } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException(e);
+            throw new ExceptionController.InternalServerError(e.getMessage());
         }
     }
 

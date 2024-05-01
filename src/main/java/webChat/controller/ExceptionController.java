@@ -73,7 +73,7 @@ public class ExceptionController {
     // 500 서버에러
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler(HttpServerErrorException.InternalServerError.class)
-    public @ResponseBody String interalServerError(Exception e){
+    public @ResponseBody String InternalServerError(Exception e){
         this.printErrorLog(e);
         return "error/500"; // 500 에러 페이지로 리디렉션
     }
@@ -88,10 +88,8 @@ public class ExceptionController {
     // 요청한 자원이 없는 경우 발생하는 예외 핸들러
     @ResponseStatus(HttpStatus.NOT_FOUND) // 404 status code
     @ExceptionHandler(ResourceNotFoundException.class)
-    @ResponseBody
-    public Map<String, String> resourceNotFoundException(Exception e) {
+    public @ResponseBody Map<String, String> resourceNotFoundException(Exception e) {
         this.printErrorLog(e);
-
         Map<String, String> result = new HashMap<>();
         result.put("code", "404");
         result.put("message", "there is no resource");
@@ -162,14 +160,6 @@ public class ExceptionController {
         }
     }
 
-    private void printErrorLog(Exception e){
-        log.error(">>>>>>> "+e.getMessage());
-        if (Objects.nonNull(e.getCause())) {
-            log.error(">>>>>>> "+ e.getCause().toString());
-        }
-        e.printStackTrace();
-    }
-
     public static class AlreadyPlayedGameException extends BadRequestException {
 
         public AlreadyPlayedGameException(String message) {
@@ -200,6 +190,14 @@ public class ExceptionController {
         result.put("message", "Syncing game round info.");
         result.put("data", Integer.parseInt(gameRound));
         return result;
+    }
+
+    private void printErrorLog(Exception e){
+        log.error(">>>>>>> "+e.getMessage());
+        if (Objects.nonNull(e.getCause())) {
+            log.error(">>>>>>> "+ e.getCause().toString());
+        }
+        e.printStackTrace();
     }
 
 }

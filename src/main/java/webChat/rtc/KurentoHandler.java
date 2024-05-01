@@ -68,6 +68,7 @@ public class KurentoHandler extends TextWebSocketHandler {
                     // 이후 receiveVideoFrom 실행 => 아마도 특정 유저로부터 받은 비디오를 다른 유저에게 넘겨주는게 아닌가...?
                     user.receiveVideoFrom(sender, sdpOffer);
                 } catch (Exception e){
+                    e.printStackTrace();
                     connectException(user, e);
                 }
                 break;

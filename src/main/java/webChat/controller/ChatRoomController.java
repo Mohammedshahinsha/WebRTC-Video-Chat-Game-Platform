@@ -65,7 +65,6 @@ public class ChatRoomController {
 
         model.addAttribute("room", room);
 
-
         if (ChatType.MSG.equals(room.getChatType())) {
             return "chatroom";
         }else{

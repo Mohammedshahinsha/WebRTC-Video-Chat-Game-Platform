@@ -323,6 +323,7 @@ public class KurentoUserSession extends User implements Closeable {
       try {
         session.sendMessage(new TextMessage(message.toString()));
       } catch (Exception e) {
+        e.printStackTrace();
         message.addProperty("id", "ConnectionFail");
         message.addProperty("data", e.getMessage());
         this.sendMessage(message);
