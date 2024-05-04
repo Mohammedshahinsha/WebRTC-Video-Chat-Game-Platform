@@ -48,14 +48,15 @@
         <h2>채팅방 리스트</h2>
         <div class="row" th:if="${user == null}">
             <div class="col">
-                <a href="/chatlogin">
-                    <button class="btn btn-primary" type="button">로그인하기</button>
-                </a>
+<!--                <a href="/chatlogin">-->
+<!--                    <button class="btn btn-primary" type="button">로그인하기</button>-->
+<!--                </a>-->
             </div>
         </div>
         <h5 th:if="${user != null}">
             [[${user.nickName}]]
         </h5>
+        <button class="btn btn-primary" type="button" id="showUpdatesButton">업데이트 내역 확인하기</button>
         <table class="table table-hover" id="table">
             <tr>
                 <th scope="col">채팅방명</th>
@@ -226,11 +227,11 @@
 <!--                    <div id="loadingIndicator">-->
 <!--                        -->
 <!--                    </div>-->
-                    <div id="roomBtn">
+                    <div id="roomConfigBtn">
                         <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Close</button>
                         <input class="btn btn-primary" type="submit" id="createRoomBtn" value="방 생성하기"/>
-                        <span id="loadingIndicator" class="spinner-border spinner-border-sm" role="status" style="display: none;"></span>
                     </div>
+                    <span id="loadingIndicator" class="spinner-border spinner-border-sm" role="status" style="display: none;"></span>
                 </div>
             </form>
         </div>
@@ -380,6 +381,51 @@
                     <label class="form-check-label" for="dontShowAgain">오늘은 더 이상 안보기(Don't show again today)</label>
                 </div>
                 <button class="btn btn-secondary" data-bs-dismiss="modal" id="agreeBtn" type="button">동의합니다.(Agree)</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- updateHistory Modal -->
+<div class="modal fade" id="updateHistoryModal" tabindex="-1" aria-labelledby="updateHistoryModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="updateHistoryModalLabel">최신 업데이트 및 공지사항</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Tab Navigation -->
+                <ul class="nav nav-tabs" id="updateHistoryTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="update-tab" data-bs-toggle="tab" data-bs-target="#update" type="button" role="tab" aria-controls="update" aria-selected="true">업데이트 내용</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="features-tab" data-bs-toggle="tab" data-bs-target="#features" type="button" role="tab" aria-controls="features" aria-selected="false">새로운 기능</button>
+                    </li>
+                </ul>
+                <!-- Tab Content -->
+                <div class="tab-content" id="updateHistoryContent">
+                    <div class="tab-pane fade show active" id="update" role="tabpanel" aria-labelledby="update-tab">
+                        <br>
+                        <h6>24.05.04 업데이트 : </h6>
+                        <ul>
+                            <li>버그 수정 및 서비스 안정화</li>
+                            <li>채팅방에서의 랜덤 GuestID 생성</li>
+                            <li>화상채팅 CatchMind 게임 추가</li>
+                        </ul>
+                    </div>
+                    <div class="tab-pane fade" id="features" role="tabpanel" aria-labelledby="features-tab">
+                        <h6>추가된 주요 기능들 : </h6>
+                        <ul>
+                            <li>화상 채팅 CatchMind 게임 개발 및 실행 가능!</li>
+                            <img src="/images/webrtc/catchmind_r60.gif" alt="CatchMind Game Example" style="width:100%; height:auto;">
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
             </div>
         </div>
     </div>

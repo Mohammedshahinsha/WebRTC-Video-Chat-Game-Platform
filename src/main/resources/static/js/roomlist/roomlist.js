@@ -79,6 +79,11 @@ $(function () {
                 console.error('Error:', error);
             });
     })
+
+    $('#showUpdatesButton').on('click', function() {
+        var myModal = new bootstrap.Modal($('#updateHistoryModal'));
+        myModal.show();
+    });
 })
 
 // 채팅방 설정 시 비밀번호 확인 - keyup 펑션 활용
@@ -142,11 +147,13 @@ function numberChk() {
 // 채팅방 생성
 function createRoom() {
     $('#loadingIndicator').show();
-    $('#createRoomBtn').hide().attr('disabled', true);
+    // $('#createRoomBtn').hide().attr('disabled', true);
+    $('#roomConfigBtn').hide();
 
     function resetEvent() {
         $('#loadingIndicator').hide();
-        $('#createRoomBtn').show().attr('disabled', false);
+        $('#roomConfigBtn').show();
+        // $('#createRoomBtn').show().attr('disabled', false);
     };
 
 
