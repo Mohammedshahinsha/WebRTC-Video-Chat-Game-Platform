@@ -7,10 +7,11 @@
 - 상세한 코드 설명은  https://terianp.tistory.com/184 에서 확인 가능합니다.
 
 ### 브랜치별 설명
-- master : 기본 문자 채팅
-- master-Webrtc-jpa : 일반 채팅 + 실시간 화상 채팅, 화면 공유(P2P)
-- master-webrtc-kurento-jpa : kurento 미디어 서버를 활용한 webrtc 화상 채팅
-- master-webrtc-catchmind : 화상채팅 + catchmind 게임
+- **master-webrtc-catchmind** : 화상채팅 + catchmind 게임  
+
+- master : 기본 문자 채팅  
+- master-Webrtc-jpa : 일반 채팅 + 실시간 화상 채팅, 화면 공유(P2P)  
+- master-webrtc-kurento-jpa : kurento 미디어 서버를 활용한 webrtc 화상 채팅  
 
 ## 1. 사용기술
 - Java 11
@@ -117,7 +118,6 @@ ENTRYPOINT ["java", "-jar", "/app.jar"]
 4) Python-Server
 - catchmind 게임 구동을 위해서는 chatforyou-python-api 서버를 필수로 구동해야합니다.
 
-
 # 4. ChatForYou
 https://hjproject.kro.kr:8653
 
@@ -136,8 +136,7 @@ This site is only for studying various functions using WebRTC and WebSocket tech
 **Please note that all legal responsibilities that may arise from using this site are the responsibility of the person using the site.** 
 
 # 5. 구동 화면
-
-![](info/chattingFileUpload.gif)  
+[//]: # (![]&#40;info/chattingFileUpload.gif&#41;  )
 
 ### 화상 채팅 화면
 ![ChatForYou.gif](info%2FChatForYou.gif)  
