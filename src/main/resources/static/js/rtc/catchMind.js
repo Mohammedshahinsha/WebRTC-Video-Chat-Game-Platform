@@ -8,10 +8,6 @@
 * 6. 게임 종료 이벤트 : 총 N번의 게임 후 전체 게임 종료
 * */
 
-/**
- * 버그 목록
- */
-
 const catchMind = {
     isInit: false,
     canvas: null,
