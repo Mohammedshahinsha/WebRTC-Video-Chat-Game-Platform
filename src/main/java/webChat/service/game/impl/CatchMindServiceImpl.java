@@ -48,7 +48,7 @@ public class CatchMindServiceImpl implements CatchMindService {
             // TODO 예외처리
 
         }
-        if (Objects.nonNull(room.getGameSettingInfos()) && room.getGameSettingInfos().isAlreadyPlayedGame()) {
+        if (Objects.nonNull(room.getGameSettingInfo()) && room.getGameSettingInfo().isAlreadyPlayedGame()) {
             return true;
         }
         return false;
@@ -62,31 +62,62 @@ public class CatchMindServiceImpl implements CatchMindService {
             log.info("titles :: {}",titles.toString());
             return titles;
         } catch (Exception e){ // 예외 발생 시 기본 리스트를 반환
+            e.printStackTrace();
             titles = new GameTitles(TITLES_EX);
             return titles;
         }
     }
 
+    private GameSubjects setBeforeSubjects(GameSettingInfo gameSettingInfo, GameSubjects gameSubjects) {
+        if (CollectionUtils.isEmpty(gameSettingInfo.getBeforeSubjects())) {
+            Map<String, List<String>> beforeSubjects = new ConcurrentHashMap<>();
+            beforeSubjects.put(gameSubjects.getTitle(), Collections.emptyList());
+            gameSettingInfo.setBeforeSubjects(beforeSubjects);
+        } else {
+            List<String> beforeSubjects = gameSettingInfo.getBeforeSubjects()
+                    .getOrDefault(gameSubjects.getTitle(), Collections.emptyList());
+            gameSubjects.setBeforeSubjects(beforeSubjects);
+        }
+        return gameSubjects;
+    }
+
     @Override
-    public GameSubjects getSubjects(GameSubjects gameSubjects) throws Exception {
+    public GameSubjects getSubjects(String roomId, GameSubjects gameSubjects) throws Exception {
 
         try{
+            KurentoRoomDto room = (KurentoRoomDto) ChatRoomMap.getInstance().getChatRooms().get(roomId);
+            GameSettingInfo gameSettingInfo = room.getGameSettingInfo();
+            if (Objects.isNull(gameSettingInfo)) {
+                gameSettingInfo = new GameSettingInfo();
+                gameSettingInfo.setRoomId(roomId);
+                room.setGameSettingInfo(gameSettingInfo);
+            }
+            setBeforeSubjects(gameSettingInfo, gameSubjects);
             gameSubjects = HttpUtil.post(catchMindAPI.getUrl()+ gameSubjectUrl, new HttpHeaders(), new ConcurrentHashMap<>(), gameSubjects, GameSubjects.class);
-            log.info("titles :: {}",gameSubjects.toString());
+            gameSettingInfo.getBeforeSubjects().put(gameSubjects.getTitle(), gameSubjects.getSubjects());
+            log.info("subjects :: {}",gameSubjects.toString());
+
             return gameSubjects;
         } catch (Exception e){ // 예외 발생 시 기본 리스트를 반환
+            e.printStackTrace();
 //            subjects = new GameTitles(TITLES_EX);
             return gameSubjects;
         }
     }
 
     @Override
-    public void setGameSettingInfo(GameSettingInfos gameSettingInfos) {
-        String roomId = gameSettingInfos.getRoomId();
-
-        KurentoRoomDto room = (KurentoRoomDto) ChatRoomMap.getInstance().getChatRooms().get(roomId);
-        room.setGameSettingInfos(gameSettingInfos);
-        log.info(">>>> CatchMind Game is Ready To GO");
+    public void setGameSettingInfo(GameSettingInfo gameSettingInfo) {
+        String roomId = gameSettingInfo.getRoomId();
+        try {
+            KurentoRoomDto room = (KurentoRoomDto) ChatRoomMap.getInstance().getChatRooms().get(roomId);
+            GameSettingInfo gameInfo = room.getGameSettingInfo();
+            gameInfo.setGameUserList(gameSettingInfo.getGameUserList());
+            gameInfo.setTotalGameRound(gameSettingInfo.getTotalGameRound());
+            gameInfo.setGameRound(gameSettingInfo.getGameRound());
+            log.info(">>>> CatchMind Game is Ready To GO");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -97,8 +128,8 @@ public class CatchMindServiceImpl implements CatchMindService {
 
         }
 
-        GameSettingInfos gameSettingInfos = room.getGameSettingInfos();
-        List<CatchMindUser> catchMindUserList = gameSettingInfos.getGameUserList();
+        GameSettingInfo gameSettingInfo = room.getGameSettingInfo();
+        List<CatchMindUser> catchMindUserList = gameSettingInfo.getGameUserList();
         // TODO 예외처리 필요
         if (CollectionUtils.isEmpty(catchMindUserList)) {
 
@@ -118,7 +149,7 @@ public class CatchMindServiceImpl implements CatchMindService {
             case WINNER:
                 updateUserScore(catchMindUser, this.WINNER_SCORE);
                 catchMindUser.setWinCount(catchMindUser.getWinCount()+1);
-                gameSettingInfos.newGameRound(); // winner 가 있는 경우만 라운드+1
+                gameSettingInfo.newGameRound(); // winner 가 있는 경우만 라운드+1
                 break;
             case MORE_TIME:
                 updateUserScore(catchMindUser, this.MORE_TIME_SCORE);
@@ -134,7 +165,7 @@ public class CatchMindServiceImpl implements CatchMindService {
     @Override
     public List<CatchMindUser> getGameUserInfos(String roomId) {
         KurentoRoomDto kurentoRoom = (KurentoRoomDto) ChatRoomMap.getInstance().getChatRooms().get(roomId);
-        List<CatchMindUser> gameUserList = kurentoRoom.getGameSettingInfos().getGameUserList();
+        List<CatchMindUser> gameUserList = kurentoRoom.getGameSettingInfo().getGameUserList();
 
         return gameUserList;
     }
@@ -145,33 +176,33 @@ public class CatchMindServiceImpl implements CatchMindService {
     }
 
     @Override
-    public GameSettingInfos getGameResult(String roomId) {
+    public GameSettingInfo getGameResult(String roomId) {
         KurentoRoomDto room = (KurentoRoomDto) ChatRoomMap.getInstance().getChatRooms().get(roomId);
 
         // 게임 라운드 확인 및 결과 보내주기
-        GameSettingInfos gameSettingInfos = room.getGameSettingInfos();
-        if (CollectionUtils.isEmpty(gameSettingInfos.getGameUserList())) {
+        GameSettingInfo gameSettingInfo = room.getGameSettingInfo();
+        if (CollectionUtils.isEmpty(gameSettingInfo.getGameUserList())) {
             // TODO 예외처리 필요
         }
 
         // 게임 라운드와 전체 라운드가 일치하지 않는 경우
         // 프론트와 서버 간 라운드 정보가 일치하지 않는 경우 일치를 위한  Exception
-        if (gameSettingInfos.getGameRound() != gameSettingInfos.getTotalGameRound()) {
-            throw new ExceptionController.SyncGameRound(String.valueOf(gameSettingInfos.getGameRound()));
+        if (gameSettingInfo.getGameRound() != gameSettingInfo.getTotalGameRound()) {
+            throw new ExceptionController.SyncGameRound(String.valueOf(gameSettingInfo.getGameRound()));
         }
 
         // score 비교 로직 수행
         // score 와 wincount 에 가산해서 비교
-        gameSettingInfos.getGameUserList().sort((u1, u2) -> {
+        gameSettingInfo.getGameUserList().sort((u1, u2) -> {
             int score1 = u1.getScore() + u1.getWinCount() * 100;
             int score2 = u2.getScore() + u2.getWinCount() * 100;
             return Integer.compare(score2, score1); // 내림차순 정렬
         });
 
-        gameSettingInfos.getGameUserList().get(0).setWiner(true);
-        gameSettingInfos.setAlreadyPlayedGame(true);
+        gameSettingInfo.getGameUserList().get(0).setWiner(true);
+        gameSettingInfo.setAlreadyPlayedGame(true);
 
-        return gameSettingInfos;
+        return gameSettingInfo;
     }
 
     private void updateUserScore(CatchMindUser catchMindUser, int score){

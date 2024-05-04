@@ -12,7 +12,6 @@ import java.util.List;
 public class GameSubjects {
     String title; // 선택된 주제
     List<String> subjects; // 추천된 주제
-
     @JsonProperty("before_subjects")
     List<String> beforeSubjects; // 이전 소주제
 

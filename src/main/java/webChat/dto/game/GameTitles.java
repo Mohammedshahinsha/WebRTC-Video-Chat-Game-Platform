@@ -1,7 +1,6 @@
 package webChat.dto.game;
 
 import lombok.*;
-
 import java.util.List;
 
 @Data

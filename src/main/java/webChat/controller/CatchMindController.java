@@ -3,15 +3,11 @@ package webChat.controller;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 import webChat.dto.game.*;
-import webChat.dto.room.ChatRoomMap;
-import webChat.dto.room.KurentoRoomDto;
 import webChat.service.game.CatchMindService;
 
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 @RestController
@@ -33,16 +29,16 @@ public class CatchMindController {
     }
 
     @PostMapping(value = "/catchmind/subjects", produces = "application/json; charset=UTF8")
-    public GameSubjects getGameSubjects(@RequestBody GameSubjects gameSubjects) throws Exception {
+    public GameSubjects getGameSubjects(@RequestParam("roomId") String roomId, @RequestBody GameSubjects gameSubjects) throws Exception {
         log.info(">>>>>>> Successfully Get Game Subjects!! <<<<<<<");
-        gameSubjects = catchMindService.getSubjects(gameSubjects);
+        gameSubjects = catchMindService.getSubjects(roomId, gameSubjects);
         return gameSubjects;
     }
 
     @PostMapping(value = "/catchmind/gameSetting", produces = "application/json; charset=UTF8")
     public Map<String, String> initGameEnv(
-            @RequestBody GameSettingInfos gameSettingInfos) {
-        catchMindService.setGameSettingInfo(gameSettingInfos);
+            @RequestBody GameSettingInfo gameSettingInfo) {
+        catchMindService.setGameSettingInfo(gameSettingInfo);
         Map<String, String> result = new ConcurrentHashMap<>();
         result.put("result", "success");
         log.info(">>>>>>> GameSetting Success!! <<<<<<<");

@@ -3,14 +3,16 @@ package webChat.dto.game;
 import lombok.Data;
 
 import java.util.List;
+import java.util.Map;
 
 @Data
-public class GameSettingInfos {
+public class GameSettingInfo {
     String roomId; // 방 아이디
     int totalGameRound; // 총 게임 라운드
     int gameRound; // 현재 게임 라운드
     List<CatchMindUser> gameUserList; // 참여하는 유저
     List<String> subjects; // 게임 주제
+    Map<String, List<String>> beforeSubjects; // 이전 게임 주제
     boolean alreadyPlayedGame;
 
     /**

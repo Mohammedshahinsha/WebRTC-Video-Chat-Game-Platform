@@ -26,7 +26,7 @@ const catchMind = {
     gameReadyUser: 0, // 게임준비를 누른 유저 수
     gameUserCount: 1, // 게임 참여자 수
     gameUserList: [], // 게임 유저 정보(리스트)
-    totalGameRound: 5, // 5 로 고정
+    totalGameRound: 3, // 고정값
     gameRound: 1,
     timerBar: null,
     timerId: null,
@@ -164,6 +164,7 @@ const catchMind = {
         $('#answerBtn').text('Type Your Answer!');
     },
     setMousePosition: function (e) {
+        // 정리 필요!!
         let rect = this.canvas.getBoundingClientRect();
         if (e.clientX) {
             this.lastX = e.clientX - rect.left;
@@ -227,14 +228,16 @@ const catchMind = {
                     // 생성된 버튼을 컨테이너에 추가
                     $titleButtonContainer.append(button);
                 });
+
+                $('#startBtn').attr('disabled', false);
             };
 
             let errorCallback = function (data) {
+                self.preventGameEvent();
                 let result = data?.responseJSON;
                 console.error("error :: ", result);
                 alert(result.message);
                 spinnerOpt.stop();
-                self.preventGameEvent();
                 return false;
             };
 
@@ -254,7 +257,7 @@ const catchMind = {
 
             self.title = $(this).attr('data-title');
 
-            let url = "/catchmind/subjects";
+            let url = `/catchmind/subjects?roomId=${roomId}`;
             const data = {
                 "title": self.title
             }
@@ -269,8 +272,8 @@ const catchMind = {
                     // 버튼 생성
                     let button = $('<button>', {
                         class: 'btn btn-outline-primary subject-btn',
-                        text: subject, // 버튼 내용으로 title 사용
-                        'data-subject': subject, // data-title 속성 설정
+                        text: subject, // 버튼 내용으로 subject 사용
+                        'data-subject': subject, // data-subject 속성 설정
                         value: subject // value 속성 설정
                     });
 
@@ -280,6 +283,7 @@ const catchMind = {
                     // 생성된 버튼을 컨테이너에 추가
                     $subjectButtonContainer.append(button);
                 });
+                $('#readyBtn').prop('disabled', false);
             };
 
             let errorCallback = function () {
@@ -289,7 +293,6 @@ const catchMind = {
 
             ajaxToJson(url, 'POST', true, data, successCallback, errorCallback);
 
-            $('#readyBtn').prop('disabled', false);
         });
 
         $('#subjectButtonContainer').off('click').on('click', '.subject-btn', function () {
@@ -399,6 +402,16 @@ const catchMind = {
 
         // game start btn
         $('#startBtn').off('click').on('click', function () {
+            if(self.gameReadyUser === 1 ) {
+                alert("혼자서는 게임 진행이 불가능해요!");
+                return;
+            }
+            if (!self.title || !self.subject) {
+                alert("게임 주제를 선정 후 시작하실 수 있습니다!");
+                return;
+            }
+
+
             $('#subjectModal').modal('hide');
             $('#answerBtn').attr('disabled', true);
 
@@ -571,7 +584,7 @@ const catchMind = {
         if (!this.isGameLeader) {
             $('#loadingUser').text('다른 참여자를 기다리는 중입니다. : ' + this.gameReadyUser + "/" + this.gameUserCount);
         } else {
-            if (this.isAllUserReady()) {
+            if (this.isAllUserReady() && !this.subject) {
                 $('#readyUser').text("모든 유저가 준비를 완료했습니다. 게임을 시작해주세요!");
                 $('#startBtn').attr('disabled', false);
             } else {
@@ -786,6 +799,8 @@ const catchMind = {
         self.isGameReady = false;
         self.drawing = false;
         self.isTimeRemain = false;
+        self.title = '';
+        self.subject = '';
         // self.gameReadyUser = 0; // 게임 준비 상태인 유저 수 초기화
         self.showRoundSubject(true);
 
@@ -810,7 +825,7 @@ const catchMind = {
             $('#nickName_ld').attr('disabled', true);
 
             $('#startBtn').removeAttr('hidden');
-            $('#startBtn').attr('disabled', false);
+            // $('#startBtn').attr('disabled', false);
 
             // 캔버스 클리어 후 이벤트
             $('#maxClearCount').text("캔버스 초기화 기회 : " + self.maxClearCount);

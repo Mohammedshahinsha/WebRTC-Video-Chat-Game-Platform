@@ -28,7 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.socket.WebSocketSession;
 import webChat.dto.ChatType;
-import webChat.dto.game.GameSettingInfos;
+import webChat.dto.game.GameSettingInfo;
 import webChat.rtc.KurentoUserSession;
 
 import javax.annotation.PreDestroy;
@@ -70,7 +70,7 @@ public class KurentoRoomDto extends ChatRoomDto implements Closeable {
    * */
   private Map<String, KurentoUserSession> participants;
 
-  private GameSettingInfos gameSettingInfos; // 해당 방의 게임 정보 세팅
+  private GameSettingInfo gameSettingInfo; // 해당 방의 게임 정보 세팅
 
   // 룸 정보 set
   public void setRoomInfo(String roomId, String roomName, String roomPwd, boolean secure, int userCount, int maxUserCnt, ChatType chatType, KurentoClient kurento){
