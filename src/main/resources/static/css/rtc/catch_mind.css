@@ -63,6 +63,15 @@
   top: .2em;
 }
 
+/* 주제 설정 모달 */
+#titleButtonContainer .title-btn {
+  margin: 5px; /* 상하좌우 모두 5px의 마진을 추가 */
+}
+
+#subjectButtonContainer .subject-btn {
+  margin: 5px; /* 상하좌우 모두 5px의 마진을 추가 */
+}
+
 /* 타이머와 maxClearCount 스타일 */
 #timer, #maxClearCount {
   font-weight: bold; /* 글자를 굵게 */
@@ -118,6 +127,36 @@ canvas#mycanvas {
   font-size: 1.2em; /* 큰 글씨 */
   font-weight: bold; /* 굵은 글씨체 */
 }
+
+.feedback-request {
+  background-color: #f8f9fa;
+  border-top: 1px solid #dee2e6;
+  padding: 15px;
+  margin-top: 20px;
+}
+
+/* 게임 결과 모달의 결과 리스트 스타일링 */
+#gameResultsModal #gameResultsList {
+  margin-bottom: 20px; /* 리스트와 탭 사이의 공간을 20px으로 설정 */
+}
+
+/* 게임 결과 모달의 탭 컨텐츠 스타일링 */
+#gameResultsModal .tab-content {
+  border-top: 1px solid #ccc; /* 탭 콘텐츠 상단에 경계선 추가 */
+  padding-top: 20px; /* 탭 콘텐츠의 상단 패딩을 20px로 설정 */
+}
+
+/* 게임 결과 모달의 탭 제목 스타일링 */
+#gameResultsModal .nav-tabs {
+  margin-bottom: 15px; /* 탭 제목과 내용 사이의 마진 설정 */
+}
+
+/*!* 게임 결과 모달의 피드백 요청 영역 스타일링 *!*/
+/*#gameResultsModal .feedback-request {*/
+/*  padding: 10px; !* 내부 패딩 추가 *!*/
+/*  background-color: #f8f9fa; !* 배경색 설정 *!*/
+/*  border-radius: 5px; !* 테두리 둥글게 설정 *!*/
+/*}*/
 
   /*
     정답 입력 모달
