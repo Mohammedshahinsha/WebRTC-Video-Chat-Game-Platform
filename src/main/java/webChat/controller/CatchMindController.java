@@ -21,7 +21,7 @@ public class CatchMindController {
     @GetMapping(value = "/catchmind/titles", produces = "application/json; charset=UTF8")
     public GameTitles getGameTitles(@RequestParam("roomId") String roomId) throws Exception {
         log.info(">>>>>>> Successfully Get Game Titles!! <<<<<<<");
-        if (catchMindService.chkAlradyPlayedGame(roomId)) {
+        if (catchMindService.chkAlreadyPlayedGame(roomId)) {
             throw new ExceptionController.AlreadyPlayedGameException("already played game");
         }
         GameTitles gameTitles = catchMindService.getTitles();

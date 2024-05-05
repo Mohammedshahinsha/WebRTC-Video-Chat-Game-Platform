@@ -4,7 +4,7 @@
 ## 0. Springboot - WebRTC 화상채팅 프로젝트
 - SpringBoot 기반 웹 소켓 채팅 및 Kurento Media Server 를 이용한 N:M 화상채팅
 - WebRTC 를 활용한 다양한 이벤트 및 CatchMind 게임 구현
-- 상세한 코드 설명은  https://terianp.tistory.com/184 에서 확인 가능합니다.
+- 상세한 코드 설명은  https://terianp.tistory.com/207 에서 확인 가능합니다.
 
 ### 브랜치별 설명
 - **master-webrtc-catchmind** : 화상채팅 + catchmind 게임  

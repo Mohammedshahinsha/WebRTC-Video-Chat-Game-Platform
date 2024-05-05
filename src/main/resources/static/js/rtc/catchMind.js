@@ -170,6 +170,33 @@ const catchMind = {
             this.lastY = e.touches[0].clientY - rect.top;
         }
     },
+    canvasDrawingEvent: function (event) {
+
+        let mouseX = event.mouseX;
+        let mouseY = event.mouseY;
+
+        if (event.mouseInit) {
+            this.saveX = 0;
+            this.saveY = 0;
+            return;
+        }
+
+        if (this.saveX === 0 && this.saveY === 0) {
+            this.saveX = mouseX;
+            this.saveY = mouseY;
+        }
+
+        this.ctx.beginPath();
+        this.ctx.moveTo(this.saveX, this.saveY); // 시작점 설정
+
+        // console.log("x pos : ", this.lastX + " ::::: "+"y pos : ", this.lastY);
+
+        this.ctx.lineTo(mouseX, mouseY); // 끝점 설정 (여기서는 시작점에서 조금 떨어진 위치로 설정)
+        this.ctx.stroke(); // 선 그리기
+
+        this.saveX = mouseX;
+        this.saveY = mouseY;
+    },
     initClickEvent: function () {
         let self = this;
 
@@ -608,35 +635,6 @@ const catchMind = {
 
         $('#clearCanvasBtn').hide();
         $('#answerBtn').attr('disabled', false);
-    },
-    canvasDrawingEvent: function (event) {
-
-        let mouseX = event.mouseX;
-        let mouseY = event.mouseY;
-
-        if (event.mouseInit) {
-            this.saveX = 0;
-            this.saveY = 0;
-            return;
-        }
-
-        if (this.saveX === 0 && this.saveY === 0) {
-            this.saveX = mouseX;
-            this.saveY = mouseY;
-        }
-
-        this.ctx.beginPath();
-        this.ctx.moveTo(this.saveX, this.saveY); // 시작점 설정
-
-        this.lastX = mouseX;
-        this.lastY = mouseY;
-        // console.log("x pos : ", this.lastX + " ::::: "+"y pos : ", this.lastY);
-
-        this.ctx.lineTo(this.lastX, this.lastY); // 끝점 설정 (여기서는 시작점에서 조금 떨어진 위치로 설정)
-        this.ctx.stroke(); // 선 그리기
-
-        this.saveX = this.lastX;
-        this.saveY = this.lastY;
     },
     checkAnswer: function (answer) {
         let self = this;

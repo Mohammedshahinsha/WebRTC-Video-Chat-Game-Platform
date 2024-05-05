@@ -42,7 +42,7 @@ public class CatchMindServiceImpl implements CatchMindService {
     private static final Logger log = LoggerFactory.getLogger(CatchMindServiceImpl.class);
 
     @Override
-    public boolean chkAlradyPlayedGame(String roomId) {
+    public boolean chkAlreadyPlayedGame(String roomId) {
         KurentoRoomDto room = (KurentoRoomDto)ChatRoomMap.getInstance().getChatRooms().get(roomId);
         if (Objects.isNull(room)) {
             // TODO 예외처리
@@ -210,5 +210,4 @@ public class CatchMindServiceImpl implements CatchMindService {
         catchMindUser.setScore(updatedScore);
         log.info(">>>> Round Winner and Get Score!! => {} :: {}", catchMindUser.getNickName(), catchMindUser.getScore());
     }
-
 }
