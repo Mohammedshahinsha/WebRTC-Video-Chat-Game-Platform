@@ -68,19 +68,6 @@ public class CatchMindServiceImpl implements CatchMindService {
         }
     }
 
-    private GameSubjects setBeforeSubjects(GameSettingInfo gameSettingInfo, GameSubjects gameSubjects) {
-        if (CollectionUtils.isEmpty(gameSettingInfo.getBeforeSubjects())) {
-            Map<String, List<String>> beforeSubjects = new ConcurrentHashMap<>();
-            beforeSubjects.put(gameSubjects.getTitle(), Collections.emptyList());
-            gameSettingInfo.setBeforeSubjects(beforeSubjects);
-        } else {
-            List<String> beforeSubjects = gameSettingInfo.getBeforeSubjects()
-                    .getOrDefault(gameSubjects.getTitle(), Collections.emptyList());
-            gameSubjects.setBeforeSubjects(beforeSubjects);
-        }
-        return gameSubjects;
-    }
-
     @Override
     public GameSubjects getSubjects(String roomId, GameSubjects gameSubjects) throws Exception {
 
@@ -94,7 +81,8 @@ public class CatchMindServiceImpl implements CatchMindService {
             }
             setBeforeSubjects(gameSettingInfo, gameSubjects);
             gameSubjects = HttpUtil.post(catchMindAPI.getUrl()+ gameSubjectUrl, new HttpHeaders(), new ConcurrentHashMap<>(), gameSubjects, GameSubjects.class);
-            gameSettingInfo.getBeforeSubjects().put(gameSubjects.getTitle(), gameSubjects.getSubjects());
+            gameSubjects.getBeforeSubjects().addAll(gameSubjects.getSubjects());
+            gameSettingInfo.getBeforeSubjects().put(gameSubjects.getTitle(), gameSubjects.getBeforeSubjects());
             log.info("subjects :: {}",gameSubjects.toString());
 
             return gameSubjects;
@@ -112,7 +100,9 @@ public class CatchMindServiceImpl implements CatchMindService {
             KurentoRoomDto room = (KurentoRoomDto) ChatRoomMap.getInstance().getChatRooms().get(roomId);
             GameSettingInfo gameInfo = room.getGameSettingInfo();
             gameInfo.setGameUserList(gameSettingInfo.getGameUserList());
-            gameInfo.setTotalGameRound(gameSettingInfo.getTotalGameRound());
+//            gameInfo.setTotalGameRound(gameSettingInfo.getTotalGameRound());
+            // TODO 추후에는 선택할 수 있게 하지만 현재는 3 라운드로 고정
+            gameInfo.setTotalGameRound(3);
             gameInfo.setGameRound(gameSettingInfo.getGameRound());
             log.info(">>>> CatchMind Game is Ready To GO");
         } catch (Exception e) {
@@ -209,5 +199,19 @@ public class CatchMindServiceImpl implements CatchMindService {
         int updatedScore = catchMindUser.getScore()+score;
         catchMindUser.setScore(updatedScore);
         log.info(">>>> Round Winner and Get Score!! => {} :: {}", catchMindUser.getNickName(), catchMindUser.getScore());
+    }
+
+    private GameSubjects setBeforeSubjects(GameSettingInfo gameSettingInfo, GameSubjects gameSubjects) {
+        if (CollectionUtils.isEmpty(gameSettingInfo.getBeforeSubjects())) {
+            Map<String, List<String>> beforeSubjects = new ConcurrentHashMap<>();
+            beforeSubjects.put(gameSubjects.getTitle(), Collections.emptyList());
+            gameSettingInfo.setBeforeSubjects(beforeSubjects);
+            gameSubjects.setBeforeSubjects(Collections.emptyList());
+        } else {
+            List<String> beforeSubjects = gameSettingInfo.getBeforeSubjects()
+                    .getOrDefault(gameSubjects.getTitle(), Collections.emptyList());
+            gameSubjects.setBeforeSubjects(beforeSubjects);
+        }
+        return gameSubjects;
     }
 }

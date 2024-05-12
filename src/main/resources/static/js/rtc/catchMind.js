@@ -220,6 +220,8 @@ const catchMind = {
         });
 
         $('#subjectModal').on('shown.bs.modal', function (e) {
+            $('#maxGameCount').val(self.totalGameRound);
+
             let $body = $('body');
             spinnerOpt.initByOption(20, 15, 4.0, 'shrink', '#ffffff', '50%', '50%');
             spinnerOpt.start($body);
@@ -328,8 +330,12 @@ const catchMind = {
             self.subject = self.replaceStr(data);
         });
 
-        // game start btn
+        // game ready btn
         $('#readyBtn').off('click').on('click', function () {
+            if (!self.title || !self.subject) {
+                alert("게임 주제를 선정 후 시작하실 수 있습니다!");
+                return;
+            }
             self.setGameUser(); // 게임 참여 가능 인원 세팅
             if (!self.isGameParticipant && !self.isGameReady && !self.isGameStart) {
                 self.isGameLeader = true;
