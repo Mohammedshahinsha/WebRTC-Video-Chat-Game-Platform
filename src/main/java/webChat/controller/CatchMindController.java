@@ -24,8 +24,7 @@ public class CatchMindController {
         if (catchMindService.chkAlreadyPlayedGame(roomId)) {
             throw new ExceptionController.AlreadyPlayedGameException("already played game");
         }
-        GameTitles gameTitles = catchMindService.getTitles();
-        return gameTitles;
+        return catchMindService.getTitles();
     }
 
     @PostMapping(value = "/catchmind/subjects", produces = "application/json; charset=UTF8")

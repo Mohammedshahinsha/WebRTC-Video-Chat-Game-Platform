@@ -33,26 +33,34 @@ public class RoomBatchJob {
     public void checkRoom() {
         ConcurrentMap<String, ChatRoomDto> chatRooms = ChatRoomMap.getInstance().getChatRooms();
 
-        AtomicInteger delRoomCnt = new AtomicInteger();
+        AtomicInteger totalDelRoomCnt = new AtomicInteger();
+        AtomicInteger msgRoomCnt = new AtomicInteger();
+        AtomicInteger rtcRoomCnt = new AtomicInteger();
+
         chatRooms.keySet()
                 .forEach(key -> {
                     ChatRoomDto room = chatRooms.get(key);
 
                     if (room.getUserCount() <= 0) { // chatroom 에서 usercount 가 0 이하만 list 에 저장
-                        chatRooms.remove(key);
-                        if (room.getChatType().equals(ChatType.RTC)) {
+                        if (ChatType.RTC.equals(room.getChatType())) {
                             kurentoManager.removeRoom((KurentoRoomDto) room);
+                            rtcRoomCnt.incrementAndGet();
+                        } else if (ChatType.MSG.equals(room.getChatType())) {
+                            msgRoomCnt.incrementAndGet();
+                            chatRooms.remove(key);
                         }
                         // room 에서 업로드된 모든 파일 삭제
                         fileService.deleteFileDir(room.getRoomId());
 
-                        delRoomCnt.incrementAndGet();
+                        totalDelRoomCnt.incrementAndGet();
                     }
                 });
 
         LocalDateTime date = LocalDateTime.now();
         log.info("##########################");
-        log.info("Delete room Count : {}", delRoomCnt);
+        log.info("Deleted MSG Room Count : {}", msgRoomCnt);
+        log.info("Deleted RTC Room Count : {}", rtcRoomCnt);
+        log.info("Deleted Room Total Count : {}", totalDelRoomCnt);
         log.info(date.toString());
         log.info("##########################");
     }

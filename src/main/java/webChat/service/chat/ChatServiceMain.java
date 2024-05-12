@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import webChat.controller.ExceptionController;
 import webChat.dto.room.ChatRoomDto;
 import webChat.dto.room.ChatRoomMap;
 import webChat.dto.ChatType;
@@ -13,6 +14,7 @@ import webChat.service.analysis.AnalysisService;
 import webChat.service.file.FileService;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentMap;
 
 
 @Service
@@ -33,7 +35,7 @@ public class ChatServiceMain {
 
 
     // 전체 채팅방 조회
-    public List<ChatRoomDto> findAllRoom(){
+    public List<ChatRoomDto> findAllRoom() {
         // TODO room userCnt 로직 수정 필요
         // 채팅방 생성 순서를 최근순으로 반환
         List<ChatRoomDto> chatRooms = new ArrayList<>(ChatRoomMap.getInstance().getChatRooms().values());
@@ -43,19 +45,19 @@ public class ChatServiceMain {
     }
 
     // roomID 기준으로 채팅방 찾기
-    public ChatRoomDto findRoomById(String roomId){
+    public ChatRoomDto findRoomById(String roomId) {
         return ChatRoomMap.getInstance().getChatRooms().get(roomId);
     }
 
     // roomName 로 채팅방 만들기
-    public ChatRoomDto createChatRoom(String roomName, String roomPwd, boolean secretChk, int maxUserCnt, String chatType){
+    public ChatRoomDto createChatRoom(String roomName, String roomPwd, boolean secretChk, int maxUserCnt, String chatType) {
 
         ChatRoomDto room;
 
         // 채팅방 타입에 따라서 사용되는 Service 구분
-        if(chatType.equals("msgChat")){
+        if (chatType.equals("msgChat")) {
             room = msgChatService.createChatRoom(roomName, roomPwd, secretChk, maxUserCnt);
-        }else{
+        } else {
             room = rtcChatService.createChatRoom(roomName, roomPwd, secretChk, maxUserCnt);
         }
 
@@ -73,16 +75,16 @@ public class ChatServiceMain {
     }
 
     // 채팅방 인원+1
-    public void plusUserCnt(String roomId){
-        log.info("cnt {}",ChatRoomMap.getInstance().getChatRooms().get(roomId).getUserCount());
+    public void plusUserCnt(String roomId) {
+        log.info("cnt {}", ChatRoomMap.getInstance().getChatRooms().get(roomId).getUserCount());
         ChatRoomDto room = ChatRoomMap.getInstance().getChatRooms().get(roomId);
-        room.setUserCount(room.getUserCount()+1);
+        room.setUserCount(room.getUserCount() + 1);
     }
 
     // 채팅방 인원-1
-    public void minusUserCnt(String roomId){
+    public void minusUserCnt(String roomId) {
         ChatRoomDto room = ChatRoomMap.getInstance().getChatRooms().get(roomId);
-        int roomCnt = room.getUserCount()-1;
+        int roomCnt = room.getUserCount() - 1;
         if (roomCnt < 0) {
             roomCnt = 0;
         }
@@ -90,7 +92,7 @@ public class ChatServiceMain {
     }
 
     // maxUserCnt 에 따른 채팅방 입장 여부
-    public boolean chkRoomUserCnt(String roomId){
+    public boolean chkRoomUserCnt(String roomId) {
         ChatRoomDto room = ChatRoomMap.getInstance().getChatRooms().get(roomId);
 
         if (room.getUserCount() + 1 > room.getMaxUserCnt()) {
@@ -101,25 +103,25 @@ public class ChatServiceMain {
     }
 
     // 채팅방 삭제
-    public void delChatRoom(String roomId){
+    public void delChatRoom(String roomId) {
 
-        try {
-            ChatRoomDto room = ChatRoomMap.getInstance().getChatRooms().remove(roomId);
+        ConcurrentMap<String, ChatRoomDto> chatRooms = ChatRoomMap.getInstance().getChatRooms();
+        ChatRoomDto room = chatRooms.get(roomId);
 
+        if (room.getUserCount() <= 0) {
             if (room.getChatType().equals(ChatType.RTC)) {
                 KurentoRoomDto kurentoRoom = (KurentoRoomDto) room;
                 kurentoManager.removeRoom(kurentoRoom);
+            } else {
+                chatRooms.remove(roomId);
             }
 
             // 채팅방 안에 있는 파일 삭제
             fileService.deleteFileDir(roomId);
 
             log.info("삭제 완료 roomId : {}", roomId);
-
-        } catch (Exception e) { // 만약에 예외 발생시 확인하기 위해서 try catch
-            e.printStackTrace();
+        } else {
+            throw new ExceptionController.DelRoomException("DelRoom Exception");
         }
-
     }
-
 }

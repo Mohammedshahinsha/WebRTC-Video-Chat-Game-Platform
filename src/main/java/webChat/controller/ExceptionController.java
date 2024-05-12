@@ -192,6 +192,22 @@ public class ExceptionController {
         return result;
     }
 
+    public static class DelRoomException extends BadRequestException {
+
+        public DelRoomException(String message) {
+            super(message);
+        }
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(DelRoomException.class)
+    public @ResponseBody Map<String, Object> delRoomException(){
+        Map<String, Object> result = new HashMap<>();
+        result.put("code", "40041");
+        result.put("message", "Can't Delete Room! Somebody use the  room XD");
+        return result;
+    }
+
     private void printErrorLog(Exception e){
         log.error(">>>>>>> "+e.getMessage());
         if (Objects.nonNull(e.getCause())) {

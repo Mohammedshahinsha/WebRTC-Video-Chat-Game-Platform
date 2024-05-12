@@ -161,9 +161,8 @@ function createRoom() {
     let pwd = $("#roomPwd").val();
     let secret = $("#secret").is(':checked');
     let secretChk = $("#secretChk");
-    let $rtcType = $("#rtcType");
-    let $msgType = $("#msgType");
-    let $maxUserCnt = $("#maxUserCnt");
+    let $chatType = $('input[name="chatType"]:checked').val();
+    let $maxUserCnt = $("#maxUserCnt").val();
 
     if (name === "") {
         alert("방 이름은 필수입니다");
@@ -187,14 +186,20 @@ function createRoom() {
         return false;
     }
 
-    if ($maxUserCnt.val() <= 1) {
+    if ($maxUserCnt <= 1) {
         alert("채팅은 최소 2명 이상!!");
         resetEvent();
         return false;
-    } else if ($maxUserCnt.val() > 4) {
-        alert("4명 이상은 서버가 아파요ㅠ.ㅠ");
-        resetEvent();
-        return false;
+    } else {
+        if ($chatType === 'msgChat' && $maxUserCnt > 100) {
+            alert("일반 채팅은 최대 100명 입니다!")
+            resetEvent();
+            return false;
+        } else if ($chatType === 'rtcChat' && $maxUserCnt > 4) {
+            alert("4명 이상은 서버가 아파해요ㅠ.ㅠ");
+            resetEvent();
+            return false;
+        }
     }
 
     if (secret) {
@@ -240,7 +245,23 @@ function enterRoom() {
 
 // 채팅방 삭제
 function delRoom() {
-    location.href = "/chat/delRoom/" + roomId;
+    let url = "/chat/delRoom/" + roomId;
+    let successCallback = function (result) {
+        alert("방 삭제를 완료했습니다");
+        location.href = "/";
+    };
+
+    let errorCallback = function(error){
+        // 서버에서 보낸 JSON 응답을 파싱하여 메시지를 alert로 표시합니다.
+        let result = error.responseJSON;
+        let errorMessage = '방 삭제 중 오류가 발생했습니다.';
+        if (result.code === '40041') {
+            errorMessage = result.message;
+        }
+        alert(errorMessage);
+    }
+
+    ajax(url, 'GET', false, '', successCallback, errorCallback);
 }
 
 // 채팅방 입장 시 인원 수에 따라서 입장 여부 결정
