@@ -39,7 +39,7 @@ jobs:
           export TZ=Asia/Seoul
           TIMESTAMP=$(date '+%Y%m%d%H%M%S')
           echo "TIMESTAMP=$TIMESTAMP" >> $GITHUB_ENV
-          echo "IMAGE_URI=ghcr.io/chatforyou:$TIMESTAMP" >> $GITHUB_ENV
+          echo "IMAGE_URI=ghcr.io/sejonj/chatforyou:$TIMESTAMP" >> $GITHUB_ENV
 
       # 5. Docker 이미지 빌드 및 태그
       - name: Build Docker Image
