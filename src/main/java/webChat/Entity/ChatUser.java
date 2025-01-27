@@ -1,8 +1,7 @@
 package webChat.Entity;
 
+import jakarta.persistence.*;
 import lombok.*;
-
-import javax.persistence.*;
 
 @Entity
 @Table

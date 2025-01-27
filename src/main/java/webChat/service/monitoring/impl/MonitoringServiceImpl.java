@@ -1,6 +1,8 @@
 package webChat.service.monitoring.impl;
 import com.maxmind.geoip2.DatabaseReader;
 import com.maxmind.geoip2.model.CityResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,9 +14,6 @@ import webChat.dto.log.ClientInfo;
 import webChat.service.monitoring.ClientCheckService;
 import webChat.service.monitoring.MonitoringService;
 import webChat.service.monitoring.PrometheusService;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.util.Objects;

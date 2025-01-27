@@ -1,7 +1,7 @@
 package webChat.dto.room;
 
-import com.sun.istack.NotNull;
 import lombok.*;
+import org.jetbrains.annotations.NotNull;
 import webChat.dto.ChatType;
 
 import java.util.concurrent.ConcurrentHashMap;

@@ -19,8 +19,8 @@ package webChat.dto.room;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.sun.istack.NotNull;
 import lombok.*;
+import org.jetbrains.annotations.NotNull;
 import org.kurento.client.Continuation;
 import org.kurento.client.KurentoClient;
 import org.kurento.client.MediaPipeline;

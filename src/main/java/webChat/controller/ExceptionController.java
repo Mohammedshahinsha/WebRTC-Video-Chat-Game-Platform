@@ -1,5 +1,6 @@
 package webChat.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.apache.tomcat.util.http.fileupload.impl.FileSizeLimitExceededException;
 import org.apache.tomcat.util.http.fileupload.impl.SizeLimitExceededException;
 import org.slf4j.Logger;
@@ -13,12 +14,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
-import webChat.utils.HttpUtil;
-import webChat.utils.StringUtil;
-
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
