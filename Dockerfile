@@ -4,6 +4,9 @@ FROM openjdk:17-jdk AS builder
 # 작업 디렉토리 설정
 WORKDIR /workspace/app
 
+# Gradle 실행에 필요한 유틸리티 설치 (findutils 포함)
+RUN apt-get update && apt-get install -y findutils
+
 # Gradle Wrapper 및 프로젝트 소스 파일 복사
 COPY gradlew .
 COPY gradle/wrapper/ gradle/wrapper/
