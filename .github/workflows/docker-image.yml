@@ -17,7 +17,7 @@ jobs:
     env:
       KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
       K8S_NAMESPACE: chatforyou # Kubernetes 네임스페이스
-      DEPLOYMENT_NAME: chatforyou # Deployment 이름
+      DEPLOYMENT_NAME: chatforyou-v03    # Deployment 이름
 
     steps:
       # 1. 코드 체크아웃
