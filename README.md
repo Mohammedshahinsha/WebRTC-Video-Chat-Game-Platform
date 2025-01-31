@@ -90,8 +90,10 @@ ChatForYou는 실시간 화상채팅을 위한 프로젝트입니다.
 
 3) Docker Container
 - Spring 프로젝트를 Docker Image 로 만들기 위한 DockerFile
-```bash
-FROM adoptopenjdk:11-jdk as builder
+  - git 에 업로드된 dockerfile 이 아닌 아래 내용으로 빌드해야합니다. 
+  - 이는 git 에 업로드된 dockerFile 의 내용은 k8s 에서 configmap 에서 가져와서 사용하도록하기 때문에 application.properties 를 포함하지 않습니다.
+```dockerfile
+FROM openjdk:17-jdk-slim AS builder
 
 # 작업 디렉토리를 설정합니다.
 WORKDIR /workspace/app
@@ -103,7 +105,7 @@ COPY . .
 RUN ./gradlew clean build -x test
 
 # 런타임 이미지를 생성합니다.
-FROM adoptopenjdk:11-jdk
+FROM openjdk:17-jdk-slim
 
 # 3. 8443 포트를 외부로 노출합니다.
 EXPOSE 8443
@@ -120,12 +122,6 @@ ENTRYPOINT ["java", "-jar", "/app.jar"]
 
 # 4. ChatForYou
 https://hjproject.kro.kr:8653
-
-# 230914
-- 자체 서버 배포 완료!
-- 현재 kurento 화상채팅을 적용한 서버 배포중입니다. 다만 아직 안정화 중이라서 자주 꺼지거나 그럴 수 있습니다
-- 자체 서버를 사용하기 때문에 이전보다 조금 더 느릴 수 있습니다
-- 자체 인증서를 사용하기 때문에 사이트에 문제가 있을 수 있다고 나오지만...그런 이상한 사이트 아니에요ㅠ.ㅠ 
 
 # **_사이트 이용시 공시 사항_**
 본 사이트는 오직 springboot 와 JavaScript 를 기본으로 하여 WebRTC 및 WebSocket 기술을 사용한 여러 기능을 공부하기 위한 사이트입니다.
@@ -149,6 +145,15 @@ This site is only for studying various functions using WebRTC and WebSocket tech
 
 ## CatchMind  
 ![catchmind_r60.gif](info%2Fcatchmind_r60.gif)  
+
+## CI/CD Pipeline with GitHub Actions for K8S Deployment
+| 프로세스 단계       | 도입 전 소요시간 | 도입 후 소요시간 | 절감 시간 | 효율성 향상률 |
+|---------------|-------------------|-------------------|-----------|----------------|
+| **Gradle 빌드** | 105.2초          | 66초              | 39.2초    | 37.3% ↑        |
+| **이미지 업로드**   | 25초             | 9초               | 16초      | 64.0% ↑        |
+| **배포 자동화**    | 15초(수동)       | 14초(자동)        | 1초       | 6.7% ↑         |
+| **전체 프로세스**   | 145.2초          | 89초              | 56.2초    | 38.7% ↑        |
+
 
 # Reference
 https://github.com/Benkoff/WebRTC-SS
