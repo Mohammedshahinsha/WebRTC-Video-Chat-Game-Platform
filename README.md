@@ -14,7 +14,7 @@
 - master-webrtc-kurento-jpa : kurento 미디어 서버를 활용한 webrtc 화상 채팅  
 
 ## 1. 사용기술
-- Java 11
+- Java 17
 - Spring Boot MVC
 - Gradle
 - AJAX

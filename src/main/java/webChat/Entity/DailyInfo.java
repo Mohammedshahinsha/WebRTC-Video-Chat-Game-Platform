@@ -1,9 +1,9 @@
 package webChat.Entity;
 
+import jakarta.persistence.*;
 import lombok.*;
 import webChat.dto.ChatType;
 
-import javax.persistence.*;
 import java.time.LocalDate;
 
 @Entity
