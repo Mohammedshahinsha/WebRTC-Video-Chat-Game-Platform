@@ -2,7 +2,8 @@ name: Docker CI/CD
 
 on:
   push:
-    branches: [ "master", "infra/cicd-test" ]
+    branches: [ "master-webrtc-catchmind"]
+#    branches: [ "master-webrtc-catchmind", "infra/cicd-test" ]
 #  pull_request:
 #    branches: [ "master" ]
 
