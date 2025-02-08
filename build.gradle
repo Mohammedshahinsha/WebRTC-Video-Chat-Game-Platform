@@ -104,6 +104,9 @@ dependencies {
 	// https://mvnrepository.com/artifact/io.minio/minio
 	implementation group: 'io.minio', name: 'minio', version: '8.5.7'
 
+	// https://mvnrepository.com/artifact/commons-net/commons-net
+	implementation group: 'commons-net', name: 'commons-net', version: '3.11.1'
+
 
 }
 
