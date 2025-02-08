@@ -72,7 +72,7 @@ public class KurentoManager {
     // rooms 에서 room 객체 삭제 => 이때 room 의 Name 을 가져와서 조회 후 삭제
     this.rooms.remove(room.getRoomId());
 
-    // room 을 종료?
+    // room 을 종료
     room.close();
 
     log.info("Room {} removed and closed", room.getRoomId());

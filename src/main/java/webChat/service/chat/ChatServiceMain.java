@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import webChat.controller.ExceptionController;
 import webChat.dto.room.ChatRoomDto;
@@ -33,6 +34,9 @@ public class ChatServiceMain {
     // 사이트 통계를 위한 서비스
     private final AnalysisService analysisService;
 
+    @Value("${chatforyou.room.max_user_count}")
+    private int MAX_USER_COUNT;
+
 
     // 전체 채팅방 조회
     public List<ChatRoomDto> findAllRoom() {
@@ -51,6 +55,10 @@ public class ChatServiceMain {
 
     // roomName 로 채팅방 만들기
     public ChatRoomDto createChatRoom(String roomName, String roomPwd, boolean secretChk, int maxUserCnt, String chatType) {
+        // TODO chatroom list 코드를 정리하면서 예외 처리 필요
+        if(maxUserCnt > MAX_USER_COUNT) {
+            throw new ExceptionController.BadRequestException("cant not over max user count : " + maxUserCnt);
+        }
 
         ChatRoomDto room;
 

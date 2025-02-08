@@ -195,8 +195,8 @@ function createRoom() {
             alert("일반 채팅은 최대 100명 입니다!")
             resetEvent();
             return false;
-        } else if ($chatType === 'rtcChat' && $maxUserCnt > 4) {
-            alert("4명 이상은 서버가 아파해요ㅠ.ㅠ");
+        } else if ($chatType === 'rtcChat' && $maxUserCnt > 6) {
+            alert("6명 이상은 서버가 아파해요ㅠ.ㅠ");
             resetEvent();
             return false;
         }
