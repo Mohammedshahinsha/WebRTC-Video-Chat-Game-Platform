@@ -10,15 +10,13 @@ import org.springframework.stereotype.Service;
 import webChat.controller.ExceptionController;
 import webChat.dto.log.ClientInfo;
 import webChat.service.monitoring.ClientCheckService;
+import webChat.utils.SubnetUtil;
 
 import javax.annotation.PostConstruct;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
-import java.util.BitSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -52,7 +50,7 @@ public class ClientCheckServiceImpl implements ClientCheckService {
         log.debug("##########################################");
 
         boolean isBlack = blackList.stream().anyMatch(black -> {
-            return clientInfo.getSubnet().equals(black);
+            return clientInfo.getSubnet().equals(black) || SubnetUtil.isInRange(black, clientInfo.getIpAddr());
         });
 
         if (isBlack) {
@@ -69,46 +67,11 @@ public class ClientCheckServiceImpl implements ClientCheckService {
         }
 
         for (String cidr : allowedSubnet) {
-            try {
-                if (isInRange(cidr, ip)) {
-                    return true; // 일치하는 경우 즉시 반환
-                }
-            } catch (UnknownHostException e) {
-                e.printStackTrace(); // 에러 로깅
-                throw new ExceptionController.AccessDeniedException("Unknow Host");
+            if (SubnetUtil.isInRange(cidr, ip)) {
+                return true;
             }
         }
-        return false; // 일치하는 CIDR이 없는 경우
-    }
-
-    /**
-     * cidr 에 ip 가 속해있는지 검사
-     * @param ip
-     * @param cidr
-     * @return
-     * @throws UnknownHostException
-     */
-    private boolean isInRange(String cidr, String ip) throws UnknownHostException {
-        String[] parts = cidr.split("/");
-        String ipSection = parts[0];
-        int prefix = (parts.length < 2) ? 0 : Integer.parseInt(parts[1]);
-
-        InetAddress ipAddr = InetAddress.getByName(ip);
-        BitSet ipBits = BitSet.valueOf(ipAddr.getAddress());
-
-        InetAddress networkAddr = InetAddress.getByName(ipSection);
-        BitSet networkBits = BitSet.valueOf(networkAddr.getAddress());
-
-        int maxLength = Math.max(ipBits.length(), networkBits.length());
-        if (maxLength < prefix) {
-            maxLength = prefix; // CIDR 접두사 길이가 더 긴 경우
-        }
-
-        ipBits.clear(prefix, maxLength);
-        networkBits.clear(prefix, maxLength);
-
-        return ipBits.equals(networkBits);
-
+        return false;
     }
 
     @Cacheable("blackList")

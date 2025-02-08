@@ -12,6 +12,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
 import webChat.controller.ExceptionController;
 import webChat.service.social.PrincipalOauth2UserService;
+import webChat.utils.SubnetUtil;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -79,21 +80,9 @@ public class SecurityConfig {
 
             // 허용된 IP 또는 서브넷인지 확인
             boolean isAllowed = allowedIpAddresses.contains(remoteAddr) ||
-                    allowedSubnet.stream().anyMatch(subnet -> isInSubnet(remoteAddr, subnet));
+                    allowedSubnet.stream().anyMatch(subnet -> SubnetUtil.isInRange(subnet, remoteAddr));
 
             return new AuthorizationDecision(isAllowed);
         };
-    }
-
-    /**
-     * IP가 특정 서브넷에 속하는지 확인하는 메서드
-     * @param ip 클라이언트 IP
-     * @param subnet 서브넷
-     * @return 서브넷에 포함 여부
-     */
-    private boolean isInSubnet(String ip, String subnet) {
-        // Apache Commons Net의 SubnetUtils 또는 다른 라이브러리를 사용하여 서브넷 검사를 구현
-        // 예시: return new SubnetUtils(subnet).getInfo().isInRange(ip);
-        return true; // 실제 서브넷 검사를 구현해야 합니다.
     }
 }
