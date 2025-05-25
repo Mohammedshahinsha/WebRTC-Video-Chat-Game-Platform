@@ -92,6 +92,7 @@ ChatForYou는 실시간 화상채팅을 위한 프로젝트입니다.
 - Spring 프로젝트를 Docker Image 로 만들기 위한 DockerFile
   - git 에 업로드된 dockerfile 이 아닌 아래 내용으로 빌드해야합니다. 
   - 이는 git 에 업로드된 dockerFile 의 내용은 k8s 에서 configmap 에서 가져와서 사용하도록하기 때문에 application.properties 를 포함하지 않습니다.
+
 ```dockerfile
 FROM openjdk:17-jdk-slim AS builder
 
@@ -99,7 +100,7 @@ FROM openjdk:17-jdk-slim AS builder
 WORKDIR /workspace/app
 
 # 프로젝트의 모든 파일을 Docker 이미지 내부로 복사합니다.
-COPY . .
+COPY springboot-backend .
 
 # Gradle을 사용하여 프로젝트를 빌드합니다.
 RUN ./gradlew clean build -x test

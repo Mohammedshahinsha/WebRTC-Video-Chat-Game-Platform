@@ -1,0 +1,13 @@
+{
+  "name": "chatforyou-frontend",
+  "version": "1.0.0",
+  "description": "Node.js static server for ChatForYou frontend",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "local": "cp ./config/config.local.js ./config/config.js && echo '로컬 빌드 완료'",
+    "prod": "cp ./config/config.prod.js ./config/config.js && echo '운영 빌드 완료'"
+  },
+  "author": "sejon",
+  "license": "MIT"
+}
