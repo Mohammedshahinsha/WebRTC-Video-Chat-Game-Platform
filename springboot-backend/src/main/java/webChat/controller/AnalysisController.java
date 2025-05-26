@@ -7,6 +7,7 @@ import webChat.service.analysis.AnalysisService;
 
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/chatforyou/api")
 public class AnalysisController {
 
     private final AnalysisService analysisService;

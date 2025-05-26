@@ -18,8 +18,8 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/chat")
 @Slf4j
+@RequestMapping("/chatforyou/api/chat")
 public class ChatRoomController {
 
     // ChatService Bean 가져오기

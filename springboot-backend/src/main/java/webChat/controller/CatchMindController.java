@@ -12,6 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/chatforyou/api")
 public class CatchMindController {
 
     private final CatchMindService catchMindService;

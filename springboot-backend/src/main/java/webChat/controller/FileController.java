@@ -11,7 +11,7 @@ import webChat.service.file.FileService;
 import java.io.IOException;
 
 @RestController
-@RequestMapping("/file")
+@RequestMapping("/chatforyou/api/file")
 @RequiredArgsConstructor
 @Slf4j
 public class FileController {

@@ -24,6 +24,7 @@ import java.util.Map;
 @Slf4j
 @RequiredArgsConstructor
 @RestController
+@RequestMapping("/chatforyou/api")
 public class ChatController {
 
     // 아래에서 사용되는 convertAndSend 를 사용하기 위해서 서언

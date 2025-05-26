@@ -10,6 +10,7 @@ import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/chatforyou/api/admin")
 public class AdminController {
 
     private final AdminService adminService;
