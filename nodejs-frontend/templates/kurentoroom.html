@@ -1,5 +1,6 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
 <head>
+    <base href="/chatforyou/">
     <meta charset="utf-8">
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
     <script src="https://code.jquery.com/jquery-3.6.1.min.js"
@@ -16,16 +17,16 @@
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 
-    <link rel="styleSheet" href="/css/rtc/kurentostyle.css" type="text/css" media="screen">
-    <link rel="styleSheet" href="/css/rtc/floating_chat.css" type="text/css" media="screen">
-    <link rel="styleSheet" href="/css/rtc/media_device.css" type="text/css" media="screen">
-    <link rel="styleSheet" href="/css/rtc/catch_mind.css" type="text/css" media="screen">
+    <link rel="styleSheet" href="css/rtc/kurentostyle.css" type="text/css" media="screen">
+    <link rel="styleSheet" href="css/rtc/floating_chat.css" type="text/css" media="screen">
+    <link rel="styleSheet" href="css/rtc/media_device.css" type="text/css" media="screen">
+    <link rel="styleSheet" href="css/rtc/catch_mind.css" type="text/css" media="screen">
 
     <!-- 로딩 관련 -->
     <script src="https://cdn.jsdelivr.net/npm/gasparesganga-jquery-loading-overlay@2.1.7/dist/loadingoverlay.min.js"></script>
     <script src="https://cdn.rawgit.com/kimmobrunfeldt/progressbar.js/0.5.6/dist/progressbar.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/spin.js/2.3.2/spin.js"></script>
-    <link rel="stylesheet" href="/css/common/spin.css" type="text/css" media="screen">
+    <link rel="stylesheet" href="css/common/spin.css" type="text/css" media="screen">
     <!-- 로딩 대체 -->
     <!-- Pace.js 스크립트를 옵션 설정 다음에 포함시킵니다 -->
 <!--    <link href="https://cdnjs.cloudflare.com/ajax/libs/pace/1.0.2/themes/blue/pace-theme-minimal.min.css" rel="stylesheet" />-->
@@ -45,14 +46,14 @@
             <div class="justify-content-around mb-3">
                 <h2 class="row justify-content-md-center" id="room-header"></h2>
                 <div class="row justify-content-md-center">
-                    <img class="col-md-1" src="/images/webrtc/screen-share-on.svg" width="24px" height="24px" alt=""
+                    <img class="col-md-1" src="images/webrtc/screen-share-on.svg" width="24px" height="24px" alt=""
                          id="screenShareBtn"
                          data-flag="false" onclick="screenShare()">
-                    <img src="/images/webrtc/video-on.svg" class="col-md-1 localVideoToggle" width="24px" height="24px"
+                    <img src="images/webrtc/video-on.svg" class="col-md-1 localVideoToggle" width="24px" height="24px"
                          alt="" id="videoBtn" data-flag="true">
-                    <img src="/images/webrtc/audio-speaker-on.svg" class="col-md-1 localAudioToggle" width="24px"
+                    <img src="images/webrtc/audio-speaker-on.svg" class="col-md-1 localAudioToggle" width="24px"
                          height="24px" alt="" id="audioBtn" data-flag="true">
-                    <img src="/images/webrtc/setting.svg" class="col-md-1" width="24px" height="24px" id="userSetting"
+                    <img src="images/webrtc/setting.svg" class="col-md-1" width="24px" height="24px" id="userSetting"
                          alt="userSetting"
                          data-toggle="modal" data-target="#userSettingsModal">
                 </div>
@@ -60,7 +61,7 @@
             <div class="col-lg-12 mb-3">
                 <div class="d-flex justify-content-around mb-3">
                     <div class="d-flex justify-content-around mb-3" id="output_dropDownContainer">
-                        <img src="/images/webrtc/speaker.svg" width="24px" height="24px">
+                        <img src="images/webrtc/speaker.svg" width="24px" height="24px">
                         <span id="output_displayText"></span>
                         <div id="bottomArrow">
                             <svg fill="#000000" height="15px" width="15px" version="1.1" id="Layer_1"
@@ -83,7 +84,7 @@
                         </div>
                     </div>
                     <div class="d-flex justify-content-around mb-3" id="input_dropDownContainer">
-                        <img src="/images/webrtc/headphone.svg" width="24px" height="24px">
+                        <img src="images/webrtc/headphone.svg" width="24px" height="24px">
                         <span id="input_displayText"></span>
                         <div id="bottomArrow">
                             <svg fill="#000000" height="15px" width="15px" version="1.1" id="Layer_1"
@@ -115,7 +116,7 @@
 
     <div class="floating-game-canvas">
         <button type="button" data-toggle="modal" data-target="#subjectModal">
-            <img src="/images/canvas-paint-svgrepo-com.svg" width="25px" height="25px" alt="">
+            <img src="images/canvas-paint-svgrepo-com.svg" width="25px" height="25px" alt="">
         </button>
     </div>
 
@@ -160,18 +161,18 @@
 </div>
 <script>
 </script>
-    <script src='/config/config.js'></script>
-    <script src="/js/common/common.js"></script>
-    <script src="/js/common/spinnerOpt.js"></script>
-    <script src="/js/common/ajaxUtil.js"></script>
-    <script src="/js/rtc/participant.js"></script>
-    <script src="/js/rtc/kurento-utils.js"></script>
-    <script src="/js/rtc/kurento-service.js"></script>
-    <script src="/js/rtc/dataChannel.js"></script>
-    <script src="/js/rtc/dataChannelChatting.js"></script>
-    <script src="/js/rtc/dataChannelFileUtil.js"></script>
-    <script src="/js/rtc/mediaDevice.js"></script>
-    <script src="/js/rtc/catchMind.js"></script>
+    <script src='config/config.js'></script>
+    <script src="js/common/common.js"></script>
+    <script src="js/common/spinnerOpt.js"></script>
+    <script src="js/common/ajaxUtil.js"></script>
+    <script src="js/rtc/participant.js"></script>
+    <script src="js/rtc/kurento-utils.js"></script>
+    <script src="js/rtc/kurento-service.js"></script>
+    <script src="js/rtc/dataChannel.js"></script>
+    <script src="js/rtc/dataChannelChatting.js"></script>
+    <script src="js/rtc/dataChannelFileUtil.js"></script>
+    <script src="js/rtc/mediaDevice.js"></script>
+    <script src="js/rtc/catchMind.js"></script>
 </body>
 </html>
 
