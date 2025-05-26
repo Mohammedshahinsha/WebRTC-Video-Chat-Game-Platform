@@ -23,9 +23,14 @@ const mimeTypes = {
 const staticDir = path.join(__dirname, 'static');
 const templatesDir = path.join(__dirname, 'templates');
 
+const BASE_PATH = process.env.BASE_PATH || '/chatforyou';
+
 const server = http.createServer((req, res) => {
   const parsedUrl = url.parse(req.url);
   let filePath = parsedUrl.pathname;
+  if (filePath.startsWith(BASE_PATH)) {
+    filePath = filePath.replace(new RegExp('^' + BASE_PATH), '') || '/';
+  }
   if (filePath === '/' || filePath === '/index.html') {
     filePath = '/templates/roomlist.html';
   }

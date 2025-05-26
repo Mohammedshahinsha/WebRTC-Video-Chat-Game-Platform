@@ -8,32 +8,44 @@ on:
 #    branches: [ "master" ]
 
 jobs:
-  deploy:
-    name: Build And Deploy K8S
-    environment: chatforyou-back-env # 환경 지정
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      frontend: ${{ steps.filter.outputs.frontend }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Filter changes
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            backend:
+              - 'springboot-backend/**'
+            frontend:
+              - 'nodejs-frontend/**'
+
+  backend-deploy:
+    name: Build And Deploy Backend K8S
+    needs: changes
+    if: needs.changes.outputs.backend == 'true'
+    environment: chatforyou-back-env
     runs-on: ubuntu-latest
     permissions:
       packages: write
       contents: read
     env:
       KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
-      K8S_NAMESPACE: chatforyou # Kubernetes 네임스페이스
-      DEPLOYMENT_NAME: chatforyou-v03    # Deployment 이름
-
+      K8S_NAMESPACE: chatforyou
+      DEPLOYMENT_NAME: chatforyou-v03
     steps:
-      # 1. 코드 체크아웃
       - name: Checkout code
         uses: actions/checkout@v2
-
-      # 2. Kubeconfig 설정
       - name: Configure Kubeconfig
         run: |
           mkdir -p ${HOME}/.kube
           echo "${KUBE_CONFIG}" | base64 --decode > ${HOME}/.kube/config
           export KUBECONFIG=${HOME}/.kube/config
-
-      # 3. TIMESTAMP 생성 (한국 시간으로) && IMAGE_URI 로 이미지명:태크명 공통화
-      # IMAGE_URI = chatforyou-io/chatforyou-io-backend:시간
       - name: Generate TIMESTAMP in KST
         id: timestamp
         run: |
@@ -41,21 +53,15 @@ jobs:
           TIMESTAMP=$(date '+%Y%m%d%H%M%S')
           echo "TIMESTAMP=$TIMESTAMP" >> $GITHUB_ENV
           echo "IMAGE_URI=ghcr.io/sejonj/chatforyou:$TIMESTAMP" >> $GITHUB_ENV
-
-      # 5. Docker 이미지 빌드 및 태그
       - name: Build Docker Image
         run: |
           cd springboot-backend
           docker build --file Dockerfile -t $IMAGE_URI .
           cd ..
-
-      # 6. Docker 이미지 푸시 (GitHub Container Registry)
       - name: Push Docker Image to GitHub Packages
         run: |
           echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
           docker push $IMAGE_URI
-
-      # 7. Kubernetes 배포
       - name: Deploy to Kubernetes
         run: |
           kubectl set image deployment/$DEPLOYMENT_NAME \
@@ -63,28 +69,45 @@ jobs:
             -n $K8S_NAMESPACE
           kubectl rollout status deployment/$DEPLOYMENT_NAME -n $K8S_NAMESPACE
 
-      # 프론트엔드 환경 변수 설정
-      - name: Set Frontend Vars
+  frontend-deploy:
+    name: Build And Deploy Frontend K8S
+    needs: changes
+    if: needs.changes.outputs.frontend == 'true'
+    environment: chatforyou-back-env
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+    env:
+      KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+      K8S_NAMESPACE: chatforyou
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Configure Kubeconfig
         run: |
-          echo "FRONT_DEPLOYMENT_NAME=chatforyou-frontend-v03" >> $GITHUB_ENV
+          mkdir -p ${HOME}/.kube
+          echo "${KUBE_CONFIG}" | base64 --decode > ${HOME}/.kube/config
+          export KUBECONFIG=${HOME}/.kube/config
+      - name: Generate TIMESTAMP in KST
+        id: timestamp
+        run: |
+          export TZ=Asia/Seoul
+          TIMESTAMP=$(date '+%Y%m%d%H%M%S')
+          echo "TIMESTAMP=$TIMESTAMP" >> $GITHUB_ENV
           echo "FRONT_IMAGE_URI=ghcr.io/sejonj/chatforyou-frontend:$TIMESTAMP" >> $GITHUB_ENV
-
-      # 프론트엔드 Docker 이미지 빌드
       - name: Build Frontend Docker Image
         run: |
           cd nodejs-frontend
           docker build -t $FRONT_IMAGE_URI .
           cd ..
-
-      # 프론트엔드 Docker 이미지 푸시
       - name: Push Frontend Docker Image
         run: |
           echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
           docker push $FRONT_IMAGE_URI
-
-      # 프론트엔드 Kubernetes 배포
       - name: Deploy Frontend to Kubernetes
         run: |
+          FRONT_DEPLOYMENT_NAME=chatforyou-frontend-v03
           kubectl set image deployment/$FRONT_DEPLOYMENT_NAME \
             chatforyou-frontend-container=$FRONT_IMAGE_URI \
             -n $K8S_NAMESPACE
