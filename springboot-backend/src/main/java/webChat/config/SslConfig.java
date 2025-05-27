@@ -14,15 +14,15 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class SslConfig implements WebMvcConfigurer {
 
-//    @Bean
-//    public ServletWebServerFactory servletContainer() {
-//        CustomTomcatServletWebServerFactory tomcat = new CustomTomcatServletWebServerFactory();
-//
-//        // Add HTTP to HTTPS redirect : http 로 요청이 들어오면 https 로 리다이렉트
-//        tomcat.addAdditionalTomcatConnectors(httpToHttpsRedirectConnector());
-//
-//        return tomcat;
-//    }
+    @Bean
+    public ServletWebServerFactory servletContainer() {
+        TomcatServletWebServerFactory tomcat = new TomcatServletWebServerFactory();
+
+        // Add HTTP to HTTPS redirect : http 로 요청이 들어오면 https 로 리다이렉트
+        tomcat.addAdditionalTomcatConnectors(httpToHttpsRedirectConnector());
+
+        return tomcat;
+    }
 
 //    static class CustomTomcatServletWebServerFactory extends TomcatServletWebServerFactory {
 //        @Override
@@ -36,18 +36,18 @@ public class SslConfig implements WebMvcConfigurer {
 //        }
 //    }
 
-//    /*
-//        http 를 https 로 리다이렉트한다.
-//        즉 http://8080 으로 요청이 들어온 경우 리다이렉트를 통해서 https://8443 으로 변경해준다
-//     */
-//    private Connector httpToHttpsRedirectConnector() {
-//        Connector connector = new Connector(TomcatServletWebServerFactory.DEFAULT_PROTOCOL);
-//        connector.setScheme("http");
-//        connector.setPort(8080);
-//        connector.setSecure(false);
-//        connector.setRedirectPort(8443);
-//        return connector;
-//    }
+    /*
+        http 를 https 로 리다이렉트한다.
+        즉 http://8080 으로 요청이 들어온 경우 리다이렉트를 통해서 https://8443 으로 변경해준다
+     */
+    private Connector httpToHttpsRedirectConnector() {
+        Connector connector = new Connector(TomcatServletWebServerFactory.DEFAULT_PROTOCOL);
+        connector.setScheme("http");
+        connector.setPort(8080);
+        connector.setSecure(false);
+        connector.setRedirectPort(8443);
+        return connector;
+    }
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
