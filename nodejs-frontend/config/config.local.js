@@ -1,3 +1,3 @@
 window.__CONFIG__ = {
-  API_BASE_URL: 'https://localhost:8443/api',
+  API_BASE_URL: 'http://localhost:8080/chatforyou/api',
 }; 
