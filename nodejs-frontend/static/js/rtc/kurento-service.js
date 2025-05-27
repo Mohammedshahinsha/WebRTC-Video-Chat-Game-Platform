@@ -366,7 +366,7 @@ window.onbeforeunload = function () {
 // 나가기 버튼 눌렀을 때 이벤트
 // 결국 replace  되기 때문에 얘도 onbeforeunload 를 탄다
 $('#button-leave').on('click', function(){
-    location.replace('/');
+    location.replace(window.__CONFIG__.BASE_URL);
 });
 
 function leaveRoom(type) {
