@@ -16,6 +16,7 @@ import webChat.service.monitoring.MonitoringService;
 import webChat.service.monitoring.PrometheusService;
 import java.io.InputStream;
 import java.net.InetAddress;
+import java.util.Enumeration;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -34,10 +35,7 @@ public class MonitoringServiceImpl implements MonitoringService,HandlerIntercept
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         String ipAddress = request.getRemoteAddr();
 
-        log.debug("##########################################");
-        log.debug("ipAddrs ::: "+ ipAddress);
-        log.debug("ipAddrs ::: "+request.getRemoteHost());
-        log.debug("##########################################");
+        this.printRequestInfo(request);
 
         if (Boolean.TRUE.equals(clientCheckService.checkIsAllowedIp(ipAddress))){
             return true;
@@ -96,5 +94,29 @@ public class MonitoringServiceImpl implements MonitoringService,HandlerIntercept
 //            return ClientInfo.builder().build();
             throw new ExceptionController.AccessForbiddenException("can not find ipAddrs");
         }
+    }
+
+    private void printRequestInfo(HttpServletRequest request){
+        log.info("##########################################");
+        log.info("Remote ipAddrs ::: " + request.getRemoteAddr());
+        log.info("Remote Host ipAddrs ::: " + request.getRemoteHost());
+
+        // 모든 HTTP 헤더 출력
+        log.info("========== HTTP Headers ==========");
+        Enumeration<String> headerNames = request.getHeaderNames();
+        while (headerNames.hasMoreElements()) {
+            String headerName = headerNames.nextElement();
+            String headerValue = request.getHeader(headerName);
+            log.info("Header: {} = {}", headerName, headerValue);
+        }
+
+        // nginx에서 설정한 특정 헤더들 별도 출력
+        log.info("========== Nginx Headers ==========");
+        log.info("X-Real-IP: {}", request.getHeader("X-Real-IP"));
+        log.info("X-Forwarded-For: {}", request.getHeader("X-Forwarded-For"));
+        log.info("X-Forwarded-Proto: {}", request.getHeader("X-Forwarded-Proto"));
+        log.info("Host: {}", request.getHeader("Host"));
+
+        log.info("##########################################");
     }
 }
