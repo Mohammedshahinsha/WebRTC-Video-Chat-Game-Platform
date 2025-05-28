@@ -78,6 +78,9 @@ $(function () {
   // 페이지 최초 로드시 방 리스트 불러오기
   loadRoomList();
 
+  // 페이지 로드 시 방문자 수 표시 (증가 없이 조회만)
+  getVisitorCount();
+
   // 방문자수, 공지, 업데이트 모달 등 기존 코드 유지
   let $maxUserCnt = $("#maxUserCnt");
   let $msgType = $("#msgType");
@@ -110,6 +113,25 @@ $(function () {
     }
   })
 
+  // 방문자 수 조회만 하는 함수 (증가 없이)
+  function getVisitorCount() {
+    let url = window.__CONFIG__.API_BASE_URL + "/visitor";
+    let data = {
+      "isVisitedToday": 'true'
+    };
+    let successCallback = function(data){
+      dailyVisitor = data;
+      $('#visitorCount').text('방문자 수 : ' + dailyVisitor);
+    };
+
+    let errorCallback = function(error){
+      console.error("Error getting visitor count: ", error);
+    };
+
+    // GET 방식으로 방문자 수만 조회
+    ajax(url, 'GET', true, data, successCallback, errorCallback);
+  }
+
   function checkVisitor() {
     let url = window.__CONFIG__.API_BASE_URL + "/visitor";
     let data = {
@@ -132,9 +154,8 @@ $(function () {
       }
     };
 
-    ajax(url, 'POST', '', data, successCallback, errorCallback, completeCallback);
+    ajax(url, 'GET', '', data, successCallback, errorCallback, completeCallback);
   }
-  checkVisitor();
 
   // hideAnnouncement 값이 없거나 false 라면 show 아니면 hide
   if (!sessionStorage.getItem('hideAnnouncement') || sessionStorage.getItem('hideAnnouncement') === 'false') {
@@ -150,16 +171,21 @@ $(function () {
     }
   });
 
+  // "동의합니다" 버튼 클릭 시에만 checkVisitor() API 호출
   $("#agreeBtn").click(function(){
-    fetch(window.__CONFIG__.API_BASE_URL + "/user_agree", {
+    // checkVisitor() API 호출
+    checkVisitor();
+    
+    // 기존 user_agree API도 유지 (필요시)
+    fetch(window.__CONFIG__.BASE_URL + "/user_agree", {
       method: 'GET'
     })
       .then(response => {
         console.info("user agree!!")
       })
-      .catch(error => {
-        console.error('Error:', error);
-      });
+    
+    // modal 닫기
+    $('#announcementModal').modal('hide');
   })
 
   $('#showUpdatesButton').on('click', function() {

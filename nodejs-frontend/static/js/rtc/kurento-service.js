@@ -31,7 +31,7 @@ let turnPwd = null;
 let origGetUserMedia;
 
 // websocket 연결 확인 후 register() 실행
-var ws = new WebSocket(window.__CONFIG__.API_BASE_URL.replace(/^http/, 'ws') + '/signal');
+var ws = new WebSocket(window.__CONFIG__.BASE_URL.replace(/^http/, 'ws') + '/signal');
 ws.onopen = () => {
     initTurnServer();
     register();

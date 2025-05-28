@@ -22,7 +22,7 @@
     </style>
 </head>
 <body>
-<div id="visitorCount" style="position: absolute; top: 10px; right: 10px;">방문자: 5명</div>
+<div id="visitorCount" style="position: absolute; top: 10px; right: 10px;"></div>
 <div class="container">
     <div class="container">
         <h2>채팅방 리스트</h2>
@@ -133,5 +133,365 @@
 
 <!-- 토스트 메시지 영역 -->
 <div id="toast-container" style="position:fixed;top:20px;right:20px;z-index:9999;"></div>
+
+<!-- updateHistory Modal -->
+<div class="modal fade" id="updateHistoryModal" tabindex="-1" aria-labelledby="updateHistoryModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="updateHistoryModalLabel">최신 업데이트 및 공지사항</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Tab Navigation -->
+                <ul class="nav nav-tabs" id="updateHistoryTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="update-tab" data-bs-toggle="tab" data-bs-target="#update" type="button" role="tab" aria-controls="update" aria-selected="true">업데이트 내용</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="features-tab" data-bs-toggle="tab" data-bs-target="#features" type="button" role="tab" aria-controls="features" aria-selected="false">새로운 기능</button>
+                    </li>
+                </ul>
+                <!-- Tab Content -->
+                <div class="tab-content" id="updateHistoryContent">
+                    <div class="tab-pane fade show active" id="update" role="tabpanel" aria-labelledby="update-tab">
+                        <br>
+                        <h6>25.05.29 업데이트</h6>
+                        <ul>
+                            <li>전체 화상채팅 구조 변경 :: NodeJs + SpringBoot</li>
+                            <li>최신 인증서 적용</li>
+                            <li>버그 수정 및 서비스 안정화를 위해서 지속적으로 모니터링 중 입니다.</li>
+                        </ul>
+                    </div>
+                    <div class="tab-pane fade" id="features" role="tabpanel" aria-labelledby="features-tab">
+                        <br>
+                        <h6>추가된 주요 기능들 : </h6>
+                        <ul>
+                            <li>화상 채팅 CatchMind 게임 개발 및 실행 가능!</li>
+                            <!-- 이미지 경로를 base href에 맞게 수정 -->
+                            <img src="images/webrtc/catchmind_r60.gif" alt="CatchMind Game Example" style="width:100%; height:auto;">
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- announcement Modal -->
+<!-- announcement Modal -->
+<div id="announcementModal" class="modal fade" tabindex="-1" aria-labelledby="announcementModalLabel" aria-hidden="true"
+     data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="announcementModalLabel">화상채팅 서비스 이용약관 및 개인정보처리방침</h5>
+            </div>
+            <div class="modal-body">
+                <ul class="nav nav-tabs" id="announcementTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button aria-controls="korea" aria-selected="true" class="nav-link active" data-bs-toggle="tab"
+                                href="#korea" id="korea-tab" role="tab">Korea
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button aria-controls="eng" aria-selected="false" class="nav-link" data-bs-toggle="tab"
+                                href="#eng" id="eng-tab" role="tab">Eng
+                        </button>
+                    </li>
+                </ul>
+                <div class="tab-content" id="announcementTabsContent">
+                    <div aria-labelledby="korea-tab" class="tab-pane fade show active" id="korea" role="tabpanel">
+                        <!-- 개발자 소개 -->
+                        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                            <h6 style="margin: 0; font-size: 18px;">안녕하세요, <strong style="color: #0408f8;font-size: 25px;"> ChatForYou </strong> 개발자 SeJonJ 입니다.</h6>
+                            <p style="margin: 10px 0; line-height: 1.6;">
+                                본 서비스는 정보통신망 이용촉진 및 정보보호 등에 관한 법률(정보통신망법)을 준수합니다.<br>
+                                모든 사용자가 안전하고 쾌적하게 화상채팅을 이용할 수 있도록 아래 사항을 반드시 숙지해주시기 바랍니다.
+                            </p>
+                            <p style="margin: 10px 0 0 0;">
+                                저는 아래 사이트에서 저에 대한 정보를 더 확인하실 수 있습니다.<br>
+                                <a href="https://terianp.tistory.com/" style="color: #FFD700;">📝 Tistory Blog</a> | 
+                                <a href="https://github.com/SeJonJ" style="color: #FFD700;">💻 GitHub</a> | 
+                                <a href="https://www.linkedin.com/in/%EC%84%B8%EC%A1%B4-%EC%9E%A5-b437ba28b/" style="color: #FFD700;">💼 LinkedIn</a>
+                            </p>
+                        </div>
+
+                        <!-- 접을 수 있는 상세 내용 -->
+                        <div class="accordion" id="termsAccordion">
+                            <!-- 개인정보 처리 안내 -->
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="headingPrivacy">
+                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePrivacy" aria-expanded="true" aria-controls="collapsePrivacy">
+                                        🔒 개인정보 처리 안내 (정보통신망법 제22조, 제27조)
+                                    </button>
+                                </h2>
+                                <div id="collapsePrivacy" class="accordion-collapse collapse show" aria-labelledby="headingPrivacy">
+                                    <div class="accordion-body">
+                                        <h6><strong style="color: #2c5aa0;">수집하는 개인정보</strong></h6>
+                                        <p>• IP주소, 접속시간, 서비스 이용기록을 자동으로 수집합니다</p>
+                                        
+                                        <h6><strong style="color: #2c5aa0;">수집 목적</strong></h6>
+                                        <p>• 서비스 제공 및 운영, 이용 통계 분석, 보안 및 부정이용 방지</p>
+                                        
+                                        <h6><strong style="color: #2c5aa0;">보관 기간</strong></h6>
+                                        <p>• 서비스 이용 중: 서비스 제공 기간<br>
+                                        • 서비스 종료 후: 즉시 파기 (통계 목적 1년 보관)</p>
+                                        
+                                        <h6><strong style="color: #2c5aa0;">개인정보보호책임자</strong></h6>
+                                        <p>• 성명: SeJonJ<br>• 연락처: wkdtpwhs@gmail.com</p>
+                                        
+                                        <div style="background-color: #f8f9fa; padding: 10px; border-radius: 5px; margin-top: 10px;">
+                                            <small><strong>동의 거부권:</strong> 개인정보 수집에 동의하지 않을 수 있으나, 서비스 이용이 제한될 수 있습니다.</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 청소년 보호 정책 -->
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="headingYouth">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseYouth" aria-expanded="false" aria-controls="collapseYouth">
+                                        👶 청소년 보호 정책 (정보통신망법 제44조의2)
+                                    </button>
+                                </h2>
+                                <div id="collapseYouth" class="accordion-collapse collapse" aria-labelledby="headingYouth">
+                                    <div class="accordion-body">
+                                        <h6><strong style="color: #2c5aa0;">연령 제한</strong></h6>
+                                        <p>• 만 14세 이상만 이용 가능<br>
+                                        • 만 19세 미만은 보호자 확인 권장</p>
+                                        
+                                        <h6><strong style="color: #2c5aa0;">유해정보 차단</strong></h6>
+                                        <p>• 음란물, 폭력물, 도박 등 청소년 유해 내용 게시 금지<br>
+                                        • 유해정보 발견 시 즉시 삭제 및 차단 조치</p>
+                                        
+                                        <div style="background-color: #fff3cd; padding: 10px; border-radius: 5px; margin-top: 10px;">
+                                            <small><strong>주의사항:</strong> 청소년을 대상으로 한 부적절한 대화나 만남 시도는 엄격히 금지되며, 관련 법령에 따라 처벌받을 수 있습니다.</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 서비스 이용 규칙 -->
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="headingRules">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseRules" aria-expanded="false" aria-controls="collapseRules">
+                                        📋 서비스 이용 규칙 및 금지사항
+                                    </button>
+                                </h2>
+                                <div id="collapseRules" class="accordion-collapse collapse" aria-labelledby="headingRules">
+                                    <div class="accordion-body">
+                                        <h6><strong style="color: #dc3545;">금지행위</strong></h6>
+                                        <ul>
+                                            <li><strong>개인정보 관련:</strong> 타인의 개인정보 무단 수집, 위조, 변조</li>
+                                            <li><strong>불법정보:</strong> 음란물, 도박, 마약 관련 내용 게시</li>
+                                            <li><strong>타인 침해:</strong> 명예훼손, 모독, 협박, 스토킹</li>
+                                            <li><strong>시스템 방해:</strong> 해킹, 바이러스 유포, 서비스 운영 방해</li>
+                                        </ul>
+                                        
+                                        <h6><strong style="color: #2c5aa0;">제재 조치</strong></h6>
+                                        <p>• 위반 시 서비스 이용 제한 또는 계정 정지<br>
+                                        • 심각한 위반 시 관련 법령에 따른 법적 조치</p>
+                                        
+                                        <div style="background-color: #f8d7da; padding: 10px; border-radius: 5px; margin-top: 10px;">
+                                            <small><strong>법적 책임:</strong> 모든 사용자는 관련 법령(정보통신망법, 개인정보보호법, 청소년보호법)을 준수해야 하며, 위반 시 민·형사상 책임을 집니다.</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 신고 및 문의 -->
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="headingReport">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseReport" aria-expanded="false" aria-controls="collapseReport">
+                                        📞 신고 및 문의
+                                    </button>
+                                </h2>
+                                <div id="collapseReport" class="accordion-collapse collapse" aria-labelledby="headingReport">
+                                    <div class="accordion-body">
+                                        <h6><strong style="color: #2c5aa0;">불법정보 신고</strong></h6>
+                                        <p>• 신고 이메일: <strong>wkdtpwhs@gmail.com</strong><br>
+                                        • 신고 대상: 음란물, 도박, 폭력물, 명예훼손, 개인정보 침해 등</p>
+                                        
+                                        <h6><strong style="color: #2c5aa0;">처리 절차</strong></h6>
+                                        <p>1. 신고 접수 및 확인<br>
+                                        2. 내용 검토 및 사실관계 확인<br>
+                                        3. 위반 여부 판단 및 조치 결정<br>
+                                        4. 조치 시행 (삭제, 계정 제재 등)<br>
+                                        5. 결과 통보</p>
+                                        
+                                        <h6><strong style="color: #2c5aa0;">처리 기간</strong></h6>
+                                        <p>• 일반 사안: 신고 접수 후 7일 이내<br>
+                                        • 긴급 사안: 24시간 내 우선 처리</p>
+                                        
+                                        <div style="background-color: #d1ecf1; padding: 10px; border-radius: 5px; margin-top: 10px;">
+                                            <small><strong>이의제기:</strong> 조치 결과에 불만이 있을 경우, 통보 후 7일 이내에 wkdtpwhs@gmail.com으로 이의제기 가능합니다.</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <br>
+                        <p style="text-align: center; color: #666; font-size: 14px;">
+                            본 약관은 「정보통신망 이용촉진 및 정보보호 등에 관한 법률」을 완전히 준수하여 작성되었습니다.<br>
+                            <strong>시행일:</strong> 2024년 1월 1일 | <strong>문의:</strong> wkdtpwhs@gmail.com
+                        </p>
+                    </div>
+                    <div aria-labelledby="eng-tab" class="tab-pane fade" id="eng" role="tabpanel">
+                        <!-- Developer Introduction -->
+                        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                            <h6 style="margin: 0; font-size: 18px;">Hello, I am SeJonJ, the developer of <strong style="color: #0408f8;font-size: 25px;">ChatForYou</strong>.</h6>
+                            <p style="margin: 10px 0; line-height: 1.6;">
+                                This service complies with the Act on Promotion of Information and Communications Network Utilization and Information Protection.<br>
+                                Please make sure to understand the following matters so that all users can use video chat safely and comfortably.
+                            </p>
+                            <p style="margin: 10px 0 0 0;">
+                                You can find more information about me on the following websites:<br>
+                                <a href="https://terianp.tistory.com/" style="color: #FFD700;">📝 Tistory Blog</a> | 
+                                <a href="https://github.com/SeJonJ" style="color: #FFD700;">💻 GitHub</a> | 
+                                <a href="https://www.linkedin.com/in/%EC%84%B8%EC%A1%B4-%EC%9E%A5-b437ba28b/" style="color: #FFD700;">💼 LinkedIn</a>
+                            </p>
+                        </div>
+
+                        <!-- Collapsible detailed content -->
+                        <div class="accordion" id="termsAccordionEng">
+                            <!-- Personal Information Processing Notice -->
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="headingPrivacyEng">
+                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePrivacyEng" aria-expanded="true" aria-controls="collapsePrivacyEng">
+                                        🔒 Personal Information Processing Notice (Articles 22, 27)
+                                    </button>
+                                </h2>
+                                <div id="collapsePrivacyEng" class="accordion-collapse collapse show" aria-labelledby="headingPrivacyEng">
+                                    <div class="accordion-body">
+                                        <h6><strong style="color: #2c5aa0;">Personal Information Collected</strong></h6>
+                                        <p>• IP address, access time, service usage records are automatically collected</p>
+                                        
+                                        <h6><strong style="color: #2c5aa0;">Collection Purpose</strong></h6>
+                                        <p>• Service provision and operation, usage statistics analysis, security and fraud prevention</p>
+                                        
+                                        <h6><strong style="color: #2c5aa0;">Retention Period</strong></h6>
+                                        <p>• During service use: Service provision period<br>
+                                        • After service termination: Immediate destruction (1 year retention for statistical purposes)</p>
+                                        
+                                        <h6><strong style="color: #2c5aa0;">Personal Information Protection Officer</strong></h6>
+                                        <p>• Name: SeJonJ<br>• Contact: wkdtpwhs@gmail.com</p>
+                                        
+                                        <div style="background-color: #f8f9fa; padding: 10px; border-radius: 5px; margin-top: 10px;">
+                                            <small><strong>Right to refuse consent:</strong> You may refuse consent to personal information collection, but service use may be restricted.</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Youth Protection Policy -->
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="headingYouthEng">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseYouthEng" aria-expanded="false" aria-controls="collapseYouthEng">
+                                        👶 Youth Protection Policy (Article 44-2)
+                                    </button>
+                                </h2>
+                                <div id="collapseYouthEng" class="accordion-collapse collapse" aria-labelledby="headingYouthEng">
+                                    <div class="accordion-body">
+                                        <h6><strong style="color: #2c5aa0;">Age Restrictions</strong></h6>
+                                        <p>• Available only for users aged 14 and above<br>
+                                        • Guardian confirmation recommended for users under 19</p>
+                                        
+                                        <h6><strong style="color: #2c5aa0;">Harmful Information Blocking</strong></h6>
+                                        <p>• Posting of harmful content such as pornography, violence, gambling is prohibited<br>
+                                        • Immediate deletion and blocking measures taken when harmful information is discovered</p>
+                                        
+                                        <div style="background-color: #fff3cd; padding: 10px; border-radius: 5px; margin-top: 10px;">
+                                            <small><strong>Warning:</strong> Inappropriate conversations or meeting attempts targeting youth are strictly prohibited and may be punished according to relevant laws.</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Service Use Rules -->
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="headingRulesEng">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseRulesEng" aria-expanded="false" aria-controls="collapseRulesEng">
+                                        📋 Service Use Rules and Prohibited Activities
+                                    </button>
+                                </h2>
+                                <div id="collapseRulesEng" class="accordion-collapse collapse" aria-labelledby="headingRulesEng">
+                                    <div class="accordion-body">
+                                        <h6><strong style="color: #dc3545;">Prohibited Activities</strong></h6>
+                                        <ul>
+                                            <li><strong>Personal Information:</strong> Unauthorized collection, falsification, alteration of others' personal information</li>
+                                            <li><strong>Illegal Information:</strong> Posting pornography, gambling, drug-related content</li>
+                                            <li><strong>Harm to Others:</strong> Defamation, insult, threats, stalking</li>
+                                            <li><strong>System Interference:</strong> Hacking, virus distribution, service operation interference</li>
+                                        </ul>
+                                        
+                                        <h6><strong style="color: #2c5aa0;">Sanctions</strong></h6>
+                                        <p>• Service use restrictions or account suspension for violations<br>
+                                        • Legal action according to relevant laws for serious violations</p>
+                                        
+                                        <div style="background-color: #f8d7da; padding: 10px; border-radius: 5px; margin-top: 10px;">
+                                            <small><strong>Legal Responsibility:</strong> All users must comply with relevant laws (Information and Communications Network Act, Personal Information Protection Act, Youth Protection Act) and bear civil and criminal responsibility for violations.</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Report and Inquiry -->
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="headingReportEng">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseReportEng" aria-expanded="false" aria-controls="collapseReportEng">
+                                        📞 Report and Inquiry
+                                    </button>
+                                </h2>
+                                <div id="collapseReportEng" class="accordion-collapse collapse" aria-labelledby="headingReportEng">
+                                    <div class="accordion-body">
+                                        <h6><strong style="color: #2c5aa0;">Illegal Information Reporting</strong></h6>
+                                        <p>• Report Email: <strong>wkdtpwhs@gmail.com</strong><br>
+                                        • Report Target: Pornography, gambling, violence, defamation, personal information infringement, etc.</p>
+                                        
+                                        <h6><strong style="color: #2c5aa0;">Processing Procedure</strong></h6>
+                                        <p>1. Report reception and confirmation<br>
+                                        2. Content review and fact verification<br>
+                                        3. Violation determination and action decision<br>
+                                        4. Action implementation (deletion, account sanctions, etc.)<br>
+                                        5. Result notification</p>
+                                        
+                                        <h6><strong style="color: #2c5aa0;">Processing Period</strong></h6>
+                                        <p>• General cases: Within 7 days of report reception<br>
+                                        • Urgent cases: Priority processing within 24 hours</p>
+                                        
+                                        <div style="background-color: #d1ecf1; padding: 10px; border-radius: 5px; margin-top: 10px;">
+                                            <small><strong>Appeal:</strong> If dissatisfied with action results, appeals can be made to wkdtpwhs@gmail.com within 7 days of notification.</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <br>
+                        <p style="text-align: center; color: #666; font-size: 14px;">
+                            These terms are written in full compliance with the "Act on Promotion of Information and Communications Network Utilization and Information Protection".<br>
+                            <strong>Effective Date:</strong> January 1, 2024 | <strong>Inquiries:</strong> wkdtpwhs@gmail.com
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="form-check">
+                    <input class="form-check-input" id="dontShowAgain" type="checkbox"/>
+                    <label class="form-check-label" for="dontShowAgain">오늘은 더 이상 안보기(Don't show again today)</label>
+                </div>
+                <button class="btn btn-secondary" data-bs-dismiss="modal" id="agreeBtn" type="button">동의합니다.(Agree)</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+</div>
 </body>
 </html>
