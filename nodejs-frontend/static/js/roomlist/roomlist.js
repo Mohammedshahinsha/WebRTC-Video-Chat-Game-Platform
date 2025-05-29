@@ -177,7 +177,7 @@ $(function () {
     checkVisitor();
     
     // 기존 user_agree API도 유지 (필요시)
-    fetch(window.__CONFIG__.BASE_URL + "/user_agree", {
+    fetch(window.__CONFIG__.API_BASE_URL + "/user_agree", {
       method: 'GET'
     })
       .then(response => {
