@@ -50,7 +50,7 @@ $(function () {
       $('#confirmPwdModal').modal('show');
     });
     // 비밀방 모달에서 '입장하기' 버튼 클릭 시 enterRoom()이 정확히 호출되는지 보장
-    $(document).off('click', '#enterRoomModal .btn-primary').on('click', '#enterRoomModal .btn-primary', function(e) {
+    $('#enterRoomModal .btn-primary').off('click').on('click', function(e) {
       e.preventDefault();
       enterRoom();
     });
