@@ -180,26 +180,21 @@ ws.onmessage = function (message) {
 }
 
 function register() {
-    // kurentoroom.html 진입 시 sessionStorage에서 방/유저 정보 읽기
+    // kurentoroom.html 진입 시 서버에서 방/유저 정보 조회
     let kurentoRoomInfo = null;
     try {
         // 방 정보를 서버에서 조회
-        const url = window.__CONFIG__.API_BASE_URL + '/chat/room?roomId=' + new URLSearchParams(window.location.search).get('roomId');
+        const url = window.__CONFIG__.API_BASE_URL + '/chat/room/' + new URLSearchParams(window.location.search).get('roomId');
         const successCallback = (result) => {
             if (result?.data) {
-                sessionStorage.setItem('kurentoRoomInfo', JSON.stringify(result.data));
+                kurentoRoomInfo = result.data;
             }
         };
         const errorCallback = (error) => {
             console.error('방 정보 조회 실패:', error);
         };
-        
         // AJAX 요청 실행
         ajax(url, 'GET', false, '', successCallback, errorCallback);
-        
-        // sessionStorage에서 방 정보 파싱
-        kurentoRoomInfo = JSON.parse(sessionStorage.getItem('kurentoRoomInfo'));
-        
         // 방 정보가 있으면 필요한 데이터 할당
         if (kurentoRoomInfo) {
             userId = kurentoRoomInfo.userId || kurentoRoomInfo.uuid;
@@ -214,7 +209,6 @@ function register() {
 
     document.getElementById('room-header').innerText = 'ROOM ' + roomName;
     document.getElementById('room').style.display = 'block';
-
 
     let message = {
         id: 'joinRoom',
