@@ -96,26 +96,56 @@ public class MonitoringServiceImpl implements MonitoringService,HandlerIntercept
         }
     }
 
-    private void printRequestInfo(HttpServletRequest request){
+    private void printRequestInfo(HttpServletRequest request) {
         log.info("##########################################");
+        log.info("📍 기본 정보");
         log.info("Remote ipAddrs ::: " + request.getRemoteAddr());
         log.info("Remote Host ipAddrs ::: " + request.getRemoteHost());
 
-        // 모든 HTTP 헤더 출력
-        log.info("========== HTTP Headers ==========");
+        // 🌟 nginx에서 추가한 새로운 디버깅용 헤더들
+        log.info("========== 🔍 nginx 디버깅 헤더들 ==========");
+        log.info("X-Original-IP: {}", request.getHeader("X-Original-IP"));           // nginx에서 보는 원본 IP
+        log.info("X-Generated-Forwarded: {}", request.getHeader("X-Generated-Forwarded")); // nginx에서 생성한 X-Forwarded-For
+        log.info("X-Client-IP: {}", request.getHeader("X-Client-IP"));               // 계산된 클라이언트 IP
+
+        // 기존 nginx 헤더들
+        log.info("========== 🌐 기존 nginx 헤더들 ==========");
+        log.info("X-Real-IP: {}", request.getHeader("X-Real-IP"));
+        log.info("X-Forwarded-For: {}", request.getHeader("X-Forwarded-For"));
+        log.info("X-Forwarded-Proto: {}", request.getHeader("X-Forwarded-Proto"));
+        log.info("Host: {}", request.getHeader("Host"));
+
+        // 🎯 문제 해결 상태 체크
+        log.info("========== 🎯 문제 해결 상태 체크 ==========");
+        String xForwardedFor = request.getHeader("X-Forwarded-For");
+        String xRealIp = request.getHeader("X-Real-IP");
+        String remoteAddr = request.getRemoteAddr();
+
+        if (xForwardedFor != null && !xForwardedFor.equals("null") && !xForwardedFor.startsWith("10.244.")) {
+            log.info("✅ 성공: X-Forwarded-For에 실제 외부 IP가 전달됨!");
+        } else {
+            log.info("❌ 실패: X-Forwarded-For가 여전히 문제 있음");
+        }
+
+        if (!xRealIp.startsWith("10.244.")) {
+            log.info("✅ 성공: X-Real-IP에 실제 외부 IP가 전달됨!");
+        } else {
+            log.info("❌ 실패: X-Real-IP가 여전히 클러스터 내부 IP");
+        }
+
+        // 🔍 IP 변화 감지
+        log.info("========== 📊 IP 변화 감지 ==========");
+        log.info("Remote Address: {} | X-Real-IP: {} | X-Forwarded-For: {}",
+                remoteAddr, xRealIp, xForwardedFor);
+
+        // 모든 HTTP 헤더 출력 (기존 유지)
+        log.info("========== 📋 모든 HTTP Headers ==========");
         Enumeration<String> headerNames = request.getHeaderNames();
         while (headerNames.hasMoreElements()) {
             String headerName = headerNames.nextElement();
             String headerValue = request.getHeader(headerName);
             log.info("Header: {} = {}", headerName, headerValue);
         }
-
-        // nginx에서 설정한 특정 헤더들 별도 출력
-        log.info("========== Nginx Headers ==========");
-        log.info("X-Real-IP: {}", request.getHeader("X-Real-IP"));
-        log.info("X-Forwarded-For: {}", request.getHeader("X-Forwarded-For"));
-        log.info("X-Forwarded-Proto: {}", request.getHeader("X-Forwarded-Proto"));
-        log.info("Host: {}", request.getHeader("Host"));
 
         log.info("##########################################");
     }
