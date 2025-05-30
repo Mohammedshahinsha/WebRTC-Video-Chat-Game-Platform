@@ -1,4 +1,5 @@
 let roomId;
+let originPwd = '';
 
 $(function () {
   // 1. 방 리스트 동적 렌더링
@@ -50,7 +51,7 @@ $(function () {
       $('#confirmPwdModal').modal('show');
     });
     // 비밀방 모달에서 '입장하기' 버튼 클릭 시 enterRoom()이 정확히 호출되는지 보장
-    $('#enterRoomModal .btn-primary').off('click').on('click', function(e) {
+    $(document).off('click', '#enterRoomModal .btn-primary').on('click', '#enterRoomModal .btn-primary', function(e) {
       e.preventDefault();
       enterRoom();
     });
@@ -293,11 +294,11 @@ $(function () {
     Toastify({
       text: '설정 진입 성공', duration: 2000, gravity: 'top', position: 'center', backgroundColor: '#51cf66', close: true
     }).showToast();
-    // #roomConfigModal을 #confirmPwdModal이 완전히 닫힌 후에 띄우기
-    $('#confirmPwdModal').one('hidden.bs.modal', function () {
-      $('#roomConfigModal').modal('show');
-    });
     $('#confirmPwdModal').modal('hide');
+    // 실제 설정 모달 띄우기
+    setTimeout(function() {
+      $('#roomConfigModal').modal('show');
+    }, 500);
   });
 
   // roomConfigModal 열릴 때 현재 방 정보로 input 초기화
@@ -312,6 +313,7 @@ $(function () {
           $('#configMaxUserCnt').val(res.data.maxUserCnt);
           $('#configRoomPwd').val(res.data.roomPwd).prop('readonly', true);
           $('#changePwdCheckbox').prop('checked', false);
+          originPwd = res.data.roomPwd || '';
         }
       }
     });
@@ -346,21 +348,20 @@ $(function () {
       Toastify({ text: '비밀번호를 입력하세요.', duration: 2000, gravity: 'top', position: 'center', backgroundColor: '#fa5252', close: true }).showToast();
       return;
     }
-    // 실제 수정 ajax
     $.ajax({
       url: window.__CONFIG__.API_BASE_URL + '/chat/room/modify/' + roomId,
-      type: 'PATCH',
+      type: 'POST',
       contentType: 'application/json',
       data: JSON.stringify({
         roomId: roomId,
         roomName: name,
         maxUserCnt: maxUserCnt,
-        roomPwd: changePwd ? pwd : undefined
+        roomPwd: changePwd ? pwd : originPwd
       }),
       success: function(res) {
         Toastify({ text: '설정이 저장되었습니다.', duration: 2000, gravity: 'top', position: 'center', backgroundColor: '#51cf66', close: true }).showToast();
         $('#roomConfigModal').modal('hide');
-        window.loadRoomList();
+        location.reload();
       },
       error: function(err) {
         Toastify({ text: '설정 저장 실패', duration: 2000, gravity: 'top', position: 'center', backgroundColor: '#fa5252', close: true }).showToast();
@@ -373,14 +374,14 @@ $(function () {
     $('#changePwdCheckbox').prop('checked', false);
   });
 
-  // 방 삭제 함수(modify) - window.loadRoomList로 호출
+  // 방 삭제 함수
   function delRoom() {
-    let url = window.__CONFIG__.API_BASE_URL + "/chat/room/modify/" + roomId;
+    let url = window.__CONFIG__.API_BASE_URL + "/chat/room/" + roomId;
     let successCallback = function (result) {
       if (result && result.data) {
         Toastify({ text: '방 삭제를 완료했습니다', duration: 2000, gravity: 'top', position: 'center', backgroundColor: '#51cf66', close: true }).showToast();
         $('#roomConfigModal').modal('hide');
-        window.loadRoomList();
+        location.reload();
       } else {
         Toastify({ text: '방 삭제에 실패했습니다.', duration: 2000, gravity: 'top', position: 'center', backgroundColor: '#fa5252', close: true }).showToast();
       }
@@ -395,7 +396,29 @@ $(function () {
     }
     ajax(url, 'DELETE', false, '', successCallback, errorCallback);
   }
-})
+
+  // 방 삭제 버튼 이벤트 바인딩 추가
+  $(document).off('click', '#deleteRoomBtn').on('click', '#deleteRoomBtn', function() {
+    delRoom();
+  });
+
+  // 방 수정 모달 최대 인원 입력 제한 (2~6)
+  $(document).on('input', '#configMaxUserCnt', function() {
+    let val = parseInt($(this).val(), 10);
+    if (isNaN(val) || val < 2) {
+      $(this).val(2);
+    } else if (val > 6) {
+      $(this).val(6);
+    }
+  });
+
+  // 비밀번호 확인 모달 닫힐 때 입력값 및 안내 초기화
+  $('#confirmPwdModal').on('hidden.bs.modal', function () {
+    $('#confirmPwd').val('');
+    $('#confirmLabel').text('비밀번호 확인');
+    $('#confirm').remove();
+  });
+});
 
 // 채팅방 설정 시 비밀번호 확인 - keyup 펑션 활용
 function confirmPWD() {
@@ -569,6 +592,3 @@ function chkRoomUserCnt(roomId) {
   }
   ajax(url, 'GET', 'false', '', successCallback, errorCallback);
 }
-
-// 방 리스트 동적 렌더링 함수 전역화
-window.loadRoomList = loadRoomList;

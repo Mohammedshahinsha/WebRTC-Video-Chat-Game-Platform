@@ -133,4 +133,13 @@ public class ChatServiceMain {
             throw new ExceptionController.DelRoomException("DelRoom Exception");
         }
     }
+
+    // 채팅방 수정
+    public ChatRoomDto updateRoom(String roomId, String roomName, String roomPwd, int maxUserCnt) {
+        ChatRoomDto room = ChatRoomMap.getInstance().getChatRooms().get(roomId);
+        room.setRoomName(roomName);
+        room.setRoomPwd(roomPwd);
+        room.setMaxUserCnt(maxUserCnt);
+        return room;
+    }
 }

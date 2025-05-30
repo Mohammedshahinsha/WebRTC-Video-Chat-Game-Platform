@@ -105,13 +105,13 @@ public class ChatRoomController {
     }
 
     // 채팅방 수정
-    @PatchMapping("/room/{roomId}")
+    @PostMapping("/room/modify/{roomId}")
     public ResponseEntity<ChatForYouResponse> modifyChatRoom(
             @PathVariable String roomId,
             @RequestBody ChatRoomDto roomDto){
         return ResponseEntity.ok(ChatForYouResponse.builder()
                 .result("success")
-                .data(chatServiceMain.chkRoomUserCnt(roomId))
+                .data(chatServiceMain.updateRoom(roomId, roomDto.getRoomName(), roomDto.getRoomPwd(), roomDto.getMaxUserCnt()))
                 .build());
     }
 
