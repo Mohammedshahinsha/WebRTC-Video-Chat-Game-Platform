@@ -1,4 +1,5 @@
 let roomId;
+let originPwd = '';
 
 $(function () {
   // 1. 방 리스트 동적 렌더링
@@ -33,12 +34,14 @@ $(function () {
   // 2. 각 방 이벤트 동적 바인딩
   function bindRoomEvents() {
     // 비밀방 입장
-    $('.enterRoomBtn').off('click').on('click', function() {
+    $('.enterRoomBtn').off('click').on('click', function(e) {
+      e.preventDefault();
       roomId = $(this).data('id');
       $('#enterRoomModal').modal('show');
     });
     // 일반방 바로 입장
-    $('.directEnterBtn').off('click').on('click', function() {
+    $('.directEnterBtn').off('click').on('click', function(e) {
+      e.preventDefault();
       const id = $(this).data('roomid');
       chkRoomUserCnt(id);
     });
@@ -46,6 +49,11 @@ $(function () {
     $('.configRoomBtn').off('click').on('click', function() {
       roomId = $(this).data('id');
       $('#confirmPwdModal').modal('show');
+    });
+    // 비밀방 모달에서 '입장하기' 버튼 클릭 시 enterRoom()이 정확히 호출되는지 보장
+    $(document).off('click', '#enterRoomModal .btn-primary').on('click', '#enterRoomModal .btn-primary', function(e) {
+      e.preventDefault();
+      enterRoom();
     });
   }
 
@@ -193,12 +201,32 @@ $(function () {
     myModal.show();
   });
 
-  // 방 생성 모달 submit 이벤트
+  // 방 생성 모달 닫힐 때 input 값 초기화
+  $('#roomModal').on('hidden.bs.modal', function () {
+    $('#modalRoomName').val('');
+    $('#modalRoomPwd').val('');
+    $('#modalMaxUserCnt').val('2');
+  });
+
+  // 방 생성 최대 인원 입력 제한 (2~6)
+  $(document).on('input', '#modalMaxUserCnt', function() {
+    let val = parseInt($(this).val(), 10);
+    if (isNaN(val) || val < 2) {
+      $(this).val(2);
+    } else if (val > 6) {
+      $(this).val(6);
+    }
+  });
+
+  // 방 생성 submit 시 최대 인원 2~6만 허용
   $('#modalCreateRoomForm').off('submit').on('submit', function(e) {
     e.preventDefault();
     const name = $('#modalRoomName').val();
     const pwd = $('#modalRoomPwd').val();
-    const maxUserCnt = $('#modalMaxUserCnt').val();
+    let maxUserCnt = parseInt($('#modalMaxUserCnt').val(), 10);
+    if (isNaN(maxUserCnt) || maxUserCnt < 2) maxUserCnt = 2;
+    if (maxUserCnt > 6) maxUserCnt = 6;
+    $('#modalMaxUserCnt').val(maxUserCnt);
     const secret = $('#modalSecret').is(':checked');
     const chatType = $('input[name="modalChatType"]:checked').val();
     if (!name || !pwd || !maxUserCnt || !chatType) {
@@ -263,15 +291,134 @@ $(function () {
       }).showToast();
       return;
     }
-    // 실제 설정 페이지가 있다면 아래 주석 해제
-    // window.location.href = '/chat/room/config/' + roomId;
-    // 별도 설정 페이지가 없다면 아래처럼 토스트만 띄우고 모달 닫기
     Toastify({
       text: '설정 진입 성공', duration: 2000, gravity: 'top', position: 'center', backgroundColor: '#51cf66', close: true
     }).showToast();
     $('#confirmPwdModal').modal('hide');
+    // 실제 설정 모달 띄우기
+    setTimeout(function() {
+      $('#roomConfigModal').modal('show');
+    }, 500);
   });
-})
+
+  // roomConfigModal 열릴 때 현재 방 정보로 input 초기화
+  $('#roomConfigModal').on('show.bs.modal', function () {
+    if (!roomId) return;
+    $.ajax({
+      url: window.__CONFIG__.API_BASE_URL + '/chat/room/' + roomId,
+      type: 'GET',
+      success: function(res) {
+        if (res && res.data) {
+          $('#configRoomName').val(res.data.roomName);
+          $('#configMaxUserCnt').val(res.data.maxUserCnt);
+          $('#configRoomPwd').val(res.data.roomPwd).prop('readonly', true);
+          $('#changePwdCheckbox').prop('checked', false);
+          originPwd = res.data.roomPwd || '';
+        }
+      }
+    });
+  });
+
+  // 비밀번호 변경 체크박스 토글 시 input 활성화/비활성화
+  $(document).off('change', '#changePwdCheckbox').on('change', '#changePwdCheckbox', function() {
+    if ($(this).is(':checked')) {
+      $('#configRoomPwd').prop('readonly', false).val('');
+    } else {
+      // 기존 비밀번호로 복원 (모달이 열릴 때 ajax로 세팅됨)
+      $('#configRoomPwd').prop('readonly', true);
+      // 값은 그대로 두거나, 필요시 다시 ajax로 불러와도 됨
+    }
+  });
+
+  // 방 수정(modify) 저장 버튼 클릭 시
+  $(document).off('click', '#saveRoomConfigBtn').on('click', '#saveRoomConfigBtn', function() {
+    const name = $('#configRoomName').val().trim();
+    const maxUserCnt = parseInt($('#configMaxUserCnt').val(), 10);
+    const pwd = $('#configRoomPwd').val();
+    const changePwd = $('#changePwdCheckbox').is(':checked');
+    if (!name) {
+      Toastify({ text: '방 이름을 입력하세요.', duration: 2000, gravity: 'top', position: 'center', backgroundColor: '#fa5252', close: true }).showToast();
+      return;
+    }
+    if (isNaN(maxUserCnt) || maxUserCnt < 2 || maxUserCnt > 6) {
+      Toastify({ text: '최대 인원은 2~6명만 가능합니다.', duration: 2000, gravity: 'top', position: 'center', backgroundColor: '#fa5252', close: true }).showToast();
+      return;
+    }
+    if (changePwd && !pwd) {
+      Toastify({ text: '비밀번호를 입력하세요.', duration: 2000, gravity: 'top', position: 'center', backgroundColor: '#fa5252', close: true }).showToast();
+      return;
+    }
+    $.ajax({
+      url: window.__CONFIG__.API_BASE_URL + '/chat/room/modify/' + roomId,
+      type: 'POST',
+      contentType: 'application/json',
+      data: JSON.stringify({
+        roomId: roomId,
+        roomName: name,
+        maxUserCnt: maxUserCnt,
+        roomPwd: changePwd ? pwd : originPwd
+      }),
+      success: function(res) {
+        Toastify({ text: '설정이 저장되었습니다.', duration: 2000, gravity: 'top', position: 'center', backgroundColor: '#51cf66', close: true }).showToast();
+        $('#roomConfigModal').modal('hide');
+        location.reload();
+      },
+      error: function(err) {
+        Toastify({ text: '설정 저장 실패', duration: 2000, gravity: 'top', position: 'center', backgroundColor: '#fa5252', close: true }).showToast();
+      }
+    });
+    // input 값 초기화
+    $('#configRoomName').val('');
+    $('#configMaxUserCnt').val('2');
+    $('#configRoomPwd').val('').prop('readonly', true);
+    $('#changePwdCheckbox').prop('checked', false);
+  });
+
+  // 방 삭제 함수
+  function delRoom() {
+    let url = window.__CONFIG__.API_BASE_URL + "/chat/room/" + roomId;
+    let successCallback = function (result) {
+      if (result && result.data) {
+        Toastify({ text: '방 삭제를 완료했습니다', duration: 2000, gravity: 'top', position: 'center', backgroundColor: '#51cf66', close: true }).showToast();
+        $('#roomConfigModal').modal('hide');
+        location.reload();
+      } else {
+        Toastify({ text: '방 삭제에 실패했습니다.', duration: 2000, gravity: 'top', position: 'center', backgroundColor: '#fa5252', close: true }).showToast();
+      }
+    };
+    let errorCallback = function(error){
+      let result = error.responseJSON;
+      let errorMessage = '방 삭제 중 오류가 발생했습니다.';
+      if (result && result.code === '40041') {
+        errorMessage = result.message;
+      }
+      Toastify({ text: errorMessage, duration: 2000, gravity: 'top', position: 'center', backgroundColor: '#fa5252', close: true }).showToast();
+    }
+    ajax(url, 'DELETE', false, '', successCallback, errorCallback);
+  }
+
+  // 방 삭제 버튼 이벤트 바인딩 추가
+  $(document).off('click', '#deleteRoomBtn').on('click', '#deleteRoomBtn', function() {
+    delRoom();
+  });
+
+  // 방 수정 모달 최대 인원 입력 제한 (2~6)
+  $(document).on('input', '#configMaxUserCnt', function() {
+    let val = parseInt($(this).val(), 10);
+    if (isNaN(val) || val < 2) {
+      $(this).val(2);
+    } else if (val > 6) {
+      $(this).val(6);
+    }
+  });
+
+  // 비밀번호 확인 모달 닫힐 때 입력값 및 안내 초기화
+  $('#confirmPwdModal').on('hidden.bs.modal', function () {
+    $('#confirmPwd').val('');
+    $('#confirmLabel').text('비밀번호 확인');
+    $('#confirm').remove();
+  });
+});
 
 // 채팅방 설정 시 비밀번호 확인 - keyup 펑션 활용
 function confirmPWD() {
@@ -428,34 +575,14 @@ function enterRoom() {
   ajax(url, 'POST', false, data, successCallback, errorCallback);
 }
 
-// 채팅방 삭제
-function delRoom() {
-  let url = window.__CONFIG__.API_BASE_URL + "/chat/delRoom/" + roomId;
-  let successCallback = function (result) {
-    if (result && result.data) {
-      alert("방 삭제를 완료했습니다");
-      location.href = "/";
-    } else {
-      alert("방 삭제에 실패했습니다.");
-    }
-  };
-  let errorCallback = function(error){
-    let result = error.responseJSON;
-    let errorMessage = '방 삭제 중 오류가 발생했습니다.';
-    if (result && result.code === '40041') {
-      errorMessage = result.message;
-    }
-    alert(errorMessage);
-  }
-  ajax(url, 'DELETE', false, '', successCallback, errorCallback);
-}
-
 // 채팅방 입장 시 인원 수에 따라서 입장 여부 결정
 function chkRoomUserCnt(roomId) {
   let url = window.__CONFIG__.API_BASE_URL + '/chat/chkUserCnt/' + roomId;
   let successCallback = function (result) {
     if (!result || !result.data) {
-      alert("채팅방이 꽉 차서 입장 할 수 없습니다");
+      Toastify({
+        text: '채팅방이 꽉 차서 입장 할 수 없습니다', duration: 2500, gravity: 'top', position: 'center', backgroundColor: '#fa5252', close: true
+      }).showToast();
       return;
     }
     location.href = '/kurentoroom.html?roomId=' + roomId;

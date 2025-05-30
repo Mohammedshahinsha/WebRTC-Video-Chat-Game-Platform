@@ -64,11 +64,12 @@ public class ChatRoomController {
         return ResponseEntity.ok(ChatForYouResponse.ofCreateRoom(room));
     }
 
-    // 채팅방 입장 화면
-    // 파라미터로 넘어오는 roomId 를 확인후 해당 roomId 를 기준으로
-    // 채팅방을 찾아서 클라이언트를 chatroom 으로 보낸다.
-    @GetMapping("/room")
-    public ResponseEntity<ChatForYouResponse> roomDetail(Model model, String roomId, @AuthenticationPrincipal PrincipalDetails principalDetails){
+    // 채팅방 정보 확인
+    @GetMapping("/room/{roomId}")
+    public ResponseEntity<ChatForYouResponse> roomDetail(
+            Model model,
+            @PathVariable String roomId,
+            @AuthenticationPrincipal PrincipalDetails principalDetails){
 
         log.info("roomId {}", roomId);
 
@@ -103,8 +104,19 @@ public class ChatRoomController {
                 .build());
     }
 
+    // 채팅방 수정
+    @PostMapping("/room/modify/{roomId}")
+    public ResponseEntity<ChatForYouResponse> modifyChatRoom(
+            @PathVariable String roomId,
+            @RequestBody ChatRoomDto roomDto){
+        return ResponseEntity.ok(ChatForYouResponse.builder()
+                .result("success")
+                .data(chatServiceMain.updateRoom(roomId, roomDto.getRoomName(), roomDto.getRoomPwd(), roomDto.getMaxUserCnt()))
+                .build());
+    }
+
     // 채팅방 삭제
-    @DeleteMapping("/{roomId}")
+    @DeleteMapping("/room/{roomId}")
     public ResponseEntity<ChatForYouResponse> delChatRoom(@PathVariable String roomId){
 
         // roomId 기준으로 chatRoomMap 에서 삭제, 해당 채팅룸 안에 있는 사진 삭제
