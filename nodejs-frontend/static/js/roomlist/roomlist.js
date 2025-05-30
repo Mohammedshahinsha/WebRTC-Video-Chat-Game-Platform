@@ -293,11 +293,11 @@ $(function () {
     Toastify({
       text: '설정 진입 성공', duration: 2000, gravity: 'top', position: 'center', backgroundColor: '#51cf66', close: true
     }).showToast();
-    $('#confirmPwdModal').modal('hide');
-    // 실제 설정 모달 띄우기
-    setTimeout(function() {
+    // #roomConfigModal을 #confirmPwdModal이 완전히 닫힌 후에 띄우기
+    $('#confirmPwdModal').one('hidden.bs.modal', function () {
       $('#roomConfigModal').modal('show');
-    }, 500);
+    });
+    $('#confirmPwdModal').modal('hide');
   });
 
   // roomConfigModal 열릴 때 현재 방 정보로 input 초기화
