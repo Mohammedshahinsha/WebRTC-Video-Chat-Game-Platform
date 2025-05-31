@@ -65,7 +65,7 @@ public class WebRtcConfig implements WebSocketConfigurer {
         ServletServerContainerFactoryBean container = new ServletServerContainerFactoryBean();
         container.setMaxTextMessageBufferSize(65536); // 32KB→64KB로 버퍼 확장
         container.setMaxBinaryMessageBufferSize(65536);
-        container.setAsyncSendTimeout(60000L); // 비동기 전송 타임아웃 60초 설정
+        container.setAsyncSendTimeout(3600000L); // 비동기 전송 타임아웃 1시간 설정
         return container;
     }
 
