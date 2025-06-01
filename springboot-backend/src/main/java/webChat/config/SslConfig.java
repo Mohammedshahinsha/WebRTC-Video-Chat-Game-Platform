@@ -52,7 +52,7 @@ public class SslConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins("http://localhost:3000", "https://hjproject.kro.kr", "https://hjproject.kro.kr/chatforyou")
+                .allowedOrigins("http://localhost:3000", "https://hjproject.kro.kr:8653", "https://hjproject.kro.kr/chatforyou")
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("Authorization", "Content-Type", "X-Requested-With")
                 .exposedHeaders("Custom-Header")
