@@ -233,7 +233,7 @@ const catchMind = {
             $subjectButtonContainer.empty();
             $titleButtonContainer.removeClass('d-none');
 
-            let url = `/catchmind/titles?roomId=${roomId}`;
+            let url = window.__CONFIG__.API_BASE_URL + `/catchmind/titles?roomId=${roomId}`;
 
             let successCallback = function (data) {
                 let titles = data.titles;
@@ -282,7 +282,7 @@ const catchMind = {
 
             self.title = $(this).attr('data-title');
 
-            let url = `/catchmind/subjects?roomId=${roomId}`;
+            let url = window.__CONFIG__.API_BASE_URL +`/catchmind/subjects?roomId=${roomId}`;
             const data = {
                 "title": self.title
             }
@@ -445,7 +445,7 @@ const catchMind = {
             $('#answerBtn').attr('disabled', true);
 
             if (self.gameRound === 1) { // 1라운드 일때만 서버로 게임 정보 전달
-                let url = '/catchmind/gameSetting';
+                let url = window.__CONFIG__.API_BASE_URL +'/catchmind/gameSetting';
                 let data = {
                     "roomId": roomId,
                     "gameUserList": self.gameUserList,
@@ -775,7 +775,7 @@ const catchMind = {
         $('#catchMindCanvas').modal('hide');
 
         if (self.gameRound === self.totalGameRound) {
-            let url = `/catchmind/gameResult?roomId=${roomId}`;
+            let url = window.__CONFIG__.API_BASE_URL +`/catchmind/gameResult?roomId=${roomId}`;
             try {
                 let data = await ajaxToJsonPromise(url, 'GET');
                 if (data.result === 'SyncGameRound') {

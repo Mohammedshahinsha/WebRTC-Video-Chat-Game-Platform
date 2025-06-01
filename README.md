@@ -79,7 +79,7 @@ ChatForYou_v2/
 
 ## 🌐 접속 정보
 - **로컬 환경**: http://localhost:3000/chatforyou
-- **운영 환경**: https://hjproject.kro.kr/chatforyou
+- **운영 환경**: https://hjproject.kro.kr:8653/chatforyou
 
 ## **_사이트 이용시 공시 사항_**
 본 사이트는 오직 Spring Boot와 Node.js, JavaScript를 기본으로 하여 WebRTC 및 WebSocket 기술을 사용한 여러 기능을 공부하기 위한 사이트입니다.
@@ -87,7 +87,7 @@ ChatForYou_v2/
 
 ## **_Disclaimer when using this site_**
 This site is only for studying various functions using WebRTC and WebSocket technologies based on Spring Boot, Node.js and JavaScript.
-**Please note that all legal responsibilities that may arise from using this site are the responsibility of the person using the site.**
+**Please note that all legal responsibilities that may arise from using this site are the responsibility of the person using the site.** 
 
 ## 🚀 구동 방법
 
@@ -164,7 +164,7 @@ docker-compose up -d
 
 ### 화상 채팅 화면
 ![ChatForYou.gif](info/ChatForYou.gif)
-
+  
 ### CatchMind 게임
 ![catchmind_r60.gif](info/catchmind_r60.gif)
 
@@ -195,7 +195,7 @@ docker-compose up -d
 - [Spinner](https://spin.js.org/)
 
 ## 📄 License
-Copyright 2024 SejonJang (wkdtpwhs@gmail.com)
+Copyright 2024 SejonJang (wkdtpwhs@gmail.com)  
 
 This project is licensed under the GNU Affero General Public License v3.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at:
 

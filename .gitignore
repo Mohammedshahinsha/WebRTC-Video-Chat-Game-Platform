@@ -33,6 +33,7 @@ springboot-backend/.nb-gradle/
 nodejs-frontend/node_modules/
 nodejs-frontend/.DS_Store
 nodejs-frontend/.env
+.cursor/rules/
 
 # 민감/환경 파일
 springboot-backend/src/main/resources/application.properties
