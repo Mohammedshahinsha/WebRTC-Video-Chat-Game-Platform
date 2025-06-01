@@ -79,7 +79,7 @@ ChatForYou_v2/
 
 ## 🌐 접속 정보
 - **로컬 환경**: http://localhost:3000/chatforyou
-- **운영 환경**: https://hjproject.kro.kr:8653/chatforyou
+- **운영 환경**: https://hjproject.kro.kr/chatforyou
 
 ## **_사이트 이용시 공시 사항_**
 본 사이트는 오직 Spring Boot와 Node.js, JavaScript를 기본으로 하여 WebRTC 및 WebSocket 기술을 사용한 여러 기능을 공부하기 위한 사이트입니다.
