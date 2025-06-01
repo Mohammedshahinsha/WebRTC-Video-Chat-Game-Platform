@@ -445,7 +445,7 @@ const roomList = {
         }).showToast();
         return;
       }
-      location.href = '/kurentoroom.html?roomId=' + roomId;
+      location.href = window.__CONFIG__.BASE_URL + '/kurentoroom.html?roomId=' + roomId;
     };
     let errorCallback = function (error) {
       console.error(error);
