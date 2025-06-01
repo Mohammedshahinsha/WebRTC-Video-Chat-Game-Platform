@@ -1,4 +1,4 @@
 window.__CONFIG__ = {
-  API_BASE_URL: 'https://chatforyou-service.chatforyou.svc.cluster.local:443/chatforyou/api',
-  BASE_URL: 'https://chatforyou-service.chatforyou.svc.cluster.local:443/chatforyou',
+  API_BASE_URL: 'https://hjproject.kro.kr:8657/chatforyou/api',
+  BASE_URL: 'https://hjproject.kro.kr:8657/chatforyou',
 }; 
