@@ -1,0 +1,65 @@
+<!-- 방 생성 모달 -->
+<div class="modal fade" id="roomModal" tabindex="-1" aria-labelledby="roomModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title" id="roomModalLabel">채팅방 생성</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form id="modalCreateRoomForm" autocomplete="off">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="modalRoomName" class="form-label">방 이름 <span class="text-danger">*</span></label>
+            <input type="text" id="modalRoomName" placeholder="방 이름을 입력하세요" required class="form-control">
+          </div>
+          <div class="mb-3">
+            <label for="modalRoomPwd" class="form-label">비밀번호 <span class="text-danger">*</span></label>
+            <div class="input-group">
+              <input type="password" id="modalRoomPwd" placeholder="비밀번호를 입력하세요" required class="form-control" data-toggle="password">
+              <span class="input-group-text"><i class="fa fa-eye"></i></span>
+            </div>
+            <div class="form-text">비밀번호는 4~16자 영문/숫자 조합 권장</div>
+          </div>
+          <div class="mb-3">
+            <label for="modalMaxUserCnt" class="form-label">최대 인원 <span class="text-danger">*</span></label>
+            <input type="number" id="modalMaxUserCnt" placeholder="2~6" min="2" max="6" required class="form-control">
+          </div>
+          <div class="form-check mb-2">
+            <input type="checkbox" id="modalSecret" class="form-check-input">
+            <label for="modalSecret" class="form-check-label">비밀방</label>
+          </div>
+          <div class="mb-2">
+            <input type="hidden" name="modalChatType" value="rtcChat">
+            <label class="form-check-label"><input type="radio" name="modalChatType" value="RTC" checked disabled> 화상 채팅</label>
+          </div>
+          <div id="modalCreateRoomLoading" class="text-center my-2" style="display:none;">
+            <div class="spinner-border text-primary" role="status"><span class="visually-hidden">로딩중...</span></div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+          <button type="submit" class="btn btn-primary w-50 fw-bold" id="modalCreateRoomBtn">방 생성</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- 방 입장(비밀번호 입력) 모달 -->
+<div class="modal fade" id="enterRoomModal" tabindex="-1" aria-labelledby="enterRoomModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="enterRoomModalLabel">채팅방 비밀번호를 입력해주세요</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <input type="password" id="enterPwd" placeholder="비밀번호" class="form-control mb-2">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+        <button type="button" class="btn btn-primary" id="enterRoomBtn">입장하기</button>
+      </div>
+    </div>
+  </div>
+</div>
