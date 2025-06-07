@@ -30,275 +30,6 @@ let turnPwd = null;
 
 let origGetUserMedia;
 
-// 오디오 권한 체크 함수 추가
-async function checkAudioPermission() {
-    try {
-        const audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        // 테스트 후 즉시 스트림 해제
-        audioStream.getTracks().forEach(track => track.stop());
-        return { success: true, errorType: null };
-    } catch (error) {
-        console.error('오디오 권한 확인 실패:', error);
-        
-        // 에러 유형 분류
-        let errorType = 'unknown';
-        if (error.name === 'NotAllowedError') {
-            errorType = 'permission_denied';
-        } else if (error.name === 'NotFoundError') {
-            errorType = 'no_device';
-        } else if (error.name === 'NotReadableError') {
-            errorType = 'device_busy';
-        } else if (error.name === 'ConstraintNotSatisfiedError') {
-            errorType = 'constraint_error';
-        }
-        
-        return { success: false, errorType: errorType, error: error };
-    }
-}
-
-// 에러 분류 헬퍼 함수
-function classifyMediaError(error) {
-    let errorType = 'unknown';
-    if (error.name === 'NotAllowedError') {
-        errorType = 'permission_denied';
-    } else if (error.name === 'NotFoundError') {
-        errorType = 'no_device';
-    } else if (error.name === 'NotReadableError') {
-        errorType = 'device_busy';
-    } else if (error.name === 'ConstraintNotSatisfiedError') {
-        errorType = 'constraint_error';
-    }
-    return errorType;
-}
-
-// 브라우저 감지 함수
-function detectBrowser() {
-    const userAgent = navigator.userAgent;
-    if (userAgent.includes('Chrome')) return 'chrome';
-    if (userAgent.includes('Firefox')) return 'firefox';
-    if (userAgent.includes('Safari')) return 'safari';
-    if (userAgent.includes('Edge')) return 'edge';
-    return 'unknown';
-}
-
-// 오디오 에러 모달 표시 함수
-function showAudioErrorModal(errorType = 'unknown', error = null) {
-    // 기존 모달이 있다면 제거
-    const existingModal = document.getElementById('audioErrorModal');
-    if (existingModal) {
-        existingModal.remove();
-    }
-
-    const browser = detectBrowser();
-    
-    // 에러 유형별 메시지 설정
-    let title, message, icon, helpText, browserGuide;
-    
-    switch (errorType) {
-        case 'permission_denied':
-            title = '🎤 마이크 권한이 필요합니다';
-            message = '음성 채팅을 위해 마이크 사용 권한을 허용해주세요.';
-            icon = '🚫';
-            helpText = '브라우저에서 마이크 권한을 차단하셨습니다.';
-            browserGuide = getBrowserPermissionGuide(browser);
-            break;
-        case 'no_device':
-            title = '🎤 마이크를 찾을 수 없습니다';
-            message = '마이크가 연결되어 있지 않거나 인식되지 않습니다.';
-            icon = '❌';
-            helpText = '마이크가 제대로 연결되어 있는지 확인해주세요.';
-            browserGuide = '1. 마이크가 컴퓨터에 제대로 연결되었는지 확인<br>2. 다른 프로그램에서 마이크를 사용 중인지 확인<br>3. 시스템 설정에서 마이크가 활성화되어 있는지 확인';
-            break;
-        case 'device_busy':
-            title = '🎤 마이크가 사용 중입니다';
-            message = '다른 애플리케이션에서 마이크를 사용하고 있습니다.';
-            icon = '⚠️';
-            helpText = '마이크를 사용 중인 다른 프로그램을 종료해주세요.';
-            browserGuide = '1. 화상회의 프로그램(Zoom, Teams 등) 종료<br>2. 음성녹음 프로그램 종료<br>3. 브라우저의 다른 탭에서 마이크 사용 중단';
-            break;
-        default:
-            title = '🎤 오디오 설정 문제';
-            message = '오디오 장치에 문제가 발생했습니다.';
-            icon = '❓';
-            helpText = '마이크 설정을 확인하고 다시 시도해주세요.';
-            browserGuide = getBrowserPermissionGuide(browser);
-    }
-
-    // 강화된 Bootstrap 모달 HTML 생성
-    const modalHTML = `
-        <div class="modal fade" id="audioErrorModal" tabindex="-1" role="dialog" aria-labelledby="audioErrorModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-lg" role="document">
-                <div class="modal-content">
-                    <div class="modal-header bg-warning text-white">
-                        <h5 class="modal-title" id="audioErrorModalLabel">
-                            <span style="font-size: 1.5em; margin-right: 10px;">${icon}</span>
-                            ${title}
-                        </h5>
-                    </div>
-                    <div class="modal-body">
-                        <div class="alert alert-info">
-                            <strong>상황:</strong> ${helpText}
-                        </div>
-                        
-                        <p style="font-size: 1.1em; margin-bottom: 20px;">${message}</p>
-                        
-                        <div class="card mb-3">
-                            <div class="card-header bg-light">
-                                <strong>📝 해결 방법</strong>
-                            </div>
-                            <div class="card-body">
-                                ${browserGuide}
-                            </div>
-                        </div>
-                        
-                        <div class="alert alert-warning">
-                            <strong>💡 참고:</strong> 음성 채팅은 이 서비스의 필수 기능입니다. 마이크 권한 없이는 채팅방을 이용할 수 없습니다.
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-success" id="audioRetryButton">
-                            🔄 다시 시도
-                        </button>
-                        <button type="button" class="btn btn-secondary" id="audioHelpButton">
-                            ❓ 도움말
-                        </button>
-                        <button type="button" class="btn btn-primary" id="audioErrorConfirmButton">
-                            ✅ 메인으로 돌아가기
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
-
-    // 모달을 body에 추가
-    document.body.insertAdjacentHTML('beforeend', modalHTML);
-
-    // 모달 표시
-    $('#audioErrorModal').modal({
-        backdrop: 'static',
-        keyboard: false
-    }).modal('show');
-
-    // 버튼 이벤트 설정
-    setupModalEvents();
-};
-
-// 브라우저별 권한 설정 가이드
-function getBrowserPermissionGuide(browser) {
-    switch (browser) {
-        case 'chrome':
-            return `
-                <strong>Chrome에서 마이크 권한 허용하기:</strong><br>
-                1. 주소창 왼쪽의 자물쇠 아이콘(🔒) 클릭<br>
-                2. "마이크" 옆의 드롭다운에서 "허용" 선택<br>
-                3. 페이지 새로고침<br>
-                <br>
-                <strong>또는:</strong><br>
-                1. Chrome 설정(⚙️) → 개인정보 및 보안 → 사이트 설정<br>
-                2. 마이크 → 차단된 사이트에서 이 사이트 제거
-            `;
-        case 'firefox':
-            return `
-                <strong>Firefox에서 마이크 권한 허용하기:</strong><br>
-                1. 주소창 왼쪽의 방패 아이콘(🛡️) 클릭<br>
-                2. "마이크 차단됨" 옆의 "X" 클릭하여 차단 해제<br>
-                3. 페이지 새로고침<br>
-                <br>
-                <strong>또는:</strong><br>
-                1. Firefox 설정 → 개인 정보 & 보안<br>
-                2. 권한 → 마이크 → 설정에서 이 사이트 허용
-            `;
-        case 'safari':
-            return `
-                <strong>Safari에서 마이크 권한 허용하기:</strong><br>
-                1. Safari 메뉴 → 환경설정<br>
-                2. 웹사이트 탭 → 마이크<br>
-                3. 이 웹사이트에 대해 "허용" 선택<br>
-                4. 페이지 새로고침
-            `;
-        case 'edge':
-            return `
-                <strong>Edge에서 마이크 권한 허용하기:</strong><br>
-                1. 주소창 왼쪽의 자물쇠 아이콘(🔒) 클릭<br>
-                2. "마이크" 권한을 "허용"으로 변경<br>
-                3. 페이지 새로고침<br>
-                <br>
-                <strong>또는:</strong><br>
-                1. Edge 설정 → 사이트 권한 → 마이크<br>
-                2. 차단된 사이트에서 이 사이트 제거
-            `;
-        default:
-            return `
-                <strong>일반적인 해결 방법:</strong><br>
-                1. 브라우저 주소창 근처의 마이크 아이콘 확인<br>
-                2. 마이크 권한을 "허용"으로 설정<br>
-                3. 페이지 새로고침<br>
-                4. 브라우저 설정에서 마이크 권한 확인
-            `;
-    }
-}
-
-// 모달 이벤트 설정
-function setupModalEvents() {
-    // 다시 시도 버튼
-    $('#audioRetryButton').click(async function() {
-        $('#audioErrorModal').modal('hide');
-        
-        // 잠시 대기 후 다시 권한 체크
-        setTimeout(async () => {
-            const result = await checkAudioPermission();
-            if (result.success) {
-                // 성공하면 페이지 새로고침하여 정상 진행
-                window.location.reload();
-            } else {
-                // 여전히 실패하면 다시 모달 표시
-                showAudioErrorModal(result.errorType, result.error);
-            }
-        }, 500);
-    });
-
-    // 도움말 버튼
-    $('#audioHelpButton').click(function() {
-        const helpWindow = window.open('', '_blank', 'width=600,height=400');
-        helpWindow.document.write(`
-            <html>
-                <head>
-                    <title>마이크 설정 도움말</title>
-                    <style>
-                        body { font-family: Arial, sans-serif; padding: 20px; line-height: 1.6; }
-                        h2 { color: #333; }
-                        .section { margin-bottom: 20px; padding: 15px; border-left: 4px solid #007bff; }
-                    </style>
-                </head>
-                <body>
-                    <h2>🎤 마이크 설정 문제 해결</h2>
-                    <div class="section">
-                        <h3>1. 시스템 설정 확인</h3>
-                        <p>• Windows: 설정 → 개인정보 → 마이크<br>
-                        • Mac: 시스템 환경설정 → 보안 및 개인정보 보호 → 마이크</p>
-                    </div>
-                    <div class="section">
-                        <h3>2. 하드웨어 확인</h3>
-                        <p>• 마이크가 제대로 연결되어 있는지 확인<br>
-                        • 마이크 음소거가 해제되어 있는지 확인</p>
-                    </div>
-                    <div class="section">
-                        <h3>3. 브라우저 재시작</h3>
-                        <p>• 브라우저를 완전히 종료 후 다시 실행<br>
-                        • 시크릿/프라이빗 모드로 접속 시도</p>
-                    </div>
-                </body>
-            </html>
-        `);
-    });
-
-    // 메인으로 돌아가기 버튼
-    $('#audioErrorConfirmButton').click(function() {
-        window.location.href = window.__CONFIG__.BASE_URL;
-    });
-}
-
 // websocket 연결 확인 후 register() 실행
 var ws = new WebSocket(window.__CONFIG__.API_BASE_URL.replace(/^http/, 'ws') + '/signal');
 ws.onopen = () => {
@@ -347,12 +78,15 @@ let constraints = {
 
 // 오디오 권한 체크 후 미디어 초기화
 async function initializeMediaDevices() {
+    // 오디오 에러 popup 로드
+    await PopupLoader.loadPopup('audio_error');
+    
     // 먼저 오디오 권한을 체크
     const hasAudioPermission = await checkAudioPermission();
     
     if (!hasAudioPermission.success) {
         // 오디오 권한이 없으면 에러 모달 표시
-        showAudioErrorModal(hasAudioPermission.errorType, hasAudioPermission.error);
+        await showAudioErrorModal(hasAudioPermission.errorType, hasAudioPermission.error);
         return;
     }
 
@@ -373,7 +107,7 @@ async function initializeMediaDevices() {
         stream.getTracks().forEach(track => track.stop());
     } catch (error) {
         console.error('Media devices initialization failed:', error);
-        showAudioErrorModal(classifyMediaError(error), error);
+        await showAudioErrorModal(classifyMediaError(error), error);
     }
 }
 

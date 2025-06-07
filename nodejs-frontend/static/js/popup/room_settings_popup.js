@@ -212,7 +212,7 @@ const RoomSettingsPopup = {
      */
     delRoom: function () {
         const self = this;
-
+        
         if (!confirm('정말 방을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
             return;
         }

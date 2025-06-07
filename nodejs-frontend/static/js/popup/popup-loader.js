@@ -59,7 +59,7 @@ const PopupLoader = {
      * 모든 필요한 popup들을 미리 로드
      */
     async preloadAllPopups() {
-        const popups = ['room', 'room_settings', 'announcement'];
+        const popups = ['room', 'room_settings', 'announcement', 'audio_error'];
         const promises = popups.map(popup => this.loadPopup(popup));
         
         try {

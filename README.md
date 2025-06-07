@@ -24,7 +24,6 @@ ChatForYou_v2/
 
 ### Frontend
 - **Node.js** - 프론트엔드 서버
-- **Express.js** - 웹 프레임워크
 - **jQuery** - DOM 조작 및 AJAX
 - **Bootstrap 5** - UI 프레임워크
 - **WebRTC** - 실시간 화상통신
