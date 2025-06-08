@@ -90,7 +90,7 @@ public class ChatRoomController {
 
     // 채팅방 비밀번호 확인
     @PostMapping(value = "/room/validatePwd/{roomId}")
-    public ResponseEntity<ChatForYouResponse> confirmPwd(
+    public ResponseEntity<ChatForYouResponse> validatePwd(
             @PathVariable String roomId,
             @RequestParam("roomPwd") String roomPwd){
 
@@ -98,7 +98,7 @@ public class ChatRoomController {
         // 찾아서 입력받은 roomPwd 와 room pwd 와 비교해서 맞으면 true, 아니면  false
         return ResponseEntity.ok(ChatForYouResponse.builder()
                 .result("success")
-                .data(chatService.confirmPwd(roomId, roomPwd))
+                .data(chatService.validatePwd(roomId, roomPwd))
                 .build());
     }
 

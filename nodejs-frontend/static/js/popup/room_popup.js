@@ -183,7 +183,7 @@ const RoomPopup = {
         }
 
         let successCallback = function(result) {
-            if (result.data && result.data.confirmPwd) {
+            if (result && result.data && result.result === 'success') {
                 self.showToast('방에 정상적으로 입장했습니다!', 'success');
                 $('#enterRoomModal').modal('hide');
                 location.href = window.__CONFIG__.BASE_URL + '/kurentoroom.html?roomId=' + self.roomId;
@@ -200,7 +200,7 @@ const RoomPopup = {
             }
         };
 
-        const url = window.__CONFIG__.API_BASE_URL + '/chat/room/confirmPwd/' + self.roomId;
+        const url = window.__CONFIG__.API_BASE_URL + '/chat/room/validatePwd/' + self.roomId;
         const requestData = { roomPwd: pwd };
         ajax(url, 'POST', true, requestData, successCallback, errorCallback);
     },
@@ -212,7 +212,7 @@ const RoomPopup = {
         const self = this;
         
         let successCallback = function(result) {
-            if (result.data && result.result === 'success') {
+            if (result && result.data && result.result === 'success') {
                 self.showToast('방에 정상적으로 입장했습니다!', 'success');
                 location.href = window.__CONFIG__.BASE_URL + '/kurentoroom.html?roomId=' + roomId;
             } else {

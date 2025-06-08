@@ -23,12 +23,12 @@ const RoomSettingsPopup = {
         // 방 설정 모달 버튼 클릭
         $(document).off('click', '.configRoomBtn').on('click', '.configRoomBtn', function () {
             self.roomId = $(this).data('id');
-            $('#confirmPwdModal').modal('show');
+            $('#validatePwdModal').modal('show');
         });
 
         // 비밀번호 확인 모달에서 설정하기 버튼 클릭
         $(document).off('click', '#configRoomBtn').on('click', '#configRoomBtn', function () {
-            self.validatePassword($('#confirmPwd').val());
+            self.validatePassword($('#validatePwd').val());
         });
 
         // 방 삭제 버튼 클릭
@@ -61,7 +61,7 @@ const RoomSettingsPopup = {
         });
 
         // 비밀번호 확인 입력 시 설정 버튼 활성화/비활성화
-        $(document).off('input', '#confirmPwd').on('input', '#confirmPwd', function () {
+        $(document).off('input', '#validatePwd').on('input', '#validatePwd', function () {
             const pwd = $(this).val().trim();
             const $configBtn = $('#configRoomBtn');
 
@@ -73,8 +73,8 @@ const RoomSettingsPopup = {
         });
 
         // 비밀번호 확인 모달이 열릴 때 버튼 초기화
-        $(document).off('shown.bs.modal', '#confirmPwdModal').on('shown.bs.modal', '#confirmPwdModal', function () {
-            $('#confirmPwd').val('');
+        $(document).off('shown.bs.modal', '#validatePwdModal').on('shown.bs.modal', '#validatePwdModal', function () {
+            $('#validatePwd').val('');
             $('#configRoomBtn').addClass('disabled').attr('aria-disabled', 'true');
         });
     },
@@ -98,7 +98,7 @@ const RoomSettingsPopup = {
                 $('#changePwdCheckbox').prop('checked', false);
                 $('#configRoomPwd').prop('readonly', true);
 
-                $('#confirmPwdModal').modal('hide');
+                $('#validatePwdModal').modal('hide');
                 $('#roomConfigModal').modal('show');
 
             } else {
@@ -125,7 +125,7 @@ const RoomSettingsPopup = {
         const self = this;
 
         let successCallback = function (result) {
-            if (result && result.result === 'success') {
+            if (result && result.result === 'success' && result.data) {
                 self.loadRoomInfo();
             } else {
                 self.showToast('비밀번호가 일치하지 않습니다.', 'error');
