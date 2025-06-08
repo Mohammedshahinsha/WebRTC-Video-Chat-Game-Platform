@@ -26,10 +26,9 @@ public class ChatRoomMap {
     }
 
     public boolean checkExistRoomName(String roomName){
-        List<String> roomNames = chatRooms.values().stream()
+        return chatRooms.values().stream()
                 .map(ChatRoomDto::getRoomName)
-                .toList();
-        return roomNames.contains(roomName);
+                .anyMatch(room -> room.equals(roomName));
     }
 
 }
