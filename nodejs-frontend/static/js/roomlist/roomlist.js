@@ -64,7 +64,7 @@ const roomList = {
       const roomId = $(this).data('id');
       if (window.RoomSettingsPopup) {
         window.RoomSettingsPopup.setRoomId(roomId);
-        $('#confirmPwdModal').modal('show');
+        $('#validatePwdModal').modal('show');
       }
     });
     // 방 생성 - RoomPopup으로 위임 (이벤트는 RoomPopup에서 처리됨)
@@ -94,7 +94,7 @@ const roomList = {
       Toastify({
         text: '설정 진입 성공', duration: 2000, gravity: 'top', position: 'center', backgroundColor: '#51cf66', close: true
       }).showToast();
-      $('#confirmPwdModal').modal('hide');
+      $('#validatePwdModal').modal('hide');
       setTimeout(function() {
         $('#roomConfigModal').modal('show');
       }, 500);
@@ -169,7 +169,7 @@ const roomList = {
       self.roomId = $(event.relatedTarget).data('id');
     });
     // 방 설정 모달 열릴 때 roomId 세팅 보강 및 기존 비밀번호 저장
-    $(document).on('show.bs.modal', '#confirmPwdModal', function (e) {
+    $(document).on('show.bs.modal', '#validatePwdModal', function (e) {
       let id = $(e.relatedTarget).data('id');
       if (id) {
         self.roomId = id;
@@ -193,8 +193,8 @@ const roomList = {
       });
     });
     // 비밀번호 확인 모달 닫힐 때 입력값 및 안내 초기화
-    $('#confirmPwdModal').on('hidden.bs.modal', function () {
-      $('#confirmPwd').val('');
+    $('#validatePwdModal').on('hidden.bs.modal', function () {
+      $('#validatePwd').val('');
       $('#confirmLabel').text('비밀번호 확인');
       $('#confirm').remove();
     });

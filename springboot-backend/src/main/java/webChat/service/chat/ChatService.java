@@ -81,7 +81,7 @@ public class ChatService {
     }
 
     // 채팅방 비밀번호 조회
-    public boolean confirmPwd(String roomId, String roomPwd) {
+    public boolean validatePwd(String roomId, String roomPwd) {
 //        String pwd = chatRoomMap.get(roomId).getRoomPwd();
         // TODO 방정보 찾을 수 없는 경우 예외처리
         return roomPwd.equals(ChatRoomMap.getInstance().getChatRooms().get(roomId).getRoomPwd());
@@ -146,6 +146,7 @@ public class ChatService {
         room.setRoomName(roomName);
         room.setRoomPwd(roomPwd);
         room.setMaxUserCnt(maxUserCnt);
+        ChatRoomMap.getInstance().getChatRooms().put(roomId, room);
         return room;
     }
 }
