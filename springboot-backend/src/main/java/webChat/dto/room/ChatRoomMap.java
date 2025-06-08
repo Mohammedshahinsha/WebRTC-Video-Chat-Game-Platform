@@ -3,8 +3,10 @@ package webChat.dto.room;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.stream.Collectors;
 
 /**
  * @desc Room 을 담기위한 클래스 => 싱글톤
@@ -21,6 +23,12 @@ public class ChatRoomMap {
 
     public static ChatRoomMap getInstance(){
         return chatRoomMap;
+    }
+
+    public boolean checkExistRoomName(String roomName){
+        return chatRooms.values().stream()
+                .map(ChatRoomDto::getRoomName)
+                .anyMatch(room -> room.equals(roomName));
     }
 
 }

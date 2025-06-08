@@ -674,7 +674,7 @@ const catchMind = {
 
         };
 
-        ajaxToJson('/catchmind/updateGameStatus', 'POST', '', gameData, successCallback, errorCallback);
+        ajaxToJson(window.__CONFIG__.API_BASE_URL + '/catchmind/updateGameStatus', 'POST', '', gameData, successCallback, errorCallback);
     },
     speakWiner: function (winerName) {
 

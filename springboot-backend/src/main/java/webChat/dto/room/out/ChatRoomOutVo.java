@@ -1,8 +1,7 @@
-package webChat.dto.response;
+package webChat.dto.room.out;
 
 import lombok.Builder;
 import lombok.Getter;
-import org.jetbrains.annotations.NotNull;
 import webChat.dto.ChatType;
 import webChat.dto.room.ChatRoomDto;
 
@@ -11,7 +10,7 @@ import java.util.UUID;
 
 @Builder
 @Getter
-public class ChatRoomResponse {
+public class ChatRoomOutVo {
     private String uuid; // 유저 고유값
     private String userId; // 유저 고유값
     private String nickName; // 유저 닉네임
@@ -23,8 +22,8 @@ public class ChatRoomResponse {
     private boolean secretChk; // 채팅방 잠금 여부
     private ChatType roomType; //  채팅 타입 여부
 
-    public static ChatRoomResponse of(ChatRoomDto chatRoomDto) {
-        return ChatRoomResponse.builder()
+    public static ChatRoomOutVo of(ChatRoomDto chatRoomDto) {
+        return ChatRoomOutVo.builder()
                 .uuid(UUID.randomUUID().toString().split("-")[0])
                 .nickName("guest" + (new Random().nextInt(100)+1))
                 .roomId(chatRoomDto.getRoomId())

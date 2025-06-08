@@ -11,6 +11,7 @@ import webChat.dto.room.ChatRoomDto;
 import webChat.dto.room.ChatRoomMap;
 import webChat.dto.ChatType;
 import webChat.dto.room.KurentoRoomDto;
+import webChat.dto.room.in.ChatRoomInVo;
 import webChat.service.analysis.AnalysisService;
 import webChat.service.file.FileService;
 
@@ -23,7 +24,7 @@ import java.util.concurrent.ConcurrentMap;
 @Setter
 @RequiredArgsConstructor
 @Slf4j
-public class ChatServiceMain {
+public class ChatService {
     private final KurentoManager kurentoManager;
     private final MsgChatService msgChatService;
     private final RtcChatService rtcChatService;
@@ -54,19 +55,24 @@ public class ChatServiceMain {
     }
 
     // roomName 로 채팅방 만들기
-    public ChatRoomDto createChatRoom(String roomName, String roomPwd, boolean secretChk, int maxUserCnt, String chatType) {
-        // TODO chatroom list 코드를 정리하면서 예외 처리 필요
-        if(maxUserCnt > MAX_USER_COUNT) {
-            throw new ExceptionController.BadRequestException("cant not over max user count : " + maxUserCnt);
+    public ChatRoomDto createChatRoom(ChatRoomInVo chatRoomInVo) {
+        if(chatRoomInVo.getMaxUserCnt() > MAX_USER_COUNT) {
+            throw new ExceptionController.BadRequestException("can not over max user count : " + chatRoomInVo.getMaxUserCnt());
+        }
+
+        if(ChatRoomMap.getInstance().checkExistRoomName(chatRoomInVo.getRoomName())) {
+            throw new ExceptionController.BadRequestException("room name is already exist : " + chatRoomInVo.getRoomName());
         }
 
         ChatRoomDto room;
 
         // 채팅방 타입에 따라서 사용되는 Service 구분
-        if (chatType.equals("msgChat")) {
-            room = msgChatService.createChatRoom(roomName, roomPwd, secretChk, maxUserCnt);
+        if (ChatType.MSG.equals(chatRoomInVo.getRoomType())) {
+            room = msgChatService.createChatRoom(chatRoomInVo.getRoomName(), chatRoomInVo.getRoomPwd(), chatRoomInVo.isSecretChk(), chatRoomInVo.getMaxUserCnt());
+        } else if(ChatType.RTC.equals(chatRoomInVo.getRoomType())) {
+            room = rtcChatService.createChatRoom(chatRoomInVo.getRoomName(), chatRoomInVo.getRoomPwd(), chatRoomInVo.isSecretChk(), chatRoomInVo.getMaxUserCnt());
         } else {
-            room = rtcChatService.createChatRoom(roomName, roomPwd, secretChk, maxUserCnt);
+            throw new ExceptionController.BadRequestException("room type is not exist : " + chatRoomInVo.getRoomType());
         }
 
         analysisService.increaseDailyRoomCnt();
@@ -103,7 +109,7 @@ public class ChatServiceMain {
     public boolean chkRoomUserCnt(String roomId) {
         ChatRoomDto room = ChatRoomMap.getInstance().getChatRooms().get(roomId);
 
-        if (room.getUserCount() + 1 > room.getMaxUserCnt()) {
+        if (room == null || room.getUserCount() + 1 > room.getMaxUserCnt()) {
             return false;
         }
 

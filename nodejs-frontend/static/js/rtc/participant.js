@@ -14,19 +14,195 @@
  * limitations under the License.
  *
  */
-// TODO userName -> userID 로 변경 필요, 중간중간 진짜 name 이 필요한 부분만 nickName 을 사용할 것
-const PARTICIPANT_MAIN_CLASS = 'participant main';
-const PARTICIPANT_CLASS = 'participant';
 
 /**
- * Creates a video element for a new participant
- *
- * @param {String} userId - the userId of the new participant, to be used as tag
- *                        userId of the video element.
- *                        The tag of the new element will be 'video<userId>'
- * @return
+ * 참가자 관련 유틸리티 함수들을 관리하는 객체
  */
+const ParticipantUtils = {
+	// 참가자 클래스 상수들
+	PARTICIPANT_MAIN_CLASS: 'participant main',
+	PARTICIPANT_CLASS: 'participant',
 
+	// 오디오 상태 추적 객체
+	audioStates: {},
+
+	/**
+	 * 오디오 상태를 초기화합니다
+	 * @param {string} userId - 사용자 ID
+	 */
+	initAudioState: function(userId) {
+		this.audioStates[userId] = {
+			enabled: true,
+			volume: 0.5  // 기본 볼륨을 0.5 (중간값)로 설정
+		};
+	},
+
+	/**
+	 * 오디오 상태를 업데이트합니다
+	 * @param {string} userId - 사용자 ID
+	 * @param {boolean} enabled - 오디오 활성화 여부
+	 * @param {number} volume - 볼륨 레벨 (선택사항)
+	 */
+	updateAudioState: function(userId, enabled, volume) {
+		if (!this.audioStates[userId]) {
+			this.initAudioState(userId);
+		}
+		this.audioStates[userId].enabled = enabled;
+		if (volume !== undefined) {
+			this.audioStates[userId].volume = volume;
+		}
+	},
+
+	/**
+	 * 오디오 상태를 가져옵니다
+	 * @param {string} userId - 사용자 ID
+	 * @return {Object} 오디오 상태 객체
+	 */
+	getAudioState: function(userId) {
+		if (!this.audioStates[userId]) {
+			this.initAudioState(userId);
+		}
+		return this.audioStates[userId];
+	},
+
+	/**
+	 * 볼륨 슬라이더를 활성화/비활성화합니다
+	 * @param {string} userId - 사용자 ID
+	 * @param {boolean} enabled - 활성화 여부
+	 */
+	toggleVolumeSlider: function(userId, enabled) {
+		const volumeSlider = document.getElementById('volumeControl_' + userId);
+		if (volumeSlider) {
+			volumeSlider.disabled = !enabled;
+			volumeSlider.style.opacity = enabled ? '1' : '0.5';
+		}
+
+		// 모달 내 볼륨 슬라이더도 업데이트
+		const modalVolumeSlider = document.querySelector('#participantsList #volumeControl_' + userId);
+		if (modalVolumeSlider) {
+			modalVolumeSlider.disabled = !enabled;
+			modalVolumeSlider.style.opacity = enabled ? '1' : '0.5';
+		}
+	},
+
+	/**
+	 * 오디오 버튼들을 동기화합니다
+	 * @param {string} userId - 사용자 ID
+	 * @param {boolean} enabled - 오디오 활성화 여부
+	 */
+	syncAudioButtons: function(userId, enabled) {
+		const state = this.getAudioState(userId);
+		const localUser = this.getLocalUserId();
+		
+		if (userId === localUser) {
+			// 내 오디오 버튼 동기화
+			const localAudioBtn = $('.localAudioToggle');
+			localAudioBtn.data('flag', enabled);
+			localAudioBtn.attr('src', enabled ? '/images/webrtc/audio-speaker-on.svg' : '/images/webrtc/audio-speaker-off.svg');
+
+			// 모달 내 내 오디오 버튼도 동기화
+			const modalAudioBtn = $('#audioBtn_' + userId);
+			if (modalAudioBtn.length) {
+				modalAudioBtn.data('flag', enabled);
+				modalAudioBtn.attr('src', enabled ? '/images/webrtc/audio-speaker-on.svg' : '/images/webrtc/audio-speaker-off.svg');
+			}
+		}
+
+		// 볼륨 슬라이더 상태 업데이트
+		this.toggleVolumeSlider(userId, enabled);
+	},
+
+	/**
+	 * 로컬 사용자 ID를 가져옵니다
+	 * @return {string} 로컬 사용자 ID
+	 */
+	getLocalUserId: function() {
+		const mainParticipant = document.getElementsByClassName(this.PARTICIPANT_MAIN_CLASS)[0];
+		return mainParticipant ? mainParticipant.id : null;
+	},
+
+	/**
+	 * 참가자 컨테이너에 음량 조절 컨트롤을 추가합니다
+	 * @param {HTMLElement} container - 참가자 컨테이너 요소
+	 * @param {string} userId - 사용자 ID
+	 */
+	addVolumeControl: function(container, userId) {
+		// 오디오 상태 초기화
+		this.initAudioState(userId);
+
+		// 복제하고자 하는 요소의 ID
+		const originalElement = $('#volumeControl');
+
+		// 요소를 복제합니다. jQuery 객체에서 DOM 엘리먼트를 가져옵니다.
+		const volumeControl = originalElement[0].cloneNode(true); // 'true'를 추가하여 자식 노드도 복제합니다.
+
+		volumeControl.type = 'range';
+		volumeControl.value = 0.5; // 기본 볼륨을 0.5로 설정
+
+		// 복제된 요소의 ID를 변경 :: 고유한 ID 부여
+		volumeControl.id = 'volumeControl_' + userId;
+
+		// 복제된 요소에 사용자 이름을 설정합니다.
+		volumeControl.setAttribute('data-userId', userId);
+
+		volumeControl.onchange = function(event) {
+			let targetUserId = this.getAttribute('data-userId');
+			const volumeLevel = parseFloat(this.value);
+			
+			// 오디오 상태 확인
+			const audioState = ParticipantUtils.getAudioState(targetUserId);
+			if (!audioState.enabled) {
+				// 오디오가 꺼져있으면 볼륨 조절 불가
+				this.value = audioState.volume;
+				return;
+			}
+
+			// 볼륨 조절 적용
+			ParticipantUtils.updateAudioState(targetUserId, true, volumeLevel);
+			participants[targetUserId].setVolume(volumeLevel);
+
+			// 모달 내 슬라이더와 동기화
+			const modalSlider = document.querySelector('#participantsList #volumeControl_' + targetUserId);
+			if (modalSlider && modalSlider !== this) {
+				modalSlider.value = volumeLevel;
+			}
+		};
+
+		// 복제된 요소를 해당 위치에 추가합니다.
+		container.appendChild(volumeControl);
+	},
+
+	/**
+	 * 참가자 수에 따라 그리드 레이아웃을 업데이트합니다
+	 */
+	updateGridLayout: function() {
+		let participantsDiv = document.getElementById('participants');
+		let totalParticipants = participantsDiv.childElementCount;
+
+		// Remove all layout classes
+		['one', 'two', 'three'].forEach(function(cls) {
+			participantsDiv.classList.remove(cls);
+		});
+
+		// Assign the appropriate layout class
+		if (totalParticipants === 1) {
+			participantsDiv.classList.add('one');
+		} else if (totalParticipants === 2) {
+			participantsDiv.classList.add('two');
+		} else if (totalParticipants === 3) {
+			participantsDiv.classList.add('three');
+		}
+	}
+};
+
+/**
+ * 새로운 참가자를 위한 비디오 요소를 생성합니다
+ * 
+ * @param {String} userId - 새 참가자의 userId, 비디오 요소의 태그 userId로 사용됩니다.
+ *                        새 요소의 태그는 'video<userId>'가 됩니다.
+ * @param {String} nickName - 참가자의 닉네임
+ * @return {Participant} 생성된 참가자 객체
+ */
 function Participant(userId, nickName) {
 	//console.log("참여자명 : "+userId)
 	this.userId = userId;
@@ -36,10 +212,14 @@ function Participant(userId, nickName) {
 	let localStream = null; // 유저의 로컬 스트림
 	let container = document.createElement('div');
 
+	/**
+	 * 현재 참가자가 메인 참가자인지 확인합니다
+	 * @return {boolean} 메인 참가자 여부
+	 */
 	let isMainParticipant = function(){
-		return (($("#"+PARTICIPANT_MAIN_CLASS)).length === 0);
+		return (($("#"+ParticipantUtils.PARTICIPANT_MAIN_CLASS)).length === 0);
 	}
-	container.className = isMainParticipant() ?  PARTICIPANT_MAIN_CLASS : PARTICIPANT_CLASS;
+	container.className = isMainParticipant() ? ParticipantUtils.PARTICIPANT_MAIN_CLASS : ParticipantUtils.PARTICIPANT_CLASS;
 	container.id = userId;
 
 	let span = document.createElement('span');
@@ -49,12 +229,12 @@ function Participant(userId, nickName) {
 	container.appendChild(video);
 	container.appendChild(span);
 	container.appendChild(audio);
-	addVolumeControl(container, userId);
+	ParticipantUtils.addVolumeControl(container, userId);
 
 	// container.onclick = switchContainerClass;
 	// document.getElementById('participants').appendChild(container);
 	$('#participants').append(container);
-	updateGridLayout();
+	ParticipantUtils.updateGridLayout();
 
 	span.appendChild(document.createTextNode(nickName));
 
@@ -63,28 +243,56 @@ function Participant(userId, nickName) {
 	video.controls = true;
 	audio.autoplay = true;
 
-	/** set user LocalStream */
+	// 초기 볼륨을 0.5로 설정
+	audio.volume = 0.5;
+	video.volume = 0.5;
+
+	/**
+	 * 사용자의 로컬 스트림을 설정합니다
+	 * @param {MediaStream} stream - 설정할 미디어 스트림
+	 */
 	this.setLocalSteam = function(stream){
 		this.localStream = stream;
 	}
 
-	/** return user localStream */
+	/**
+	 * 사용자의 로컬 스트림을 반환합니다
+	 * @return {MediaStream} 로컬 미디어 스트림
+	 */
 	this.getLocalStream = function(){
 		return this.localStream;
 	}
 
+	/**
+	 * 참가자 컨테이너 요소를 반환합니다
+	 * @return {HTMLElement} 컨테이너 요소
+	 */
 	this.getElement = function() {
 		return container;
 	}
 
+	/**
+	 * 비디오 요소를 반환합니다
+	 * @return {HTMLVideoElement} 비디오 요소
+	 */
 	this.getVideoElement = function() {
 		return video;
 	}
 
+	/**
+	 * 오디오 요소를 반환합니다
+	 * @return {HTMLAudioElement} 오디오 요소
+	 */
 	this.getAudioElement = function() {
 		return audio;
 	}
 
+	/**
+	 * 비디오 수신을 위한 SDP offer를 처리합니다
+	 * @param {Error} error - 에러 객체
+	 * @param {string} offerSdp - SDP offer 문자열
+	 * @param {Object} wp - WebRTC peer 객체
+	 */
 	this.offerToReceiveVideo = function(error, offerSdp, wp){
 		if (error) return console.error ("sdp offer error")
 		//console.log('Invoking SDP offer callback function');
@@ -97,7 +305,11 @@ function Participant(userId, nickName) {
 		sendMessageToServer(msg);
 	}
 
-
+	/**
+	 * ICE candidate 이벤트를 처리합니다
+	 * @param {RTCIceCandidate} candidate - ICE candidate 객체
+	 * @param {Object} wp - WebRTC peer 객체
+	 */
 	this.onIceCandidate = function (candidate, wp) {
 		//console.log("Local candidate" + JSON.stringify(candidate));
 		let message = {
@@ -111,13 +323,19 @@ function Participant(userId, nickName) {
 
 	Object.defineProperty(this, 'rtcPeer', { writable: true});
 
+	/**
+	 * 참가자 객체를 정리하고 DOM에서 제거합니다
+	 */
 	this.dispose = function() {
 		//console.log('Disposing participant ' + this.userId);
 		this.rtcPeer.dispose();
 		container.parentNode.removeChild(container);
 	};
 
-	// Participant 클래스에 음량 조절 메서드 추가
+	/**
+	 * 참가자의 음량을 설정합니다
+	 * @param {number} volumeLevel - 0.0에서 1.0 사이의 음량 레벨
+	 */
 	this.setVolume = function(volumeLevel) {
 		let audioElement = this.getAudioElement();
 		let videoElement = this.getVideoElement();
@@ -127,39 +345,23 @@ function Participant(userId, nickName) {
 		}
 	};
 
+	/**
+	 * 로컬 사용자의 ID를 반환합니다
+	 * @return {string} 로컬 사용자 ID
+	 */
 	this.getLocalUser = function(){
-		return document.getElementsByClassName(PARTICIPANT_MAIN_CLASS)[0].id;
+		return document.getElementsByClassName(ParticipantUtils.PARTICIPANT_MAIN_CLASS)[0].id;
 	}
 }
 
-function addVolumeControl(container, userId){
-	// 복제하고자 하는 요소의 ID
-	const originalElement = $('#volumeControl');
+// ==============================================
+// jQuery 이벤트 리스너들 - 전역 변수 의존성으로 인해 수정하지 않음
+// ==============================================
 
-	// 요소를 복제합니다. jQuery 객체에서 DOM 엘리먼트를 가져옵니다.
-	const volumeControl = originalElement[0].cloneNode(true); // 'true'를 추가하여 자식 노드도 복제합니다.
-
-	volumeControl.type = 'range';
-
-	// 복제된 요소의 ID를 변경 :: 고유한 ID 부여
-	volumeControl.id = 'volumeControl_' + userId;
-
-	// 복제된 요소에 사용자 이름을 설정합니다.
-	volumeControl.setAttribute('data-userId', userId);
-
-	volumeControl.onchange = function(event) {
-
-		let userId = this.getAttribute('data-userId');
-
-		const volumeLevel = parseFloat(this.value); // 슬라이더 값은 문자열이므로 숫자로 변환
-		participants[userId].setVolume(volumeLevel); // 해당 참가자에 대해 음량을 조절
-	};
-
-	// 복제된 요소를 해당 위치에 추가합니다.
-	container.appendChild(volumeControl);
-}
-
-// video on, off 기능
+/**
+ * 로컬 비디오 토글 기능 - 비디오 on/off
+ * 주의: 전역 변수 participants, userId에 의존
+ */
 $(".localVideoToggle").on("click", function(){
 	let videoBtn = $('.localVideoToggle');
 	let isVideo = videoBtn.data("flag");
@@ -178,7 +380,10 @@ $(".localVideoToggle").on("click", function(){
 	}
 });
 
-// audio on, off 기능
+/**
+ * 로컬 오디오 토글 기능 - 오디오 on/off
+ * 주의: 전역 변수 participants, userId에 의존
+ */
 $(".localAudioToggle").on("click", function(){
 	let audioBtn = $(".localAudioToggle");
 	let useAudio = audioBtn.data("flag");
@@ -186,18 +391,24 @@ $(".localAudioToggle").on("click", function(){
 
 	if (useAudio) { // 오디오가 사용중이라면 오디오 off
 		audioTrack.enabled = false;
-		// audioBtn.val("Audio On");
+		ParticipantUtils.updateAudioState(userId, false);
 		audioBtn.data("flag", false);
-		audioBtn.attr("src", "/images/webrtc/audio-speaker-off.svg")
+		audioBtn.attr("src", "/images/webrtc/audio-speaker-off.svg");
 	} else {
 		audioTrack.enabled = true;
-		// audioBtn.val("Audio Off");
+		ParticipantUtils.updateAudioState(userId, true);
 		audioBtn.data("flag", true);
-		audioBtn.attr("src", "/images/webrtc/audio-speaker-on.svg")
+		audioBtn.attr("src", "/images/webrtc/audio-speaker-on.svg");
 	}
+
+	// 오디오 버튼들과 볼륨 슬라이더 동기화
+	ParticipantUtils.syncAudioButtons(userId, !useAudio);
 });
 
-// "유저 설정" 버튼을 클릭할 때 모달을 설정합니다.
+/**
+ * 사용자 설정 모달 기능 - 참가자 목록과 각 참가자의 비디오/오디오/음량 컨트롤
+ * 주의: 전역 변수 participants에 의존
+ */
 $('#userSetting').on('click', function (e) {
 	let participantsList = $('#participantsList');
 	participantsList.empty(); // 기존 목록을 비웁니다.
@@ -212,7 +423,37 @@ $('#userSetting').on('click', function (e) {
 		// 기존의 볼륨 컨트롤을 찾아서 복사합니다.
 		let existingVolumeSlider = $('#' + volumeSliderId);
 		// 기존의 볼륨 컨트롤이 있으면 복사하여 사용합니다.
-		let volumeSlider = existingVolumeSlider.clone(true);
+		let volumeSlider = existingVolumeSlider.clone();
+
+		// 현재 오디오 상태에 따라 볼륨 슬라이더 설정
+		let audioState = ParticipantUtils.getAudioState(userId);
+		volumeSlider[0].disabled = !audioState.enabled;
+		volumeSlider[0].style.opacity = audioState.enabled ? '1' : '0.5';
+		volumeSlider[0].value = audioState.volume;
+
+		// 모달 내 볼륨 슬라이더 이벤트 추가
+		volumeSlider.on('input change', function() {
+			let targetUserId = userId;
+			let volumeLevel = parseFloat(this.value);
+			
+			// 오디오 상태 확인
+			let currentAudioState = ParticipantUtils.getAudioState(targetUserId);
+			if (!currentAudioState.enabled) {
+				// 오디오가 꺼져있으면 볼륨 조절 불가
+				this.value = currentAudioState.volume;
+				return;
+			}
+
+			// 볼륨 조절 적용
+			ParticipantUtils.updateAudioState(targetUserId, true, volumeLevel);
+			participants[targetUserId].setVolume(volumeLevel);
+
+			// 메인 화면의 볼륨 슬라이더와 동기화
+			let mainVolumeSlider = document.getElementById('volumeControl_' + targetUserId);
+			if (mainVolumeSlider) {
+				mainVolumeSlider.value = volumeLevel;
+			}
+		});
 
 		// 비디오 및 오디오 컨트롤 버튼 복사 및 ID 수정
 		let videoButtonId = 'videoBtn_' + userId;
@@ -226,6 +467,35 @@ $('#userSetting').on('click', function (e) {
 
 			videoButton.removeClass('col-md-1');
 			audioButton.removeClass('col-md-1');
+
+			// 내 오디오 버튼 상태 동기화
+			audioButton.data('flag', audioState.enabled);
+			audioButton.attr('src', audioState.enabled ? '/images/webrtc/audio-speaker-on.svg' : '/images/webrtc/audio-speaker-off.svg');
+
+			// 내 오디오 버튼 이벤트 추가
+			audioButton.off('click').on('click', function() {
+				let currentState = $(this).data('flag');
+				let audioTrack = participants[userId].rtcPeer.getLocalStream().getTracks().filter(track => track.kind === 'audio')[0];
+
+				if (currentState) {
+					audioTrack.enabled = false;
+					ParticipantUtils.updateAudioState(userId, false);
+					$(this).data('flag', false);
+					$(this).attr('src', '/images/webrtc/audio-speaker-off.svg');
+				} else {
+					audioTrack.enabled = true;
+					ParticipantUtils.updateAudioState(userId, true);
+					$(this).data('flag', true);
+					$(this).attr('src', '/images/webrtc/audio-speaker-on.svg');
+				}
+
+				// 메인 화면 버튼과 볼륨 슬라이더 동기화
+				ParticipantUtils.syncAudioButtons(userId, !currentState);
+				
+				// 모달 내 볼륨 슬라이더 상태도 업데이트
+				volumeSlider[0].disabled = currentState;
+				volumeSlider[0].style.opacity = currentState ? '0.5' : '1';
+			});
 
 			listItem.append(videoButton, audioButton, volumeSlider);
 		} else { // 다른 유저의 video, audio 설정
@@ -262,24 +532,39 @@ $('#userSetting').on('click', function (e) {
 			remoteAudioButton.removeClass('localAudioToggle');
 			// col-md-1 삭제
 			remoteAudioButton.removeClass('col-md-1');
+
+			// 상대방 오디오 버튼 상태 동기화
+			remoteAudioButton.data('flag', audioState.enabled);
+			remoteAudioButton.attr('src', audioState.enabled ? '/images/webrtc/audio-speaker-on.svg' : '/images/webrtc/audio-speaker-off.svg');
+
 			// 클릭 이벤트 할당
 			remoteAudioButton.click(function(){
-				let useRemoteVideo = remoteAudioButton.data('flag')
+				let useRemoteAudio = remoteAudioButton.data('flag')
 				// 오디오 트랙만 가져오기
 				let audioTrack = participant.rtcPeer.getRemoteStream().getTracks().filter(track => track.kind === 'audio')[0];
 
-				if (useRemoteVideo) { // 오디오가 사용중이라면 오디오 off : enabled = false
+				if (useRemoteAudio) { // 오디오가 사용중이라면 오디오 off : enabled = false
 					audioTrack.enabled = false;
-					// remoteAudioButton.val("Audio On");
+					ParticipantUtils.updateAudioState(userId, false);
 					remoteAudioButton.data('flag', false);
-					remoteAudioButton.attr('src', '/images/webrtc/audio-speaker-off.svg')
+					remoteAudioButton.attr('src', '/images/webrtc/audio-speaker-off.svg');
+					
+					// 볼륨 슬라이더 비활성화
+					volumeSlider[0].disabled = true;
+					volumeSlider[0].style.opacity = '0.5';
 				} else {
 					audioTrack.enabled = true;
-					// remoteAudioButton.val("Audio Off");
+					ParticipantUtils.updateAudioState(userId, true);
 					remoteAudioButton.data('flag', true);
-					remoteAudioButton.attr('src', '/images/webrtc/audio-speaker-on.svg')
+					remoteAudioButton.attr('src', '/images/webrtc/audio-speaker-on.svg');
 
+					// 볼륨 슬라이더 활성화
+					volumeSlider[0].disabled = false;
+					volumeSlider[0].style.opacity = '1';
 				}
+
+				// 메인 화면의 볼륨 슬라이더도 동기화
+				ParticipantUtils.toggleVolumeSlider(userId, !useRemoteAudio);
 			})
 
 			listItem.append(remoteVideoButton, remoteAudioButton, volumeSlider);
@@ -288,22 +573,3 @@ $('#userSetting').on('click', function (e) {
 		participantsList.append(listItem);
 	});
 });
-
-function updateGridLayout() {
-	let participantsDiv = document.getElementById('participants');
-	let totalParticipants = participantsDiv.childElementCount;
-
-	// Remove all layout classes
-	['one', 'two', 'three'].forEach(function(cls) {
-		participantsDiv.classList.remove(cls);
-	});
-
-	// Assign the appropriate layout class
-	if (totalParticipants === 1) {
-		participantsDiv.classList.add('one');
-	} else if (totalParticipants === 2) {
-		participantsDiv.classList.add('two');
-	} else if (totalParticipants === 3) {
-		participantsDiv.classList.add('three');
-	}
-}

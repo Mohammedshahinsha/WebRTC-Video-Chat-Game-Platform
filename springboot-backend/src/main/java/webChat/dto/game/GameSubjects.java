@@ -10,13 +10,10 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class GameSubjects {
-    String title; // 선택된 주제
-    List<String> subjects; // 추천된 주제
+    private String title; // 선택된 주제
+    private List<String> subjects; // 추천된 주제
     @JsonProperty("before_subjects")
-    List<String> beforeSubjects; // 이전 소주제
-
-    public GameSubjects(String title){
-        this.title = title;
-    }
+    private List<String> beforeSubjects; // 이전 소주제
+    private String difficulty; // 난이도
 
 }

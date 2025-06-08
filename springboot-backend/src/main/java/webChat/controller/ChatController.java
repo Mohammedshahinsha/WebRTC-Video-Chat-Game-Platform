@@ -12,7 +12,7 @@ import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 import webChat.dto.room.ChatRoomMap;
-import webChat.service.chat.ChatServiceMain;
+import webChat.service.chat.ChatService;
 import webChat.service.chat.MsgChatService;
 import webChat.dto.chat.ChatDto;
 
@@ -32,7 +32,7 @@ public class ChatController {
     private final SimpMessageSendingOperations template;
 
     private final MsgChatService msgChatService;
-    private final ChatServiceMain chatServiceMain;
+    private final ChatService chatService;
 
     @Value("${turn.server.urls}")
     private String turnServerUrl;
@@ -50,7 +50,7 @@ public class ChatController {
     public void enterUser(@Payload ChatDto chat, SimpMessageHeaderAccessor headerAccessor) {
 
         // 채팅방 유저+1
-        chatServiceMain.plusUserCnt(chat.getRoomId());
+        chatService.plusUserCnt(chat.getRoomId());
 
         // 채팅방에 유저 추가 및 UserUUID 반환
         String userUUID = msgChatService.addUser(ChatRoomMap.getInstance().getChatRooms(), chat.getRoomId(), chat.getSender());
@@ -87,7 +87,7 @@ public class ChatController {
         log.info("headAccessor {}", headerAccessor);
 
         // 채팅방 유저 -1
-        chatServiceMain.minusUserCnt(roomId);
+        chatService.minusUserCnt(roomId);
 
         // 채팅방 유저 리스트에서 UUID 유저 닉네임 조회 및 리스트에서 유저 삭제
         String username = msgChatService.findUserNameByRoomIdAndUserUUID(ChatRoomMap.getInstance().getChatRooms(), roomId, userUUID);

@@ -4,7 +4,7 @@ const roomList = {
   init: function() {
     const self = this;
     self.loadRoomList();
-    self.getVisitorCount();
+    self.checkVisitor();
     self.bindRoomEvents();
     self.initModals();
     self.initInputLimits();
@@ -14,7 +14,7 @@ const roomList = {
   },
   loadRoomList: function() {
     const self = this;
-    ajax(window.__CONFIG__.API_BASE_URL + '/chat/roomlist', 'GET', true, '', function(list) {
+    ajax(window.__CONFIG__.API_BASE_URL + '/chat/room/list', 'GET', true, '', function(list) {
       const $tbody = $('#roomTableBody');
       $tbody.empty();
       list.forEach(function(room) {
@@ -42,83 +42,33 @@ const roomList = {
   },
   bindRoomEvents: function() {
     const self = this;
-    // 비밀방 입장
+    // 비밀방 입장 - RoomPopup으로 위임
     $(document).off('click', '.enterRoomBtn').on('click', '.enterRoomBtn', function(e) {
       e.preventDefault();
-      self.roomId = $(this).data('id');
-      $('#enterRoomModal').modal('show');
+      const roomId = $(this).data('id');
+      if (window.RoomPopup) {
+        window.RoomPopup.setRoomId(roomId);
+        $('#enterRoomModal').modal('show');
+      }
     });
-    // 일반방 바로 입장
+    // 일반방 바로 입장 - RoomPopup으로 위임
     $(document).off('click', '.directEnterBtn').on('click', '.directEnterBtn', function(e) {
       e.preventDefault();
       const id = $(this).data('roomid');
-      self.chkRoomUserCnt(id);
+      if (window.RoomPopup) {
+        window.RoomPopup.chkRoomUserCnt(id);
+      }
     });
-    // 방 설정 모달
+    // 방 설정 모달 - RoomSettingsPopup으로 위임
     $(document).off('click', '.configRoomBtn').on('click', '.configRoomBtn', function() {
-      self.roomId = $(this).data('id');
-      $('#confirmPwdModal').modal('show');
-    });
-    // 비밀방 모달에서 '입장하기' 버튼 클릭
-    $(document).off('click', '#enterRoomBtn').on('click', '#enterRoomBtn', function(e) {
-      e.preventDefault();
-      self.enterRoom();
-    });
-    // 방 생성
-    $('#modalCreateRoomForm').off('submit').on('submit', function(e) {
-      e.preventDefault();
-      if (self.createRoom()) {
-        $.ajax({
-          url: window.__CONFIG__.API_BASE_URL + '/chat/room',
-          type: 'POST',
-          data: {
-            roomName: $('#modalRoomName').val(),
-            roomPwd: $('#modalRoomPwd').val(),
-            secretChk: $('#modalSecret').is(':checked'),
-            maxUserCnt: $('#modalMaxUserCnt').val(),
-            chatType: $('input[name="modalChatType"]:checked').val()
-          },
-          xhrFields: { withCredentials: true },
-          success: function(res) {
-            Toastify({
-              text: '방 생성이 완료되었습니다!',
-              duration: 2000,
-              gravity: 'top',
-              position: 'center',
-              backgroundColor: '#51cf66',
-              close: true
-            }).showToast();
-            $('#roomModal').modal('hide');
-            self.loadRoomList();
-          },
-          error: function(err) {
-            Toastify({
-              text: '방 생성에 실패했습니다: ' + (err.responseText || ''),
-              duration: 2500,
-              gravity: 'top',
-              position: 'center',
-              backgroundColor: '#fa5252',
-              close: true
-            }).showToast();
-          }
-        });
+      const roomId = $(this).data('id');
+      if (window.RoomSettingsPopup) {
+        window.RoomSettingsPopup.setRoomId(roomId);
+        $('#confirmPwdModal').modal('show');
       }
     });
-    // 방 생성 모달 닫힐 때 input 값 초기화
-    $('#roomModal').on('hidden.bs.modal', function () {
-      $('#modalRoomName').val('');
-      $('#modalRoomPwd').val('');
-      $('#modalMaxUserCnt').val('2');
-    });
-    // 방 생성 최대 인원 입력 제한 (2~6)
-    $(document).on('input', '#modalMaxUserCnt', function() {
-      let val = parseInt($(this).val(), 10);
-      if (isNaN(val) || val < 2) {
-        $(this).val(2);
-      } else if (val > 6) {
-        $(this).val(6);
-      }
-    });
+    // 방 생성 - RoomPopup으로 위임 (이벤트는 RoomPopup에서 처리됨)
+    // 방 생성 관련 모든 이벤트 처리는 js/popup/room_popup.js에서 담당
     // 방 수정 모달 최대 인원 입력 제한 (2~6)
     $(document).on('input', '#configMaxUserCnt', function() {
       let val = parseInt($(this).val(), 10);
@@ -174,218 +124,6 @@ const roomList = {
       }
     });
   },
-  createRoom: function() {
-    $('#loadingIndicator').show();
-    $('#roomConfigBtn').hide();
-    function resetEvent() {
-      $('#loadingIndicator').hide();
-      $('#roomConfigBtn').show();
-    };
-    let name = $("#modalRoomName").val();
-    let pwd = $("#modalRoomPwd").val();
-    let secret = $("#modalSecret").is(':checked');
-    let $chatType = $('input[name="modalChatType"]:checked').val();
-    let $maxUserCnt = $("#modalMaxUserCnt").val();
-    if (name === "") {
-      Toastify({
-        text: '방 이름은 필수입니다',
-        duration: 2000,
-        gravity: 'top',
-        position: 'center',
-        backgroundColor: '#fa5252',
-        close: true
-      }).showToast();
-      resetEvent();
-      return false;
-    }
-    if ($("#" + name).length > 0) {
-      Toastify({
-        text: '이미 존재하는 방입니다',
-        duration: 2000,
-        gravity: 'top',
-        position: 'center',
-        backgroundColor: '#fa5252',
-        close: true
-      }).showToast();
-      resetEvent();
-      return false;
-    }
-    if (pwd === "") {
-      Toastify({
-        text: '비밀번호는 필수입니다',
-        duration: 2000,
-        gravity: 'top',
-        position: 'center',
-        backgroundColor: '#fa5252',
-        close: true
-      }).showToast();
-      resetEvent();
-      return false;
-    }
-    if ($('input[name=modalChatType]:checked').val() == null) {
-      Toastify({
-        text: '채팅 타입은 필수입니다',
-        duration: 2000,
-        gravity: 'top',
-        position: 'center',
-        backgroundColor: '#fa5252',
-        close: true
-      }).showToast();
-      resetEvent();
-      return false;
-    }
-    if ($maxUserCnt <= 1) {
-      Toastify({
-        text: '채팅은 최소 2명 이상이어야 합니다!',
-        duration: 2000,
-        gravity: 'top',
-        position: 'center',
-        backgroundColor: '#fa5252',
-        close: true
-      }).showToast();
-      resetEvent();
-      return false;
-    } else {
-      if ($chatType === 'msgChat' && $maxUserCnt > 100) {
-        Toastify({
-          text: '일반 채팅은 최대 100명입니다!',
-          duration: 2000,
-          gravity: 'top',
-          position: 'center',
-          backgroundColor: '#fa5252',
-          close: true
-        }).showToast();
-        resetEvent();
-        return false;
-      } else if ($chatType === 'rtcChat' && $maxUserCnt > 6) {
-        Toastify({
-          text: '화상 채팅은 최대 6명입니다!',
-          duration: 2000,
-          gravity: 'top',
-          position: 'center',
-          backgroundColor: '#fa5252',
-          close: true
-        }).showToast();
-        resetEvent();
-        return false;
-      }
-    }
-    if (!this.numberChk()) {
-      resetEvent();
-      return false;
-    }
-    return true;
-  },
-  delRoom: function() {
-    const self = this;
-    let url = window.__CONFIG__.API_BASE_URL + "/chat/room/" + self.roomId;
-    let successCallback = function (result) {
-      if (result && result.data) {
-        Toastify({ text: '방 삭제를 완료했습니다', duration: 2000, gravity: 'top', position: 'center', backgroundColor: '#51cf66', close: true }).showToast();
-        $('#roomConfigModal').modal('hide');
-        location.reload();
-      } else {
-        Toastify({ text: '방 삭제에 실패했습니다.', duration: 2000, gravity: 'top', position: 'center', backgroundColor: '#fa5252', close: true }).showToast();
-      }
-    };
-    let errorCallback = function(error){
-      let result = error.responseJSON;
-      let errorMessage = '방 삭제 중 오류가 발생했습니다.';
-      if (result && result.code === '40041') {
-        errorMessage = result.message;
-      }
-      Toastify({ text: errorMessage, duration: 2000, gravity: 'top', position: 'center', backgroundColor: '#fa5252', close: true }).showToast();
-    }
-    ajax(url, 'DELETE', false, '', successCallback, errorCallback);
-  },
-  saveRoomConfig: function() {
-    const self = this;
-    const name = $('#configRoomName').val().trim();
-    const maxUserCnt = parseInt($('#configMaxUserCnt').val(), 10);
-    const pwd = $('#configRoomPwd').val();
-    const changePwd = $('#changePwdCheckbox').is(':checked');
-    if (!name) {
-      Toastify({ text: '방 이름을 입력하세요.', duration: 2000, gravity: 'top', position: 'center', backgroundColor: '#fa5252', close: true }).showToast();
-      return;
-    }
-    if (isNaN(maxUserCnt) || maxUserCnt < 2 || maxUserCnt > 6) {
-      Toastify({ text: '최대 인원은 2~6명만 가능합니다.', duration: 2000, gravity: 'top', position: 'center', backgroundColor: '#fa5252', close: true }).showToast();
-      return;
-    }
-    if (changePwd && !pwd) {
-      Toastify({ text: '비밀번호를 입력하세요.', duration: 2000, gravity: 'top', position: 'center', backgroundColor: '#fa5252', close: true }).showToast();
-      return;
-    }
-    $.ajax({
-      url: window.__CONFIG__.API_BASE_URL + '/chat/room/modify/' + self.roomId,
-      type: 'POST',
-      contentType: 'application/json',
-      data: JSON.stringify({
-        roomId: self.roomId,
-        roomName: name,
-        maxUserCnt: maxUserCnt,
-        roomPwd: changePwd ? pwd : self.originPwd
-      }),
-      success: function(res) {
-        Toastify({ text: '설정이 저장되었습니다.', duration: 2000, gravity: 'top', position: 'center', backgroundColor: '#51cf66', close: true }).showToast();
-        $('#roomConfigModal').modal('hide');
-        location.reload();
-      },
-      error: function(err) {
-        Toastify({ text: '설정 저장 실패', duration: 2000, gravity: 'top', position: 'center', backgroundColor: '#fa5252', close: true }).showToast();
-      }
-    });
-    // input 값 초기화
-    $('#configRoomName').val('');
-    $('#configMaxUserCnt').val('2');
-    $('#configRoomPwd').val('').prop('readonly', true);
-    $('#changePwdCheckbox').prop('checked', false);
-  },
-  confirmPWD: function() {
-    const self = this;
-    $("#confirmPwd").off('keyup').on("keyup", function () {
-      let $confirmPwd = $("#confirmPwd").val();
-      const $configRoomBtn = $("#configRoomBtn");
-      let $confirmLabel = $("#confirmLabel");
-      if (!self.roomId) {
-        Toastify({
-          text: '방 정보가 올바르지 않습니다. 다시 시도해 주세요.', duration: 2500, gravity: 'top', position: 'center', backgroundColor: '#fa5252', close: true
-        }).showToast();
-        $configRoomBtn.attr("class", "btn btn-primary disabled");
-        $configRoomBtn.attr("aria-disabled", true);
-        $confirmLabel.html("<span id='confirm'>방 정보 오류</span>");
-        $("#confirm").css({ "color": "#FA3E3E", "font-weight": "bold" });
-        return;
-      }
-      let url = window.__CONFIG__.API_BASE_URL + '/chat/confirmPwd/' + self.roomId;
-      let data = {
-        "roomPwd": $confirmPwd
-      };
-      let successCallback = function(result){
-        if (result && result.data) {
-          $configRoomBtn.attr("class", "btn btn-primary");
-          $configRoomBtn.attr("aria-disabled", false);
-          $confirmLabel.html("<span id='confirm'>비밀번호 확인 완료</span>");
-          $("#confirm").css({
-            "color": "#0D6EFD",
-            "font-weight": "bold",
-          });
-        } else {
-          $configRoomBtn.attr("class", "btn btn-primary disabled");
-          $configRoomBtn.attr("aria-disabled", true);
-          $confirmLabel.html("<span id='confirm'>비밀번호가 틀립니다</span>");
-          $("#confirm").css({
-            "color": "#FA3E3E",
-            "font-weight": "bold",
-          });
-        }
-      };
-      let errorCallback = function (error) {
-        console.error(error)
-      };
-      ajax(url, 'POST', '', data, successCallback, errorCallback);
-    });
-  },
   numberChk: function() {
     let check = /^[0-9]+$/;
     if (!check.test($("#modalMaxUserCnt").val())) {
@@ -401,79 +139,18 @@ const roomList = {
     }
     return true;
   },
-  enterRoom: function() {
-    const self = this;
-    let $enterPwd = $('#enterPwd').val();
-    let url = window.__CONFIG__.API_BASE_URL + '/chat/confirmPwd/' + self.roomId;
-    let data = {
-      'roomPwd': $enterPwd
-    };
-    let successCallback = function (result) {
-      if (result && result.data) {
-        $('#enterRoomModal').modal('hide');
-        self.chkRoomUserCnt(self.roomId);
-      } else {
-        Toastify({
-          text: '비밀번호가 틀립니다. 비밀번호를 확인해주세요',
-          duration: 2500,
-          gravity: 'top',
-          position: 'center',
-          backgroundColor: '#fa5252',
-          close: true
-        }).showToast();
-      }
-    };
-    let errorCallback = function (error) {
-      console.error(error);
-      Toastify({
-        text: '방 입장 중 오류가 발생했습니다',
-        duration: 2500,
-        gravity: 'top',
-        position: 'center',
-        backgroundColor: '#fa5252',
-        close: true
-      }).showToast();
-    }
-    ajax(url, 'POST', false, data, successCallback, errorCallback);
-  },
-  chkRoomUserCnt: function(roomId) {
-    let url = window.__CONFIG__.API_BASE_URL + '/chat/chkUserCnt/' + roomId;
-    let successCallback = function (result) {
-      if (!result || !result.data) {
-        Toastify({
-          text: '채팅방이 꽉 차서 입장 할 수 없습니다', duration: 2500, gravity: 'top', position: 'center', backgroundColor: '#fa5252', close: true
-        }).showToast();
-        return;
-      }
-      location.href = window.__CONFIG__.BASE_URL + '/kurentoroom.html?roomId=' + roomId;
-    };
-    let errorCallback = function (error) {
-      console.error(error);
-    }
-    ajax(url, 'GET', 'false', '', successCallback, errorCallback);
-  },
-  getVisitorCount: function() {
-    let url = window.__CONFIG__.API_BASE_URL + "/visitor";
-    let data = {
-      "isVisitedToday": 'true'
-    };
-    let successCallback = function(data){
-      dailyVisitor = data;
-      $('#visitorCount').text('방문자 수 : ' + dailyVisitor);
-    };
-    let errorCallback = function(error){
-      console.error("Error getting visitor count: ", error);
-    };
-    ajax(url, 'GET', true, data, successCallback, errorCallback);
-  },
+  // 방문자 수 조회
   checkVisitor: function() {
     let url = window.__CONFIG__.API_BASE_URL + "/visitor";
     let data = {
-      "isVisitedToday": sessionStorage.getItem("isVisitedToday") === 'true'
+      "isVisitedToday": sessionStorage.getItem("isVisitedToday") === 'true' ? 'true' : 'false'
     };
-    let successCallback = function(data){
-      dailyVisitor = data;
-      $('#visitorCount').text('방문자 수 : ' + dailyVisitor);
+    let successCallback = function(res){
+      if(res.result === 'success'){
+        $('#visitorCount').text('방문자 수 : ' + res.data);
+      } else {
+        console.error("Error ajax data: ", res.message);
+      }
     };
     let errorCallback = function(error){
       console.error("Error ajax data: ", error);
@@ -553,13 +230,12 @@ const roomList = {
   },
   initUpdateButton: function() {
     $('#showUpdatesButton').on('click', function() {
-      var myModal = new bootstrap.Modal($('#updateHistoryModal'));
-      myModal.show();
+      const updateHistoryModal = new bootstrap.Modal($('#updateHistoryModal'));
+      updateHistoryModal.show();
     });
   }
 };
 
 $(function() {
   roomList.init();
-  roomList.confirmPWD();
 });

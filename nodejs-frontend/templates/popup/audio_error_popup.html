@@ -1,0 +1,43 @@
+<!-- 오디오 에러 모달 -->
+<div class="modal fade" id="audioErrorModal" tabindex="-1" role="dialog" aria-labelledby="audioErrorModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-white">
+                <h5 class="modal-title" id="audioErrorModalLabel">
+                    <span id="audioErrorIcon" style="font-size: 1.5em; margin-right: 10px;"></span>
+                    <span id="audioErrorTitle"></span>
+                </h5>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <strong>상황:</strong> <span id="audioErrorHelpText"></span>
+                </div>
+                
+                <p id="audioErrorMessage" style="font-size: 1.1em; margin-bottom: 20px;"></p>
+                
+                <div class="card mb-3">
+                    <div class="card-header bg-light">
+                        <strong>📝 해결 방법</strong>
+                    </div>
+                    <div class="card-body" id="audioErrorBrowserGuide">
+                    </div>
+                </div>
+                
+                <div class="alert alert-warning">
+                    <strong>💡 참고:</strong> 음성 채팅은 이 서비스의 필수 기능입니다. 마이크 권한 없이는 채팅방을 이용할 수 없습니다.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success" id="audioRetryButton">
+                    🔄 다시 시도
+                </button>
+                <button type="button" class="btn btn-secondary" id="audioHelpButton">
+                    ❓ 도움말
+                </button>
+                <button type="button" class="btn btn-primary" id="audioErrorConfirmButton">
+                    ✅ 메인으로 돌아가기
+                </button>
+            </div>
+        </div>
+    </div>
+</div> 
