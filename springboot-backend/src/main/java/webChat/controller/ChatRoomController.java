@@ -96,6 +96,7 @@ public class ChatRoomController {
 
         // 넘어온 roomId 와 roomPwd 를 이용해서 비밀번호 찾기
         // 찾아서 입력받은 roomPwd 와 room pwd 와 비교해서 맞으면 true, 아니면  false
+        // TODO 추후 401 권한 에러로 수정할 것
         return ResponseEntity.ok(ChatForYouResponse.builder()
                 .result("success")
                 .data(chatService.validatePwd(roomId, roomPwd))
