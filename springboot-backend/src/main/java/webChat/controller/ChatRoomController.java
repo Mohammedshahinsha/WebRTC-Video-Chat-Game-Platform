@@ -6,31 +6,32 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import webChat.dto.response.common.ChatForYouResponse;
-import webChat.dto.room.in.ChatRoomInVo;
-import webChat.dto.room.out.ChatRoomOutVo;
-import webChat.dto.room.ChatRoomMap;
-import webChat.dto.ChatType;
-import webChat.service.chat.ChatService;
-import webChat.dto.room.ChatRoomDto;
+import webChat.model.response.common.ChatForYouResponse;
+import webChat.model.room.ChatRoom;
+import webChat.model.room.in.ChatRoomInVo;
+import webChat.model.room.out.ChatRoomOutVo;
+import webChat.model.room.ChatRoomMap;
+import webChat.model.chat.ChatType;
+import webChat.service.chat.ChatRoomService;
+import webChat.service.kurento.KurentoManager;
 import webChat.service.social.PrincipalDetails;
 import java.util.ArrayList;
 import java.util.List;
 
-@RequiredArgsConstructor
 @RestController
-@Slf4j
 @RequestMapping("/chatforyou/api/chat")
+@RequiredArgsConstructor
+@Slf4j
 public class ChatRoomController {
 
-    // ChatService Bean 가져오기
-    private final ChatService chatService;
+    private final ChatRoomService chatRoomService;
+    private final KurentoManager kurentoManager;
 
     @GetMapping("/room/list")
     public ResponseEntity<List<ChatRoomOutVo>> goChatRooms(Model model, @AuthenticationPrincipal PrincipalDetails principalDetails){
         List<ChatRoomOutVo> responses = new ArrayList<>();
 
-        chatService.findAllRoom().forEach(room -> {
+        chatRoomService.findAllRoom().forEach(room -> {
             responses.add(ChatRoomOutVo.of(room));
         });
 
@@ -43,7 +44,7 @@ public class ChatRoomController {
 //        }
 
 //        model.addAttribute("user", "hey");
-        log.debug("SHOW ALL ChatList {}", chatService.findAllRoom());
+        log.debug("SHOW ALL ChatList {}", chatRoomService.findAllRoom());
         return ResponseEntity.ok(responses);
     }
 
@@ -53,9 +54,8 @@ public class ChatRoomController {
     public ResponseEntity<ChatForYouResponse> createRoom(
             @RequestBody ChatRoomInVo chatRoomInVo) {
 
-
         // 매개변수 : 방 이름, 패스워드, 방 잠금 여부, 방 인원수
-        ChatRoomDto room = chatService.createChatRoom(chatRoomInVo);
+        ChatRoom room = kurentoManager.createChatRoom(chatRoomInVo);
 
         log.info("CREATE Chat Room [{}]", room);
 
@@ -77,7 +77,7 @@ public class ChatRoomController {
             model.addAttribute("user", principalDetails.getUser());
         }
 
-        ChatRoomDto room = ChatRoomMap.getInstance().getChatRooms().get(roomId);
+        ChatRoom room = ChatRoomMap.getInstance().getChatRooms().get(roomId);
 
         model.addAttribute("room", room);
 
@@ -99,7 +99,7 @@ public class ChatRoomController {
         // TODO 추후 401 권한 에러로 수정할 것
         return ResponseEntity.ok(ChatForYouResponse.builder()
                 .result("success")
-                .data(chatService.validatePwd(roomId, roomPwd))
+                .data(chatRoomService.validatePwd(roomId, roomPwd))
                 .build());
     }
 
@@ -110,7 +110,7 @@ public class ChatRoomController {
             @RequestBody ChatRoomInVo chatRoom){
         return ResponseEntity.ok(ChatForYouResponse.builder()
                 .result("success")
-                .data(chatService.updateRoom(roomId, chatRoom.getRoomName(), chatRoom.getRoomPwd(), chatRoom.getMaxUserCnt()))
+                .data(chatRoomService.updateRoom(roomId, chatRoom.getRoomName(), chatRoom.getRoomPwd(), chatRoom.getMaxUserCnt()))
                 .build());
     }
 
@@ -121,7 +121,7 @@ public class ChatRoomController {
         // roomId 기준으로 chatRoomMap 에서 삭제, 해당 채팅룸 안에 있는 사진 삭제
         return ResponseEntity.ok(ChatForYouResponse.builder()
                 .result("success")
-                .data(chatService.delChatRoom(roomId))
+                .data(chatRoomService.delChatRoom(roomId))
                 .build());
 
     }
@@ -131,7 +131,7 @@ public class ChatRoomController {
     public ResponseEntity<ChatForYouResponse> chUserCnt(@PathVariable String roomId){
         return ResponseEntity.ok(ChatForYouResponse.builder()
                 .result("success")
-                .data(chatService.chkRoomUserCnt(roomId))
+                .data(chatRoomService.chkRoomUserCnt(roomId))
                 .build());
     }
 }

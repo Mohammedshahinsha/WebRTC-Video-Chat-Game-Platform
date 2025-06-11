@@ -2,10 +2,10 @@ package webChat.mapper;
 
 import javax.annotation.Generated;
 import org.springframework.stereotype.Component;
-import webChat.Entity.ChatUser;
-import webChat.Entity.ChatUser.ChatUserBuilder;
-import webChat.dto.chat.ChatUserDto;
-import webChat.dto.chat.ChatUserDto.ChatUserDtoBuilder;
+import webChat.entity.ChatUser;
+import webChat.entity.ChatUser.ChatUserBuilder;
+import webChat.model.chat.ChatUserDto;
+import webChat.model.chat.ChatUserDto.ChatUserDtoBuilder;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",

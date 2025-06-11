@@ -5,10 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import webChat.dto.FileDto;
+import webChat.model.file.FileDto;
 import webChat.service.file.FileService;
-
-import java.io.IOException;
 
 @RestController
 @RequestMapping("/chatforyou/api/file")

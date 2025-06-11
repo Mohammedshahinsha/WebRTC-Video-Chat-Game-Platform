@@ -4,7 +4,7 @@ import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import webChat.dto.log.ClientInfo;
+import webChat.model.log.ClientInfo;
 import webChat.service.monitoring.PrometheusService;
 
 @Service

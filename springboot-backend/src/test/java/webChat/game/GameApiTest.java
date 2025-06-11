@@ -4,15 +4,11 @@ package webChat.game;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.test.context.TestPropertySource;
-import webChat.config.SslConfig;
-import webChat.config.WebRtcConfig;
-import webChat.config.WebSocketConfig;
-import webChat.dto.game.GameSubjects;
-import webChat.dto.game.GameTitles;
+import webChat.model.game.GameSubjects;
+import webChat.model.game.GameTitles;
 import webChat.utils.HttpUtil;
 
 import java.util.concurrent.ConcurrentHashMap;

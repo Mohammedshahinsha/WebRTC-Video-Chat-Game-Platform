@@ -1,6 +1,6 @@
 package webChat.service.game;
 
-import webChat.dto.game.*;
+import webChat.model.game.*;
 
 import java.util.List;
 
@@ -41,7 +41,7 @@ public interface CatchMindService {
      * @param userId
      * @return 유저 정보
      */
-    CatchMindUser updateUser(GameStatus gameStatus, String roomId, String userId);
+    CatchMindUserDto updateUser(GameStatus gameStatus, String roomId, String userId);
 
     /**
      * 게임 결과 정보 return
@@ -49,6 +49,6 @@ public interface CatchMindService {
      * @return 방에서의 게임 결과
      */
     GameSettingInfo getGameResult(String roomId);
-    List<CatchMindUser> getGameUserInfos(String roomId);
+    List<CatchMindUserDto> getGameUserInfos(String roomId);
     boolean chkDuplicateNickName(String nickName);
 }

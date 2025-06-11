@@ -6,7 +6,7 @@ import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
-import webChat.dto.chat.ChatUserDto;
+import webChat.model.chat.ChatUserDto;
 
 // OAuth2 로그인 시 -> 즉 소셜 로그인 시 DefaultOAuth2UserService 아래의 loadUser 메서드가 실행됨
 // 즉 OAuth2 로그인 후 후처리 - 회원 가입, 회원 정보에 따른 등록 등 - 관현 클래스와 메서드에 해당함

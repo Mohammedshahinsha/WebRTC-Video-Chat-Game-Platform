@@ -1,5 +1,5 @@
 package webChat.service.monitoring;
-import webChat.dto.log.ClientInfo;
+import webChat.model.log.ClientInfo;
 
 
 public interface MonitoringService {

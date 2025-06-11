@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
-import webChat.dto.game.*;
+import webChat.model.game.*;
 import webChat.service.game.CatchMindService;
 
 import java.util.Map;
@@ -49,7 +49,7 @@ public class CatchMindController {
     public Map<String, String> updateGameStatus(
             @RequestBody GameStatusRequest gameStatusRequest) {
         Map<String, String> result = new ConcurrentHashMap<>();
-        CatchMindUser catchMindUser = catchMindService.updateUser(gameStatusRequest.getGameStatus(), gameStatusRequest.getRoomId(), gameStatusRequest.getUserId());
+        CatchMindUserDto catchMindUser = catchMindService.updateUser(gameStatusRequest.getGameStatus(), gameStatusRequest.getRoomId(), gameStatusRequest.getUserId());
         result.put("result", "success");
         result.put("nickName", catchMindUser.getNickName());
         return result;

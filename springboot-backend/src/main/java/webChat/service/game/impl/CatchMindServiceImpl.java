@@ -10,9 +10,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import webChat.config.CatchMindConfig;
 import webChat.controller.ExceptionController;
-import webChat.dto.game.*;
-import webChat.dto.room.ChatRoomMap;
-import webChat.dto.room.KurentoRoomDto;
+import webChat.model.game.*;
+import webChat.model.room.ChatRoomMap;
+import webChat.model.room.KurentoRoom;
 import webChat.service.game.CatchMindService;
 import webChat.utils.HttpUtil;
 
@@ -43,7 +43,7 @@ public class CatchMindServiceImpl implements CatchMindService {
 
     @Override
     public boolean chkAlreadyPlayedGame(String roomId) {
-        KurentoRoomDto room = (KurentoRoomDto)ChatRoomMap.getInstance().getChatRooms().get(roomId);
+        KurentoRoom room = (KurentoRoom)ChatRoomMap.getInstance().getChatRooms().get(roomId);
         if (Objects.isNull(room)) {
             // TODO 예외처리
 
@@ -72,7 +72,7 @@ public class CatchMindServiceImpl implements CatchMindService {
     public GameSubjects getSubjects(String roomId, GameSubjects gameSubjects) throws Exception {
 
         try{
-            KurentoRoomDto room = (KurentoRoomDto) ChatRoomMap.getInstance().getChatRooms().get(roomId);
+            KurentoRoom room = (KurentoRoom) ChatRoomMap.getInstance().getChatRooms().get(roomId);
             GameSettingInfo gameSettingInfo = room.getGameSettingInfo();
             if (Objects.isNull(gameSettingInfo)) {
                 gameSettingInfo = new GameSettingInfo();
@@ -97,7 +97,7 @@ public class CatchMindServiceImpl implements CatchMindService {
     public void setGameSettingInfo(GameSettingInfo gameSettingInfo) {
         String roomId = gameSettingInfo.getRoomId();
         try {
-            KurentoRoomDto room = (KurentoRoomDto) ChatRoomMap.getInstance().getChatRooms().get(roomId);
+            KurentoRoom room = (KurentoRoom) ChatRoomMap.getInstance().getChatRooms().get(roomId);
             GameSettingInfo gameInfo = room.getGameSettingInfo();
             gameInfo.setGameUserList(gameSettingInfo.getGameUserList());
 //            gameInfo.setTotalGameRound(gameSettingInfo.getTotalGameRound());
@@ -111,21 +111,21 @@ public class CatchMindServiceImpl implements CatchMindService {
     }
 
     @Override
-    public CatchMindUser updateUser(GameStatus gameStatus, String roomId, String userId) {
-        KurentoRoomDto room = (KurentoRoomDto) ChatRoomMap.getInstance().getChatRooms().get(roomId);
+    public CatchMindUserDto updateUser(GameStatus gameStatus, String roomId, String userId) {
+        KurentoRoom room = (KurentoRoom) ChatRoomMap.getInstance().getChatRooms().get(roomId);
         // TODO 예외처리 필요
         if (Objects.isNull(room)) {
 
         }
 
         GameSettingInfo gameSettingInfo = room.getGameSettingInfo();
-        List<CatchMindUser> catchMindUserList = gameSettingInfo.getGameUserList();
+        List<CatchMindUserDto> catchMindUserList = gameSettingInfo.getGameUserList();
         // TODO 예외처리 필요
         if (CollectionUtils.isEmpty(catchMindUserList)) {
 
         }
 
-        Optional<CatchMindUser> user = catchMindUserList.stream()
+        Optional<CatchMindUserDto> user = catchMindUserList.stream()
                 .filter(u -> {
                     return u.getUserId().equals(userId);
                 }).findFirst();
@@ -134,7 +134,7 @@ public class CatchMindServiceImpl implements CatchMindService {
             // TODO 예외처리하기
         }
 
-        CatchMindUser catchMindUser = user.get();
+        CatchMindUserDto catchMindUser = user.get();
         switch (gameStatus){
             case WINNER:
                 updateUserScore(catchMindUser, this.WINNER_SCORE);
@@ -153,9 +153,9 @@ public class CatchMindServiceImpl implements CatchMindService {
     }
 
     @Override
-    public List<CatchMindUser> getGameUserInfos(String roomId) {
-        KurentoRoomDto kurentoRoom = (KurentoRoomDto) ChatRoomMap.getInstance().getChatRooms().get(roomId);
-        List<CatchMindUser> gameUserList = kurentoRoom.getGameSettingInfo().getGameUserList();
+    public List<CatchMindUserDto> getGameUserInfos(String roomId) {
+        KurentoRoom kurentoRoom = (KurentoRoom) ChatRoomMap.getInstance().getChatRooms().get(roomId);
+        List<CatchMindUserDto> gameUserList = kurentoRoom.getGameSettingInfo().getGameUserList();
 
         return gameUserList;
     }
@@ -167,7 +167,7 @@ public class CatchMindServiceImpl implements CatchMindService {
 
     @Override
     public GameSettingInfo getGameResult(String roomId) {
-        KurentoRoomDto room = (KurentoRoomDto) ChatRoomMap.getInstance().getChatRooms().get(roomId);
+        KurentoRoom room = (KurentoRoom) ChatRoomMap.getInstance().getChatRooms().get(roomId);
 
         // 게임 라운드 확인 및 결과 보내주기
         GameSettingInfo gameSettingInfo = room.getGameSettingInfo();
@@ -195,7 +195,7 @@ public class CatchMindServiceImpl implements CatchMindService {
         return gameSettingInfo;
     }
 
-    private void updateUserScore(CatchMindUser catchMindUser, int score){
+    private void updateUserScore(CatchMindUserDto catchMindUser, int score){
         int updatedScore = catchMindUser.getScore()+score;
         catchMindUser.setScore(updatedScore);
         log.info(">>>> Round Winner and Get Score!! => {} :: {}", catchMindUser.getNickName(), catchMindUser.getScore());
