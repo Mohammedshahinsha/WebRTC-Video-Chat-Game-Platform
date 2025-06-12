@@ -142,11 +142,8 @@ public class KurentoHandler extends TextWebSocketHandler {
             return;
         }
 
-        // room 에서 유저를 제거하고
         kurentoManager.leave(room, user);
 
-        // room 에서 userCount -1
-        room.setUserCount(room.getUserCount()-1);
     }
 
     private void connectException(KurentoUserSession user, Exception e) throws IOException {
