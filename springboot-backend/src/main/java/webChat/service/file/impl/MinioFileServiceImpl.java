@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import webChat.config.MinioConfig;
 import webChat.controller.ExceptionController;
-import webChat.dto.FileDto;
+import webChat.model.file.FileDto;
 import webChat.service.file.FileService;
 import webChat.utils.StringUtil;
 

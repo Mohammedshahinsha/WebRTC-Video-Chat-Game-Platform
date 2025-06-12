@@ -8,7 +8,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import webChat.controller.ExceptionController;
-import webChat.dto.log.ClientInfo;
+import webChat.model.log.ClientInfo;
 import webChat.service.monitoring.ClientCheckService;
 import webChat.utils.SubnetUtil;
 

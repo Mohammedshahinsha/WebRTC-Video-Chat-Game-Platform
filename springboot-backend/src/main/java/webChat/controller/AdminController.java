@@ -2,10 +2,12 @@ package webChat.controller;
 
 import com.google.gson.Gson;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import webChat.service.admin.AdminService;
 import webChat.utils.JwtUtil;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @RestController
@@ -14,6 +16,15 @@ import java.util.Map;
 public class AdminController {
 
     private final AdminService adminService;
+
+    @Value("${turn.server.urls}")
+    private String turnServerUrl;
+
+    @Value("${turn.server.username}")
+    private String turnServerUserName;
+
+    @Value("${turn.server.credential}")
+    private String turnServerCredential;
 
     @PostMapping("/gentoken/{key}")
     public String generateToken(@PathVariable String key) throws Exception {
@@ -73,6 +84,17 @@ public class AdminController {
         } catch (Exception e) {
             throw new ExceptionController.InternalServerError(e.getMessage());
         }
+    }
 
+    // turn server config
+    @PostMapping("/turnconfig")
+    @ResponseBody
+    public Map<String, String> turnServerConfig(){
+        Map<String, String> turnServerConfig = new HashMap<>();
+        turnServerConfig.put("url", turnServerUrl);
+        turnServerConfig.put("username", turnServerUserName);
+        turnServerConfig.put("credential", turnServerCredential);
+
+        return turnServerConfig;
     }
 }

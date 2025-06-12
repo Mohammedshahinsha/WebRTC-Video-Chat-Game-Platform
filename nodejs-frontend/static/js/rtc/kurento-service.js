@@ -39,7 +39,7 @@ ws.onopen = () => {
 }
 
 var initTurnServer = function(){
-    fetch(window.__CONFIG__.API_BASE_URL + '/turnconfig', {
+    fetch(window.__CONFIG__.API_BASE_URL + '/admin/turnconfig', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'

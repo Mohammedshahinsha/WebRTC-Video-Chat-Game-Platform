@@ -18,6 +18,7 @@
 package webChat.rtc;
 
 import com.google.gson.JsonObject;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.kurento.client.*;
 import org.kurento.jsonrpc.JsonUtils;
@@ -25,7 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
-import webChat.dto.User;
+import webChat.model.user.UserDto;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -40,7 +41,8 @@ import java.util.concurrent.ConcurrentMap;
  * 새로운 유저가 들어왔을 때 이를 나의 map 에 저장하고, 다른 사람들과 이를 동기화 해서 일치 시키는 것?
  */
 @RequiredArgsConstructor
-public class KurentoUserSession extends User implements Closeable {
+@Getter
+public class KurentoUserSession extends UserDto implements Closeable {
 
   private static final Logger log = LoggerFactory.getLogger(KurentoUserSession.class);
 
@@ -48,7 +50,7 @@ public class KurentoUserSession extends User implements Closeable {
 
   private final MediaPipeline pipeline;
 
-  private final String roomName;
+  private final String roomId;
 
   /**
    * @desc 현재 '나' 의 webRtcEndPoint 객체
@@ -65,13 +67,13 @@ public class KurentoUserSession extends User implements Closeable {
   /**
    * @Param String 유저명, String 방이름, WebSocketSession 세션객체, MediaPipline (kurento)mediaPipeline 객체
    */
-  public KurentoUserSession(String userId, String nickName, String roomName, WebSocketSession session,
+  public KurentoUserSession(String userId, String nickName, String roomId, WebSocketSession session,
                             MediaPipeline pipeline) {
 
     super(userId, nickName);
     this.pipeline = pipeline;
     this.session = session;
-    this.roomName = roomName;
+    this.roomId = roomId;
 
     // 외부로 송신하는 미디어?
     this.outgoingMedia = new WebRtcEndpoint.Builder(pipeline)
@@ -114,52 +116,12 @@ public class KurentoUserSession extends User implements Closeable {
   }
 
   /**
-   * @desc 나의 webRtcEndpoint 객체를 return 함
-   * @return webRtcEndpoint 객체
-   * */
-  public WebRtcEndpoint getOutgoingWebRtcPeer() {
-    return outgoingMedia;
-  }
-
-  /**
-   * @desc IncomingMedia return
-   * @return ConcurrentMap<String, WebRtcEndpoint>
-   */
-  public ConcurrentMap<String, WebRtcEndpoint> getIncomingMedia() {
-    return incomingMedia;
-  }
-
-  /**
-   * @desc return userId
-   * */
-  @Override
-  public String getUserId() {
-    return super.getUserId();
-  }
-
-  /**
-   * @desc webSocketSession 객체 return
-   * */
-  public WebSocketSession getSession() {
-    return session;
-  }
-
-  /**
-   * The room to which the user is currently attending.
-   *
-   * @return The room
-   */
-  public String getRoomName() {
-    return this.roomName;
-  }
-
-  /**
    * @desc
    * @Param userSession, String
    * */
   public void receiveVideoFrom(KurentoUserSession sender, String sdpOffer) throws IOException {
     // 유저가 room 에 들어왓음을 알림
-    log.info("USER {}: connecting with {} in room {}", this.getUserId(), sender.getUserId(), this.roomName);
+    log.info("USER {}: connecting with {} in room {}", this.getUserId(), sender.getUserId(), this.roomId);
 
     // 들어온 유저가 Sdp 제안
     log.trace("USER {}: SdpOffer for {} is {}", this.getUserId(), sender.getUserId(), sdpOffer);
@@ -247,7 +209,7 @@ public class KurentoUserSession extends User implements Closeable {
 
     /** 여기가 이해가 안갔었음 */
     // sender 기존에 갖고 있던 webRtcEndPoint 와 새로 생성된 incomingMedia 을 연결한다
-    sender.getOutgoingWebRtcPeer().connect(incomingMedia);
+    sender.getOutgoingMedia().connect(incomingMedia);
 
     return incomingMedia;
   }
@@ -359,7 +321,7 @@ public class KurentoUserSession extends User implements Closeable {
     KurentoUserSession other = (KurentoUserSession) obj;
     String userId = this.getUserId();
     boolean eq = userId.equals(other.getUserId());
-    eq &= roomName.equals(other.roomName);
+    eq &= roomId.equals(other.roomId);
     return eq;
   }
 
@@ -372,7 +334,7 @@ public class KurentoUserSession extends User implements Closeable {
   public int hashCode() {
     int result = 1;
     result = 31 * result + this.getUserId().hashCode();
-    result = 31 * result + roomName.hashCode();
+    result = 31 * result + roomId.hashCode();
     return result;
   }
 }

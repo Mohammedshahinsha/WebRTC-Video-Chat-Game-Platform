@@ -2,8 +2,8 @@ package webChat.mapper;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
-import webChat.Entity.DailyInfo;
-import webChat.dto.log.DailyInfoDto;
+import webChat.entity.DailyInfo;
+import webChat.model.log.DailyInfoDto;
 
 @Mapper(componentModel = "spring")
 

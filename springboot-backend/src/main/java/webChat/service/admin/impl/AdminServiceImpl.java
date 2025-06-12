@@ -4,33 +4,30 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import webChat.dto.room.ChatRoomDto;
-import webChat.dto.room.ChatRoomMap;
-import webChat.dto.room.KurentoRoomDto;
+import webChat.model.room.ChatRoomMap;
+import webChat.model.room.KurentoRoom;
 import webChat.service.admin.AdminService;
-import webChat.service.chat.KurentoManager;
+import webChat.service.chat.ChatRoomService;
+import webChat.service.kurento.KurentoManager;
 import webChat.service.file.FileService;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentMap;
 
 @Service
 @RequiredArgsConstructor
 public class AdminServiceImpl implements AdminService {
 
-    private final KurentoManager kurentoManager;
     private final FileService fileService;
+    private final ChatRoomService chatRoomService;
 
     @Override
     public Map<String, Object> getAllRooms() {
         Map<String, Object> result = new HashMap<>();
 
-        ConcurrentMap<String, ChatRoomDto> chatRooms = ChatRoomMap.getInstance().getChatRooms();
-
         JsonArray joRooms = new JsonArray();
-        chatRooms.values()
+        ChatRoomMap.getInstance().getChatRooms().values()
                 .forEach(room -> {
                     JsonObject joRoom = new JsonObject();
                     joRoom.addProperty("id", room.getRoomId());
@@ -49,11 +46,11 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public String delRoom(String roomId) {
-        Optional<KurentoRoomDto> kurentoRoom = Optional
-                .ofNullable((KurentoRoomDto) ChatRoomMap.getInstance().getChatRooms().get(roomId));
+        Optional<KurentoRoom> kurentoRoom = Optional
+                .ofNullable((KurentoRoom) ChatRoomMap.getInstance().getChatRooms().get(roomId));
 
         if (kurentoRoom.isPresent()) {
-            kurentoManager.removeRoom(kurentoRoom.get());
+            kurentoRoom.get().close();
             return "success del chatroom";
         }
 

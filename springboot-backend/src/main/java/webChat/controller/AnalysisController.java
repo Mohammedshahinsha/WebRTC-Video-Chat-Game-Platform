@@ -4,7 +4,7 @@ package webChat.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import webChat.dto.response.common.ChatForYouResponse;
+import webChat.model.response.common.ChatForYouResponse;
 import webChat.service.analysis.AnalysisService;
 
 @RestController

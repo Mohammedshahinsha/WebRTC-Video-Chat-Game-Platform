@@ -1,7 +1,7 @@
 package webChat.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import webChat.Entity.DailyInfo;
+import webChat.entity.DailyInfo;
 
 import java.time.LocalDate;
 
