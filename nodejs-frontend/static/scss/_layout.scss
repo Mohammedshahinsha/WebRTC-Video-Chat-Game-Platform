@@ -1,0 +1,85 @@
+@use "variables" as *;
+
+.body-roomlist {
+    background: linear-gradient(135deg, #f5f7fa, #e4ecf7); // 밝은 회색+푸른빛
+    font-family: "Pretendard Variable", sans-serif;
+    color: #222;
+    min-height: 100vh;
+
+    .container {
+        position: relative;
+    }
+
+    .main_title {
+        font-size: 2rem;
+        font-weight: 600;
+        margin-top: 2rem;
+        border-left: 4px solid #3fc1c9;
+        padding-left: 1rem;
+        color: #3a3d46;
+    }
+
+    .button-group {
+        display: flex;
+        gap: 0.5rem;
+        margin: 1rem 0;
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        transition: all 0.3s ease;
+
+        &:hover {
+            transform: scale(1.03);
+            box-shadow: 0 4px 12px rgba(63, 193, 201, 0.4);
+        }
+    }
+
+    #table {
+        margin-top: 2rem;
+
+        thead {
+            background-color: $color-white;
+            color: #3a3d46;
+        }
+
+        tbody {
+            tr {
+                color: $color-gray-300;
+
+                &:hover {
+                    background-color: #4a4f58;
+                    transition: background-color 0.3s;
+                }
+
+                td {
+                    color: $color-gray-300;
+                }
+            }
+        }
+    }
+
+    .visitor-count {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        font-size: 0.9rem;
+        z-index: 999;
+    }
+
+    .toast-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+    }
+
+    span.input-group-text.input-password-hide,
+    span.input-group-text.input-password-show {
+        height: 40px;
+    }
+
+    input#maxUserCnt {
+        width: 160px;
+    }
+}

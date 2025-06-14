@@ -1,0 +1,51 @@
+// COLOR VARIABLES
+$color-white: #fff;
+$color-black: #000;
+
+// Primary / Accent
+$color-primary: #128ff2;
+$color-accent: #ff4743;
+
+// Gray Scale
+$color-gray-100: #f9f9f9;
+$color-gray-200: #f4f4f4;
+$color-gray-300: #eaeaea;
+$color-gray-400: #c8c8c8;
+$color-gray-500: #999;
+$color-gray-600: #777;
+$color-gray-700: #555;
+$color-gray-800: #333;
+$color-gray-900: #222;
+
+// Table & UI
+$color-border: $color-gray-400;
+$color-placeholder: $color-gray-600;
+$color-text: #43464b;
+
+// Custom Theming Colors
+$color-info: #53d6c5;
+$color-info-dark: #3bb7a9;
+$color-warning: #ffcc57;
+$color-warning-dark: #f0b93e;
+
+// BACKGROUND GRADIENTS
+$background-light: linear-gradient(135deg, #f5f7fa, #e4ecf7); // 밝은 회색+푸른빛
+$background-dark: linear-gradient(135deg, #20232a, #2c2f36); // 다크 모드용 (예비)
+
+// FONT
+$font-base:
+    "Pretendard Variable",
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
+$font-size-base: 1rem;
+$line-height-base: 1.58;
+
+// BUTTON
+$btn-radius: 2px;
+$btn-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.12);
+
+// Z-INDEX
+$z-toast: 9999;
+$z-header: 1000;
