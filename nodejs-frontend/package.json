@@ -6,7 +6,9 @@
   "scripts": {
     "start": "node server.js",
     "local": "cp ./config/config.local.js ./config/config.js && echo '로컬 빌드 완료'",
-    "prod": "cp ./config/config.prod.js ./config/config.js && echo '운영 빌드 완료'"
+    "prod": "cp ./config/config.prod.js ./config/config.js && echo '운영 빌드 완료'",
+    "sass": "sass --watch static/scss/main.scss static/css/chatroom/common.css",
+    "dev": "concurrently \"npm run sass\" \"npm run start\""
   },
   "author": "sejon",
   "license": "MIT"
