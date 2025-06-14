@@ -27,6 +27,7 @@ public class RoomBatchJob {
     private final AnalysisService analysisService;
     private final DailyInfoRepository dailyInfoRepository;
     private final FileService fileService;
+    private final ChatRoomService chatRoomService;
 
     @Scheduled(cron = "0 0,30 * * * *", zone = "Asia/Seoul") // 매 시간 30분에 실행 , 타임존 seoul 기준
     public void checkRoom() {
@@ -40,7 +41,7 @@ public class RoomBatchJob {
                     KurentoRoom room = (KurentoRoom) chatRooms.get(key);
 
                     if (room.getUserCount() <= 0) { // chatroom 에서 usercount 가 0 이하만 list 에 저장
-                        room.close();
+                        chatRoomService.delChatRoom(room.getRoomId());
                         // room 에서 업로드된 모든 파일 삭제
                         fileService.deleteFileDir(room.getRoomId());
 
