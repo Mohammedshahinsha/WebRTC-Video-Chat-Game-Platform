@@ -16,7 +16,7 @@
   <link rel="stylesheet" href="static/css/chatroom/common.css">
 </head>
 <body class="body-roomlist">
-    <header class="d-flex align-items-center justify-content-center p-3">
+    <header class="d-flex align-items-center justify-content-center p-4">
         <h1 class="h4 mb-0">ChatForYou</h1>
     </header>
   <div class="container">
@@ -27,20 +27,22 @@
         <button class="btn btn-custom-info" type="button" data-bs-toggle="modal" data-bs-target="#roomModal">방 생성</button>
     </div>
 
-    <table class="table table-hover" id="table">
-      <thead>
-        <tr>
-          <th scope="col">채팅방명</th>
-          <th scope="col">잠금 여부</th>
-          <th scope="col">참여 인원</th>
-          <th scope="col">채팅 종류</th>
-          <th scope="col">채팅방 설정</th>
-        </tr>
-      </thead>
-      <tbody id="roomTableBody">
-        <!-- JS에서 동적으로 방 리스트 렌더링 -->
-      </tbody>
-    </table>
+    <div class="table_wrap">
+        <table class="table table-hover" id="table">
+            <thead>
+              <tr>
+                <th scope="col">채팅방명</th>
+                <th scope="col">잠금 여부</th>
+                <th scope="col">참여 인원</th>
+                <th scope="col">채팅 종류</th>
+                <th scope="col">채팅방 설정</th>
+              </tr>
+            </thead>
+            <tbody id="roomTableBody">
+              <!-- JS에서 동적으로 방 리스트 렌더링 -->
+            </tbody>
+          </table>
+    </div>
   </div>
 
   <div id="toast-container" class="toast-container"></div>

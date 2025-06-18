@@ -115,22 +115,26 @@ table {
   transform: scale(1.03);
   box-shadow: 0 4px 12px rgba(63, 193, 201, 0.4);
 }
-.body-roomlist #table {
+.body-roomlist .table_wrap {
   margin-top: 2rem;
-}
-.body-roomlist #table thead {
   background-color: #fff;
+  border-radius: 6px;
+  padding: 6px;
+}
+.body-roomlist .table_wrap thead {
   color: #3a3d46;
 }
-.body-roomlist #table tbody tr {
+.body-roomlist .table_wrap tbody tr {
   color: #eaeaea;
 }
-.body-roomlist #table tbody tr:hover {
-  background-color: #4a4f58;
+.body-roomlist .table_wrap tbody tr:hover {
+  background-color: #f9f9f9;
   transition: background-color 0.3s;
 }
-.body-roomlist #table tbody tr td {
-  color: #eaeaea;
+.body-roomlist .table_wrap tbody tr td {
+  color: #3a3d46;
+  background-color: #fff;
+  vertical-align: middle;
 }
 .body-roomlist .visitor-count {
   position: absolute;
@@ -151,6 +155,11 @@ table {
 }
 .body-roomlist input#maxUserCnt {
   width: 160px;
+}
+
+.icon_wrap img {
+  width: 24px;
+  height: 24px;
 }
 
 .modal-content {

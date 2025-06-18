@@ -11,5 +11,8 @@
     "dev": "concurrently \"npm run sass\" \"npm run start\""
   },
   "author": "sejon",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
 }
