@@ -13,6 +13,7 @@ import java.util.concurrent.ConcurrentMap;
 // 모든 ChatService 에서 ChatRooms가 공통된 필요함으로
 @Getter
 @Setter
+@Deprecated(since = "Kurento 리펙로링 적용 확인 후 제거예정")
 public class ChatRoomMap {
     private static ChatRoomMap chatRoomMap = new ChatRoomMap();
     private ConcurrentMap<String, ChatRoom> chatRooms = new ConcurrentHashMap<>();

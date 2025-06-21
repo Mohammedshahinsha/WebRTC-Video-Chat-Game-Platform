@@ -10,6 +10,7 @@ import webChat.model.file.FileDto;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@Deprecated
 public class ChatDto {
     // 메시지  타입 : 입장, 채팅
     // 메시지 타입에 따라서 동작하는 구조가 달라진다.

@@ -4,7 +4,6 @@ import lombok.Builder;
 import lombok.Getter;
 import webChat.model.chat.ChatType;
 import webChat.model.room.ChatRoom;
-import webChat.rtc.KurentoUserSession;
 
 import java.util.Random;
 import java.util.UUID;

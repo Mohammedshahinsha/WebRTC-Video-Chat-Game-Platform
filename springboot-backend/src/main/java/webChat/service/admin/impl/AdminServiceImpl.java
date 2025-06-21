@@ -7,8 +7,7 @@ import org.springframework.stereotype.Service;
 import webChat.model.room.ChatRoomMap;
 import webChat.model.room.KurentoRoom;
 import webChat.service.admin.AdminService;
-import webChat.service.chat.ChatRoomService;
-import webChat.service.kurento.KurentoManager;
+import webChat.service.chatroom.ChatRoomService;
 import webChat.service.file.FileService;
 
 import java.util.HashMap;
@@ -50,7 +49,7 @@ public class AdminServiceImpl implements AdminService {
                 .ofNullable((KurentoRoom) ChatRoomMap.getInstance().getChatRooms().get(roomId));
 
         if (kurentoRoom.isPresent()) {
-            kurentoRoom.get().close();
+            kurentoRoom.get().deactivate();
             return "success del chatroom";
         }
 
