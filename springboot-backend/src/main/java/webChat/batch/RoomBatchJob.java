@@ -2,21 +2,18 @@ package webChat.batch;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.coyote.BadRequestException;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import webChat.entity.DailyInfo;
-import webChat.model.room.ChatRoom;
-import webChat.model.room.ChatRoomMap;
-import webChat.model.chat.ChatType;
 import webChat.model.room.KurentoRoom;
 import webChat.repository.DailyInfoRepository;
 import webChat.service.analysis.AnalysisService;
-import webChat.service.chat.ChatRoomService;
-import webChat.service.file.FileService;
-
+import webChat.service.chatroom.ChatRoomService;
+import webChat.service.redis.RedisService;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Map;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -25,30 +22,29 @@ import java.util.concurrent.atomic.AtomicInteger;
 @RequiredArgsConstructor
 public class RoomBatchJob {
     private final AnalysisService analysisService;
-    private final DailyInfoRepository dailyInfoRepository;
-    private final FileService fileService;
     private final ChatRoomService chatRoomService;
+    private final DailyInfoRepository dailyInfoRepository;
+    private final RedisService redisService;
+    private final int SEARCH_COUNT = 100;
+
 
     @Scheduled(cron = "0 0,30 * * * *", zone = "Asia/Seoul") // 매 시간 30분에 실행 , 타임존 seoul 기준
-    public void checkRoom() {
-        Map<String, ChatRoom> chatRooms = ChatRoomMap.getInstance().getChatRooms();
+//    @Scheduled(cron = "0/10 * * * * *", zone = "Asia/Seoul")
+    public void checkDeleteRoom() {
 
         AtomicInteger totalDelRoomCnt = new AtomicInteger();
         AtomicInteger rtcRoomCnt = new AtomicInteger();
 
-        chatRooms.keySet()
-                .forEach(key -> {
-                    KurentoRoom room = (KurentoRoom) chatRooms.get(key);
-
-                    if (room.getUserCount() <= 0) { // chatroom 에서 usercount 가 0 이하만 list 에 저장
-                        chatRoomService.delChatRoom(room.getRoomId());
-                        // room 에서 업로드된 모든 파일 삭제
-                        fileService.deleteFileDir(room.getRoomId());
-
-                        rtcRoomCnt.incrementAndGet();
-                        totalDelRoomCnt.incrementAndGet();
-                    }
-                });
+        try {
+            List<KurentoRoom> chatRoomListForDelete = redisService.getChatRoomListForDelete(SEARCH_COUNT);
+            for (KurentoRoom kurentoRoom : chatRoomListForDelete) {
+                chatRoomService.delChatRoom(kurentoRoom);
+                rtcRoomCnt.incrementAndGet();
+                totalDelRoomCnt.incrementAndGet();
+            }
+        } catch (BadRequestException e) {
+            throw new RuntimeException("Batch Job Failed", e);
+        }
 
         LocalDateTime date = LocalDateTime.now();
         log.info("##########################");
@@ -58,7 +54,7 @@ public class RoomBatchJob {
         log.info("##########################");
     }
 
-    @Scheduled(cron = "0 0 */3 * * *", zone = "Asia/Seoul") // 3시간 마다 , 타임존 seoul 기준
+    @Scheduled(cron = "0 0 */6 * * *", zone = "Asia/Seoul") // 6시간 마다 , 타임존 seoul 기준
     public void dailyInfoInsert() {
         LocalDate nowDate = LocalDate.now();
         DailyInfo findDailyInfo = dailyInfoRepository.findByDate(nowDate);

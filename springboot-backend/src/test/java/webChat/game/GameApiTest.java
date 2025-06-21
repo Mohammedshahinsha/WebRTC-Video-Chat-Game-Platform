@@ -11,6 +11,8 @@ import webChat.model.game.GameSubjects;
 import webChat.model.game.GameTitles;
 import webChat.utils.HttpUtil;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.concurrent.ConcurrentHashMap;
 
 
@@ -33,7 +35,7 @@ class GameApiTest {
     @DisplayName("python api post test")
     void  getSubjects(String title) throws Exception {
         String url = "http://localhost:8000/game_subject";
-        GameSubjects subjects = new GameSubjects(title);
+        GameSubjects subjects = new GameSubjects(title, Arrays.asList("호랑이", "고양이", "강아지"), new ArrayList<>(), "hard");
         subjects = HttpUtil.post(url, new HttpHeaders(), new ConcurrentHashMap<>(), subjects, GameSubjects.class);
         log.info("subjects :: {}",subjects.toString());
     }

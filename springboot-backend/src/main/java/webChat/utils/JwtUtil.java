@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 import java.util.Date;
 
-// TODO secretKey 세팅 로직 수정 필요!!
+// TODO 로그인 기능 추가 후 JWT 사용 시 수정 필요!
 @Component
 public class JwtUtil {
 
