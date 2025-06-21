@@ -110,6 +110,22 @@ dependencies {
 	// https://mvnrepository.com/artifact/commons-net/commons-net
 	implementation group: 'commons-net', name: 'commons-net', version: '3.11.1'
 
+	// redis
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
+	// redisSearch
+	implementation group: 'io.github.dengliming.redismodule', name: 'redisearch', version: '2.0.3'
+
+	// QR Code Generation (ZXing)
+	// https://mvnrepository.com/artifact/com.google.zxing/core
+	implementation 'com.google.zxing:core:3.5.2'
+	// https://mvnrepository.com/artifact/com.google.zxing/javase
+	implementation 'com.google.zxing:javase:3.5.2'
+
+	// Apache Commons Codec for Base64 encoding
+	// https://mvnrepository.com/artifact/commons-codec/commons-codec
+	implementation 'commons-codec:commons-codec:1.16.0'
+
 
 }
 
