@@ -1,13 +1,17 @@
 package webChat.controller;
 
-import com.google.gson.Gson;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import webChat.service.admin.AdminService;
+import webChat.model.response.common.ChatForYouResponse;
+import webChat.model.room.out.ChatRoomOutVo;
+import webChat.service.chatroom.ChatRoomService;
 import webChat.utils.JwtUtil;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -15,7 +19,8 @@ import java.util.Map;
 @RequestMapping("/chatforyou/api/admin")
 public class AdminController {
 
-    private final AdminService adminService;
+    private final ChatRoomService chatRoomService;
+    private final JwtUtil jwtUtil;
 
     @Value("${turn.server.urls}")
     private String turnServerUrl;
@@ -26,9 +31,11 @@ public class AdminController {
     @Value("${turn.server.credential}")
     private String turnServerCredential;
 
-    @PostMapping("/gentoken/{key}")
-    public String generateToken(@PathVariable String key) throws Exception {
-        return JwtUtil.getInstance().generateToken(key);
+    @PostMapping("/gentoken")
+    public String generateToken(
+            @RequestParam String key,
+            @RequestParam String user) {
+        return jwtUtil.generateToken(key, user);
     }
 
     /**
@@ -38,8 +45,12 @@ public class AdminController {
      * @return room list
      * @throws Exception 400, 401
      */
-    @PostMapping("/allrooms")
-    public String allRooms(@RequestHeader("Authorization") String token) throws Exception {
+    @GetMapping("/allrooms")
+    public ResponseEntity<List<ChatRoomOutVo>> allRooms(
+     @RequestHeader("Authorization") String token,
+     @RequestParam(value = "keyword", required = false) String keyword,
+     @RequestParam(value = "pageNum", required = false, defaultValue = "0") String pageNumStr,
+     @RequestParam(value = "pageSize", required = false, defaultValue = "20") String pageSizeStr) throws Exception {
 
         String jwtToken = token.replace("Bearer ", "");
 
@@ -47,16 +58,14 @@ public class AdminController {
             throw new ExceptionController.UnauthorizedException("Invalid token format");
         }
 
-        if (!JwtUtil.getInstance().validateToken(jwtToken)) {
+        if (!jwtUtil.validateToken(jwtToken)) {
             throw new ExceptionController.UnauthorizedException("Invalid token format or you have No Auth");
         }
-
-        try {
-            Map<String, Object> result = adminService.getAllRooms();
-            return new Gson().toJson(result);
-        } catch (Exception e) {
-            throw new ExceptionController.InternalServerError(e.getMessage());
-        }
+        List<ChatRoomOutVo> responses = new ArrayList<>();
+        chatRoomService.getRoomList("", Integer.parseInt(pageNumStr), Integer.parseInt(pageSizeStr), true).forEach(room -> {
+            responses.add(ChatRoomOutVo.of(room));
+        });
+        return ResponseEntity.ok(responses);
     }
 
     /**
@@ -67,23 +76,23 @@ public class AdminController {
      * @return del room result
      * @throws Exception 400, 401
      */
-    @PostMapping("/delete/{roomId}")
-    public String delRoom(@PathVariable String roomId, @RequestHeader("Authorization") String token) throws Exception {
+    @DeleteMapping("/delete/{roomId}")
+    public ResponseEntity<ChatForYouResponse> delRoom(@PathVariable String roomId, @RequestHeader("Authorization") String token) throws Exception {
         String jwtToken = token.replace("Bearer ", "");
 
         if (!token.startsWith("Bearer ")) {
             throw new ExceptionController.UnauthorizedException("Invalid token format");
         }
 
-        if (!JwtUtil.getInstance().validateToken(jwtToken)) {
+        if (!jwtUtil.validateToken(jwtToken)) {
             throw new ExceptionController.UnauthorizedException("Invalid token format or you have No Auth");
         }
 
-        try {
-            return adminService.delRoom(roomId);
-        } catch (Exception e) {
-            throw new ExceptionController.InternalServerError(e.getMessage());
-        }
+        // roomId 기준으로 chatRoomMap 에서 삭제, 해당 채팅룸 안에 있는 사진 삭제
+        return ResponseEntity.ok(ChatForYouResponse.builder()
+                .result("success")
+                .data(chatRoomService.delChatRoom(roomId))
+                .build());
     }
 
     // turn server config

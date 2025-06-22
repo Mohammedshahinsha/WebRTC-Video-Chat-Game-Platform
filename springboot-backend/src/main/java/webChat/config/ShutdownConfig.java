@@ -33,7 +33,6 @@ public class ShutdownConfig implements ApplicationListener<ContextClosedEvent> {
     private final KurentoClient kurentoClient;
     private final RedisService redisService;
     private final List<RoomState> ALL_ROOM_STATES = Lists.newArrayList(RoomState.ACTIVE, RoomState.CREATED, RoomState.INACTIVE);
-    private boolean lockCloseUp = false;
 
     @PostConstruct
     public void init() {
@@ -43,7 +42,6 @@ public class ShutdownConfig implements ApplicationListener<ContextClosedEvent> {
 
     @Override
     public void onApplicationEvent(ContextClosedEvent event) {
-        lockCloseUp = true;
         cleanup();
     }
 
@@ -52,9 +50,6 @@ public class ShutdownConfig implements ApplicationListener<ContextClosedEvent> {
      * 단 redis 에서 방 직접 삭제는 X
      */
     private void cleanup() {
-        if(lockCloseUp) {
-            return;
-        }
         RoomSearchCriteria searchCriteria = RoomSearchCriteria.builder()
                 .redisIndex(RedisIndex.CHATROOM)
                 .keyword("")
@@ -69,13 +64,20 @@ public class ShutdownConfig implements ApplicationListener<ContextClosedEvent> {
             if (allChatRoomData.isEmpty() || allChatRoomData.get(DataType.CHATROOM.getType()) == null) {
                 continue;
             }
-
             KurentoRoom kurentoRoom = (KurentoRoom) allChatRoomData.get("chatroom");
+
+            // redis 에서 해당 방의 유저수 및 방 상태 변경
+            kurentoRoom.setUserCount(0); // 유저 count 초기화
+            kurentoRoom.setRoomState(RoomState.INACTIVE); // 방 상태 초기화
+            redisService.updateChatRoom(kurentoRoom);
+            log.info("KurentoRoom {} data updated", kurentoRoom.getRoomId());
+
             kurentoRoomManager.deleteKurentoRoom(kurentoRoom);
+            
         }
 
         kurentoClient.destroy();
         // 재배포 시 필요한 정리 작업
-        log.info("모든 데이터 삭제 완료");
+        log.info("All Kurento Data destroyed - Clean up completed");
     }
 }

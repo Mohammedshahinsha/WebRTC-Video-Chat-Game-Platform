@@ -5,7 +5,6 @@ const roomList = {
     const self = this;
     self.loadRoomList();
     self.checkVisitor();
-    self.bindRoomEvents();
     self.initModals();
     self.initInputLimits();
     self.initAnnouncement();
@@ -35,7 +34,6 @@ const roomList = {
           </tr>
         `);
       });
-      self.bindRoomEvents();
     }, function(err) {
       $('#roomTableBody').html('<tr><td colspan="5">방 목록을 불러오지 못했습니다.</td></tr>');
     });

@@ -44,7 +44,7 @@ public class ChatRoomController {
 //        }
 
 //        model.addAttribute("user", "hey");
-        chatRoomService.getRoomList(keyword, Integer.parseInt(pageNumStr), Integer.parseInt(pageSizeStr)).forEach(room -> {
+        chatRoomService.getRoomList(keyword, Integer.parseInt(pageNumStr), Integer.parseInt(pageSizeStr), true).forEach(room -> {
             responses.add(ChatRoomOutVo.of(room));
         });
         return ResponseEntity.ok(responses);
