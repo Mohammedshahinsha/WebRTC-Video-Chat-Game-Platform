@@ -5,6 +5,8 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import lombok.RequiredArgsConstructor;
 import org.kurento.client.IceCandidate;
+import org.kurento.client.KurentoClient;
+import org.kurento.client.MediaPipeline;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -12,10 +14,13 @@ import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
-import webChat.model.room.ChatRoom;
-import webChat.model.room.ChatRoomMap;
+import webChat.model.redis.DataType;
 import webChat.model.room.KurentoRoom;
-import webChat.rtc.KurentoUserSession;
+import webChat.repository.KurentoPiplineMap;
+import webChat.service.chatroom.ChatRoomService;
+import webChat.service.chatroom.participant.KurentoParticipantService;
+import webChat.service.redis.RedisService;
+import webChat.utils.JsonUtils;
 
 import java.io.IOException;
 import java.util.Map;
@@ -36,20 +41,21 @@ public class KurentoHandler extends TextWebSocketHandler {
     // 즉, JSON Object -> JAVA Object 또는 그 반대의 행위를 돕는 라이브러리 입니다.
     private static final Gson gson = new GsonBuilder().create();
 
-    // 유저 등록? 을 위한 객체 생성
-   private final KurentoUserRegistry registry;
-
     // kurento room 기능
-    private final KurentoManager kurentoManager;
+    private final KurentoRoomManager kurentoRoomManager;
+    private final KurentoClient kurentoClient;
 
-    private Map<String, ChatRoom> chatRoomMap = ChatRoomMap.getInstance().getChatRooms();
+    private final RedisService redisService;
+    private final ChatRoomService chatRoomService;
+    private final KurentoParticipantService participantService;
+    private final Map<String, MediaPipeline> kurentoPiplineMap = KurentoPiplineMap.getInstance();
 
-    // 이전에 사용하던 그 메서드
     @Override
     public void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
         final JsonObject jsonMessage = gson.fromJson(message.getPayload(), JsonObject.class);
 
-        final KurentoUserSession user = registry.getBySession(session);
+        String roomId = JsonUtils.getStrOrEmpty(jsonMessage, "roomId");
+        final KurentoUserSession user = participantService.getBySessionId(session);
 
         if (user != null) {
             log.debug("Incoming message from user '{}': {}", user.getUserId(), jsonMessage);
@@ -69,9 +75,10 @@ public class KurentoHandler extends TextWebSocketHandler {
             case "receiveVideoFrom": // receiveVideoFrom 인 경우
                 try {
                     // sender 명 - 사용자명 - 과
-                    final String senderName = jsonMessage.get("sender").getAsString();
+                    final String senderUserId = jsonMessage.get("sender").getAsString();
                     // 유저명을 통해 session 값을 가져온다
-                    final KurentoUserSession sender = registry.getByName(senderName);
+                    final KurentoUserSession sender = participantService.getParticipant(roomId, senderUserId);
+                    // TODO sender 예외처리
                     // jsonMessage 에서 sdpOffer 값을 가져온다
                     final String sdpOffer = jsonMessage.get("sdpOffer").getAsString();
                     // 이후 receiveVideoFrom 실행 => 아마도 특정 유저로부터 받은 비디오를 다른 유저에게 넘겨주는게 아닌가...?
@@ -102,10 +109,10 @@ public class KurentoHandler extends TextWebSocketHandler {
     }
 
     // 유저의 연결이 끊어진 경우
-    // leaveRoom 실행
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
-        KurentoUserSession user = registry.removeBySession(session);
+        // TODO user 가 null 인 경우 예외처리
+        KurentoUserSession user = participantService.getBySessionId(session);
         this.leaveRoom(user);
     }
 
@@ -118,32 +125,42 @@ public class KurentoHandler extends TextWebSocketHandler {
 
         log.info("PARTICIPANT {}: trying to join room {}", userId, roomId);
 
-        // roomId 를 기준으로 room 으 ㄹ가져온다
-        KurentoRoom room = (KurentoRoom) chatRoomMap.get(roomId);
+        // roomId 를 기준으로 room 을 가져온다
+        KurentoRoom kurentoRoom = redisService.getRedisDataByDataType(roomId, DataType.CHATROOM, KurentoRoom.class);
+        if (kurentoRoom == null) {
+            // TODO 예외처리
+            return;
+        }
 
-        // room 에 유저정보 추가
-        final KurentoUserSession user = kurentoManager.join(room, userId, nickName, session);
+        // room 을 active 상태로 전환
+        if(kurentoRoom.getKurento() == null){
+            kurentoRoom.setKurento(kurentoClient);
+        }
 
-        // 단순히 room 에 저장하는 것 외에도 user 를 저장하기 위한 메서드?
-        registry.register(user);
+        if (!kurentoPiplineMap.containsKey(roomId)) {
+            kurentoPiplineMap.put(roomId, kurentoRoom.getKurento().createMediaPipeline());
+        }
+        kurentoRoom.activate();
+        kurentoRoomManager.join(kurentoRoom, userId, nickName, session);
+        redisService.incrementUserCount(kurentoRoom);
     }
 
-    // 유저가 room 에서 떠났을 때
     private void leaveRoom(KurentoUserSession user) throws IOException {
         // user 가 null 이면 return
         if (Objects.isNull(user)) {
             return;
         }
 
-        final KurentoRoom room = (KurentoRoom) chatRoomMap.get(user.getRoomId());
+        // redis 에서 방 삭제
+        KurentoRoom kurentoRoom = redisService.getRedisDataByDataType(user.getRoomId(), DataType.CHATROOM, KurentoRoom.class);
 
         // 유저가 room 의 participants 에 없다면 return
-        if (!room.getParticipants().containsKey(user.getUserId())) {
+        if (!participantService.getParticipantMap(kurentoRoom.getRoomId()).containsKey(user.getUserId())) {
             return;
         }
 
-        kurentoManager.leave(room, user);
-
+        kurentoRoomManager.leave(kurentoRoom, user);
+        redisService.decrementUserCount(kurentoRoom);
     }
 
     private void connectException(KurentoUserSession user, Exception e) throws IOException {

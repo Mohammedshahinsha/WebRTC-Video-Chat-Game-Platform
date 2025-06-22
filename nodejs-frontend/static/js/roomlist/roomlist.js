@@ -5,7 +5,6 @@ const roomList = {
     const self = this;
     self.loadRoomList();
     self.checkVisitor();
-    self.bindRoomEvents();
     self.initModals();
     self.initInputLimits();
     self.initAnnouncement();
@@ -35,93 +34,8 @@ const roomList = {
           </tr>
         `);
       });
-      self.bindRoomEvents();
     }, function(err) {
       $('#roomTableBody').html('<tr><td colspan="5">방 목록을 불러오지 못했습니다.</td></tr>');
-    });
-  },
-  bindRoomEvents: function() {
-    const self = this;
-    // 비밀방 입장 - RoomPopup으로 위임
-    $(document).off('click', '.enterRoomBtn').on('click', '.enterRoomBtn', function(e) {
-      e.preventDefault();
-      const roomId = $(this).data('id');
-      if (window.RoomPopup) {
-        window.RoomPopup.setRoomId(roomId);
-        $('#enterRoomModal').modal('show');
-      }
-    });
-    // 일반방 바로 입장 - RoomPopup으로 위임
-    $(document).off('click', '.directEnterBtn').on('click', '.directEnterBtn', function(e) {
-      e.preventDefault();
-      const id = $(this).data('roomid');
-      if (window.RoomPopup) {
-        window.RoomPopup.chkRoomUserCnt(id);
-      }
-    });
-    // 방 설정 모달 - RoomSettingsPopup으로 위임
-    $(document).off('click', '.configRoomBtn').on('click', '.configRoomBtn', function() {
-      const roomId = $(this).data('id');
-      if (window.RoomSettingsPopup) {
-        window.RoomSettingsPopup.setRoomId(roomId);
-        $('#validatePwdModal').modal('show');
-      }
-    });
-    // 방 생성 - RoomPopup으로 위임 (이벤트는 RoomPopup에서 처리됨)
-    // 방 생성 관련 모든 이벤트 처리는 js/popup/room_popup.js에서 담당
-    // 방 수정 모달 최대 인원 입력 제한 (2~6)
-    $(document).on('input', '#configMaxUserCnt', function() {
-      let val = parseInt($(this).val(), 10);
-      if (isNaN(val) || val < 2) {
-        $(this).val(2);
-      } else if (val > 6) {
-        $(this).val(6);
-      }
-    });
-    // 방 삭제 버튼
-    $(document).off('click', '#deleteRoomBtn').on('click', '#deleteRoomBtn', function() {
-      self.delRoom();
-    });
-    // 채팅방 설정하기 버튼
-    $(document).off('click', '#configRoomBtn').on('click', '#configRoomBtn', function() {
-      if ($(this).hasClass('disabled') || $(this).attr('aria-disabled') === 'true') return;
-      if (!self.roomId) {
-        Toastify({
-          text: '방 정보가 올바르지 않습니다. 다시 시도해 주세요.', duration: 2500, gravity: 'top', position: 'center', backgroundColor: '#fa5252', close: true
-        }).showToast();
-        return;
-      }
-      Toastify({
-        text: '설정 진입 성공', duration: 2000, gravity: 'top', position: 'center', backgroundColor: '#51cf66', close: true
-      }).showToast();
-      $('#validatePwdModal').modal('hide');
-      setTimeout(function() {
-        $('#roomConfigModal').modal('show');
-      }, 500);
-    });
-    // 방 수정 저장
-    $(document).off('click', '#saveRoomConfigBtn').on('click', '#saveRoomConfigBtn', function() {
-      self.saveRoomConfig();
-    });
-    // 비밀번호 변경 체크박스
-    $(document).off('change', '#changePwdCheckbox').on('change', '#changePwdCheckbox', function() {
-      if ($(this).is(':checked')) {
-        $('#configRoomPwd').prop('readonly', false).val('');
-      } else {
-        $('#configRoomPwd').prop('readonly', true);
-      }
-    });
-    // 비밀번호 입력란 눈 아이콘 토글
-    $(document).on('click', '#roomModal .input-group-text', function() {
-      const $input = $(this).siblings('input[data-toggle="password"]');
-      const $icon = $(this).find('i');
-      if ($input.attr('type') === 'password') {
-        $input.attr('type', 'text');
-        $icon.removeClass('fa-eye').addClass('fa-eye-slash');
-      } else {
-        $input.attr('type', 'password');
-        $icon.removeClass('fa-eye-slash').addClass('fa-eye');
-      }
     });
   },
   numberChk: function() {

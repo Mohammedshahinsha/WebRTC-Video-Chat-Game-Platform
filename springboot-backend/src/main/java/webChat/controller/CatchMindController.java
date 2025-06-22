@@ -1,12 +1,12 @@
 package webChat.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.apache.coyote.BadRequestException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 import webChat.model.game.*;
 import webChat.service.game.CatchMindService;
-
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -47,7 +47,7 @@ public class CatchMindController {
 
     @PostMapping(value = "/catchmind/updateGameStatus", produces = "application/json; charset=UTF8")
     public Map<String, String> updateGameStatus(
-            @RequestBody GameStatusRequest gameStatusRequest) {
+            @RequestBody GameStatusRequest gameStatusRequest) throws BadRequestException {
         Map<String, String> result = new ConcurrentHashMap<>();
         CatchMindUserDto catchMindUser = catchMindService.updateUser(gameStatusRequest.getGameStatus(), gameStatusRequest.getRoomId(), gameStatusRequest.getUserId());
         result.put("result", "success");
@@ -56,7 +56,7 @@ public class CatchMindController {
     }
 
     @GetMapping(value = "/catchmind/gameResult", produces = "application/json; charset=UTF8")
-    public Map<String, Object> gameResult(@RequestParam("roomId") String roomId) {
+    public Map<String, Object> gameResult(@RequestParam("roomId") String roomId) throws BadRequestException {
         Map<String, Object> result = new ConcurrentHashMap<>();
 
         result.put("result", "success");

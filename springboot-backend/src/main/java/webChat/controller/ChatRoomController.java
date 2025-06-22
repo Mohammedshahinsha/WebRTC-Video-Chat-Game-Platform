@@ -2,6 +2,7 @@ package webChat.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.coyote.BadRequestException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.ui.Model;
@@ -10,10 +11,9 @@ import webChat.model.response.common.ChatForYouResponse;
 import webChat.model.room.ChatRoom;
 import webChat.model.room.in.ChatRoomInVo;
 import webChat.model.room.out.ChatRoomOutVo;
-import webChat.model.room.ChatRoomMap;
 import webChat.model.chat.ChatType;
-import webChat.service.chat.ChatRoomService;
-import webChat.service.kurento.KurentoManager;
+import webChat.service.chatroom.ChatRoomService;
+import webChat.service.kurento.KurentoRoomManager;
 import webChat.service.social.PrincipalDetails;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,15 +25,15 @@ import java.util.List;
 public class ChatRoomController {
 
     private final ChatRoomService chatRoomService;
-    private final KurentoManager kurentoManager;
+    private final KurentoRoomManager kurentoRoomManager;
 
     @GetMapping("/room/list")
-    public ResponseEntity<List<ChatRoomOutVo>> goChatRooms(Model model, @AuthenticationPrincipal PrincipalDetails principalDetails){
+    public ResponseEntity<List<ChatRoomOutVo>> goChatRooms(
+            @RequestParam(value = "keyword", required = false) String keyword,
+            @RequestParam(value = "pageNum", required = false, defaultValue = "0") String pageNumStr,
+            @RequestParam(value = "pageSize", required = false, defaultValue = "20") String pageSizeStr,
+            @AuthenticationPrincipal PrincipalDetails principalDetails){
         List<ChatRoomOutVo> responses = new ArrayList<>();
-
-        chatRoomService.findAllRoom().forEach(room -> {
-            responses.add(ChatRoomOutVo.of(room));
-        });
 
         // TODO 로그인 기능 도입 시 필요
 //        // principalDetails 가 null 이 아니라면 로그인 된 상태!!
@@ -44,7 +44,9 @@ public class ChatRoomController {
 //        }
 
 //        model.addAttribute("user", "hey");
-        log.debug("SHOW ALL ChatList {}", chatRoomService.findAllRoom());
+        chatRoomService.getRoomList(keyword, Integer.parseInt(pageNumStr), Integer.parseInt(pageSizeStr), true).forEach(room -> {
+            responses.add(ChatRoomOutVo.of(room));
+        });
         return ResponseEntity.ok(responses);
     }
 
@@ -55,7 +57,7 @@ public class ChatRoomController {
             @RequestBody ChatRoomInVo chatRoomInVo) {
 
         // 매개변수 : 방 이름, 패스워드, 방 잠금 여부, 방 인원수
-        ChatRoom room = kurentoManager.createChatRoom(chatRoomInVo);
+        ChatRoom room = chatRoomService.createChatRoom(chatRoomInVo);
 
         log.info("CREATE Chat Room [{}]", room);
 
@@ -67,7 +69,7 @@ public class ChatRoomController {
     public ResponseEntity<ChatForYouResponse> roomDetail(
             Model model,
             @PathVariable String roomId,
-            @AuthenticationPrincipal PrincipalDetails principalDetails){
+            @AuthenticationPrincipal PrincipalDetails principalDetails) throws BadRequestException {
 
         log.info("roomId {}", roomId);
 
@@ -77,14 +79,14 @@ public class ChatRoomController {
             model.addAttribute("user", principalDetails.getUser());
         }
 
-        ChatRoom room = ChatRoomMap.getInstance().getChatRooms().get(roomId);
+        ChatRoom chatRoom = chatRoomService.findRoomById(roomId);
 
-        model.addAttribute("room", room);
+        model.addAttribute("room", chatRoom);
 
-        if (ChatType.MSG.equals(room.getChatType())) {
+        if (ChatType.MSG.equals(chatRoom.getChatType())) {
             return ResponseEntity.ok(null);
         }else{
-            return ResponseEntity.ok(ChatForYouResponse.ofJoinRoom(room));
+            return ResponseEntity.ok(ChatForYouResponse.ofJoinRoom(chatRoom));
         }
     }
 
@@ -92,7 +94,7 @@ public class ChatRoomController {
     @PostMapping(value = "/room/validatePwd/{roomId}")
     public ResponseEntity<ChatForYouResponse> validatePwd(
             @PathVariable String roomId,
-            @RequestParam("roomPwd") String roomPwd){
+            @RequestParam("roomPwd") String roomPwd) throws BadRequestException {
 
         // 넘어온 roomId 와 roomPwd 를 이용해서 비밀번호 찾기
         // 찾아서 입력받은 roomPwd 와 room pwd 와 비교해서 맞으면 true, 아니면  false
@@ -107,7 +109,7 @@ public class ChatRoomController {
     @PutMapping(value = "/room/{roomId}")
     public ResponseEntity<ChatForYouResponse> modifyChatRoom(
             @PathVariable String roomId,
-            @RequestBody ChatRoomInVo chatRoom){
+            @RequestBody ChatRoomInVo chatRoom) throws BadRequestException {
         return ResponseEntity.ok(ChatForYouResponse.builder()
                 .result("success")
                 .data(chatRoomService.updateRoom(roomId, chatRoom.getRoomName(), chatRoom.getRoomPwd(), chatRoom.getMaxUserCnt()))
@@ -116,7 +118,7 @@ public class ChatRoomController {
 
     // 채팅방 삭제
     @DeleteMapping("/room/{roomId}")
-    public ResponseEntity<ChatForYouResponse> delChatRoom(@PathVariable String roomId){
+    public ResponseEntity<ChatForYouResponse> delChatRoom(@PathVariable String roomId) throws BadRequestException {
 
         // roomId 기준으로 chatRoomMap 에서 삭제, 해당 채팅룸 안에 있는 사진 삭제
         return ResponseEntity.ok(ChatForYouResponse.builder()
@@ -128,7 +130,7 @@ public class ChatRoomController {
 
     // 유저 카운트
     @GetMapping("/room/chkUserCnt/{roomId}")
-    public ResponseEntity<ChatForYouResponse> chUserCnt(@PathVariable String roomId){
+    public ResponseEntity<ChatForYouResponse> chUserCnt(@PathVariable String roomId) throws BadRequestException {
         return ResponseEntity.ok(ChatForYouResponse.builder()
                 .result("success")
                 .data(chatRoomService.chkRoomUserCnt(roomId))

@@ -203,10 +203,11 @@ const ParticipantUtils = {
  * @param {String} nickName - 참가자의 닉네임
  * @return {Participant} 생성된 참가자 객체
  */
-function Participant(userId, nickName) {
+function Participant(userId, nickName, roomId) {
 	//console.log("참여자명 : "+userId)
 	this.userId = userId;
 	this.nickName = nickName;
+	this.roomId = roomId;
 
 	let rtcPeer = null;
 	let localStream = null; // 유저의 로컬 스트림
@@ -298,6 +299,7 @@ function Participant(userId, nickName) {
 		//console.log('Invoking SDP offer callback function');
 		let msg =  {
 			id : "receiveVideoFrom",
+			roomId : roomId,
 			sender : userId,
 			nickName : nickName,
 			sdpOffer : offerSdp
@@ -314,6 +316,7 @@ function Participant(userId, nickName) {
 		//console.log("Local candidate" + JSON.stringify(candidate));
 		let message = {
 			id: 'onIceCandidate',
+			roomId : roomId,
 			candidate: candidate,
 			name: userId,
 			nickName : nickName

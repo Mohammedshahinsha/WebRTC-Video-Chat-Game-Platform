@@ -1,5 +1,6 @@
 package webChat.service.game;
 
+import org.apache.coyote.BadRequestException;
 import webChat.model.game.*;
 
 import java.util.List;
@@ -10,7 +11,7 @@ public interface CatchMindService {
      * @param roomId
      * @return 게임 플레이 여부
      */
-    boolean chkAlreadyPlayedGame(String roomId);
+    boolean chkAlreadyPlayedGame(String roomId) throws BadRequestException;
 
     /**
      * python server 에 게임 대주제를 요청
@@ -41,14 +42,14 @@ public interface CatchMindService {
      * @param userId
      * @return 유저 정보
      */
-    CatchMindUserDto updateUser(GameStatus gameStatus, String roomId, String userId);
+    CatchMindUserDto updateUser(GameStatus gameStatus, String roomId, String userId) throws BadRequestException;
 
     /**
      * 게임 결과 정보 return
      * @param roomId
      * @return 방에서의 게임 결과
      */
-    GameSettingInfo getGameResult(String roomId);
-    List<CatchMindUserDto> getGameUserInfos(String roomId);
+    GameSettingInfo getGameResult(String roomId) throws BadRequestException;
+    List<CatchMindUserDto> getGameUserInfos(String roomId) throws BadRequestException;
     boolean chkDuplicateNickName(String nickName);
 }
