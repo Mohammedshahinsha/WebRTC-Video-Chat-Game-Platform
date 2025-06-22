@@ -58,7 +58,7 @@ public class ChatRoomService {
     }
 
     // 전체 채팅방 조회
-    public List<ChatRoom> findRoomList(String keyword, int pageNum, int pageSize) {
+    public List<ChatRoom> getRoomList(String keyword, int pageNum, int pageSize) {
         // 채팅방 생성 순서를 최근순으로 반환
         List<ChatRoom> chatRoomList = new ArrayList<>();
         pageNum = pageNum !=0 ? pageNum - 1 : pageNum;
