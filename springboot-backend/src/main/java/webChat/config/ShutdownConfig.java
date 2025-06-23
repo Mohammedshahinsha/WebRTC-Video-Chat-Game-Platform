@@ -68,7 +68,7 @@ public class ShutdownConfig implements ApplicationListener<ContextClosedEvent> {
 
             // redis 에서 해당 방의 유저수 및 방 상태 변경
             kurentoRoom.setUserCount(0); // 유저 count 초기화
-            kurentoRoom.setRoomState(RoomState.INACTIVE); // 방 상태 초기화
+            kurentoRoom.setRoomState(RoomState.CREATED); // 방 상태 초기화
             redisService.updateChatRoom(kurentoRoom);
             log.info("KurentoRoom {} data updated", kurentoRoom.getRoomId());
 

@@ -63,7 +63,7 @@ public class AdminController {
         }
         List<ChatRoomOutVo> responses = new ArrayList<>();
         chatRoomService.getRoomList("", Integer.parseInt(pageNumStr), Integer.parseInt(pageSizeStr), true).forEach(room -> {
-            responses.add(ChatRoomOutVo.of(room));
+            responses.add(ChatRoomOutVo.ofJoin(room));
         });
         return ResponseEntity.ok(responses);
     }

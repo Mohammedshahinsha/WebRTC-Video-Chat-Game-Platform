@@ -238,7 +238,7 @@ function register() {
         id: 'joinRoom',
         nickName : nickName,
         userId: userId,
-        room: roomId,
+        roomId: roomId,
     }
     sendMessageToServer(message);
 }

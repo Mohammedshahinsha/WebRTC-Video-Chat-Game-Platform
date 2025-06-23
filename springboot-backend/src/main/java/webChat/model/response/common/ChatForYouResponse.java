@@ -30,7 +30,7 @@ public class ChatForYouResponse {
     public static ChatForYouResponse ofJoinRoom(ChatRoom chatRoom) {
         return ChatForYouResponse.builder()
                 .result(SUCCESS_RESULT)
-                .data(ChatRoomOutVo.of(chatRoom))
+                .data(ChatRoomOutVo.ofJoin(chatRoom))
                 .build();
     }
 }

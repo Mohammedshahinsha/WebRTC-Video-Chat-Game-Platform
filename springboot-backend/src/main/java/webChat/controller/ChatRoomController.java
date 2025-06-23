@@ -13,7 +13,6 @@ import webChat.model.room.in.ChatRoomInVo;
 import webChat.model.room.out.ChatRoomOutVo;
 import webChat.model.chat.ChatType;
 import webChat.service.chatroom.ChatRoomService;
-import webChat.service.kurento.KurentoRoomManager;
 import webChat.service.social.PrincipalDetails;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +24,6 @@ import java.util.List;
 public class ChatRoomController {
 
     private final ChatRoomService chatRoomService;
-    private final KurentoRoomManager kurentoRoomManager;
 
     @GetMapping("/room/list")
     public ResponseEntity<List<ChatRoomOutVo>> goChatRooms(
@@ -44,7 +42,7 @@ public class ChatRoomController {
 //        }
 
 //        model.addAttribute("user", "hey");
-        chatRoomService.getRoomList(keyword, Integer.parseInt(pageNumStr), Integer.parseInt(pageSizeStr), true).forEach(room -> {
+        chatRoomService.getRoomList(keyword, Integer.parseInt(pageNumStr), Integer.parseInt(pageSizeStr), false).forEach(room -> {
             responses.add(ChatRoomOutVo.of(room));
         });
         return ResponseEntity.ok(responses);
@@ -64,7 +62,7 @@ public class ChatRoomController {
         return ResponseEntity.ok(ChatForYouResponse.ofCreateRoom(room));
     }
 
-    // 채팅방 정보 확인
+    // 채팅방 입장
     @GetMapping("/room/{roomId}")
     public ResponseEntity<ChatForYouResponse> roomDetail(
             Model model,
