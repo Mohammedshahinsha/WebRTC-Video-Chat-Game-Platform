@@ -18,20 +18,17 @@
 package webChat.model.room;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.gson.annotations.SerializedName;
 import lombok.*;
-import org.kurento.client.Continuation;
+import lombok.extern.slf4j.Slf4j;
 import org.kurento.client.KurentoClient;
-import org.kurento.client.MediaPipeline;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import webChat.model.chat.ChatType;
 import webChat.model.game.GameSettingInfo;
-import webChat.rtc.KurentoUserSession;
+import webChat.service.chatroom.participant.KurentoParticipantService;
 
 import javax.annotation.PreDestroy;
 import java.io.Closeable;
-import java.io.IOException;
-import java.util.*;
 
 /**
  * @modifyBy SeJon Jang (wkdtpwhs@gmail.com)
@@ -40,25 +37,52 @@ import java.util.*;
 @Getter
 @Setter
 @NoArgsConstructor
-public class KurentoRoom extends ChatRoom<KurentoUserSession> implements Closeable {
+@Slf4j
+public class KurentoRoom extends ChatRoom implements Closeable {
 
-  // 로깅 객체 생성
-  @JsonIgnore
-  private final Logger log = LoggerFactory.getLogger(KurentoRoom.class);
   @JsonIgnore
   private KurentoClient kurento;
-  // 미디어 파이프라인
-  @JsonIgnore
-  private MediaPipeline pipeline;
 
+  @JsonIgnore
+  private KurentoParticipantService participantService;
+
+  @SerializedName("game_setting_info")
+  @JsonProperty("game_setting_info")
   private GameSettingInfo gameSettingInfo; // 해당 방의 게임 정보 세팅
 
+  @JsonIgnore
+  private boolean isKurentoInitialized = false;
+
   // 룸 정보 set
-  public KurentoRoom(String roomId, String roomName, String roomPwd, boolean secretChk, int userCount, int maxUserCnt, ChatType chatType, KurentoClient kurento){
-    super(roomId, roomName, userCount, maxUserCnt, roomPwd, secretChk, chatType);
-    this.kurento = kurento;
-    // 파이프라인 생성
-    this.createPipline();
+  public KurentoRoom(String roomId, String roomName, String creator, String roomPwd, boolean secretChk, int userCount, int maxUserCnt, ChatType chatType){
+    super(roomId, roomName, creator, userCount, maxUserCnt, roomPwd, secretChk, chatType, RoomState.CREATED);
+  }
+
+  // Kurento 리소스가 필요한 시점에 초기화
+  private void kurentoInitialized() {
+    if (!isKurentoInitialized && kurento != null) {
+      try {
+        this.isKurentoInitialized = true;
+        log.info("Kurento 리소스 초기화 완료: {}", this.getRoomId());
+      } catch (Exception e) {
+        log.error("Kurento 리소스 초기화 실패: {}", this.getRoomId(), e);
+      }
+    }
+  }
+
+  public void activate() {
+    if(this.getRoomState() != RoomState.ACTIVE){
+      this.setRoomState(RoomState.ACTIVE);
+      isKurentoInitialized = true;
+    }
+  }
+
+  /**
+   *  방 상태 변경 : deactive
+   */
+  public void deactivate() {
+    isKurentoInitialized = false;
+    this.setRoomState(RoomState.INACTIVE);
   }
 
   // 유저명 가져오기
@@ -68,70 +92,18 @@ public class KurentoRoom extends ChatRoom<KurentoUserSession> implements Closeab
   }
 
   /**
-   * @Param roomName, pipline
-   * @desc roomName 과 pipline 을 이용한 생성자
-   * */
-//  public KurentoRoom(String roomId, MediaPipeline pipeline) {
-//    this.roomId = roomId;
-//    this.pipeline = pipeline;
-//    log.info("ROOM {} has been created", roomId);
-//  }
-
-  // 생성자 대신 아래 메서드로 pipline 초기화
-  private void createPipline(){
-    this.pipeline = this.kurento.createMediaPipeline();
-  }
-
-  /**
    * @desc 종료시 실행?
    * */
+  @JsonIgnore
   @PreDestroy
   private void shutdown() {
     this.close();
   }
 
-  /**
-   * @Desc participants 의 value 만 return
-   */
-  public Collection<KurentoUserSession> getUserSessions() {
-    return this.getParticipants().values();
-  }
-
-  public KurentoUserSession getParticipant(String userId) {
-    return this.getParticipants().get(userId);
-  }
-
-  // 방이 close 되었을 때 사용됨
   @Override
-  @JsonIgnore
   public void close() {
-    // participants 의 value 값으로 for 문 시작
-    for (final KurentoUserSession user : this.getUserSessions()) {
-      try {
-        // 유저 close
-        user.close();
-      } catch (IOException e) {
-        log.debug("ROOM {}: Could not invoke close on participant {}", this.getRoomId(), user.getUserId(), e);
-      }
-    } // for 문 끝
-
-    // 유저 정보를 담은 map - participants - 초기화
-    this.getParticipants().clear();
-
-    /** 여기서 부터는 Kurento 의 메서드 인 듯 **/
-    pipeline.release(new Continuation<Void>() {
-
-      @Override
-      public void onSuccess(Void result) throws Exception {
-        log.trace("ROOM {}: Released Pipeline", KurentoRoom.this.getRoomId());
-      }
-
-      @Override
-      public void onError(Throwable cause) throws Exception {
-        log.warn("PARTICIPANT {}: Could not release Pipeline", KurentoRoom.this.getRoomId(), cause);
-      }
-    });
-
-    log.debug("Room {} closed", this.getRoomId());
+    isKurentoInitialized = false;
+    this.setRoomState(RoomState.INACTIVE);
+    this.kurento = null;
   }
 }

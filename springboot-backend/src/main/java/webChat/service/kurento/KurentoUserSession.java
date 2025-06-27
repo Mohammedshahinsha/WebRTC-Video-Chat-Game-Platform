@@ -15,15 +15,14 @@
  *
  */
 
-package webChat.rtc;
+package webChat.service.kurento;
 
 import com.google.gson.JsonObject;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.kurento.client.*;
 import org.kurento.jsonrpc.JsonUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import webChat.model.user.UserDto;
@@ -42,9 +41,8 @@ import java.util.concurrent.ConcurrentMap;
  */
 @RequiredArgsConstructor
 @Getter
+@Slf4j
 public class KurentoUserSession extends UserDto implements Closeable {
-
-  private static final Logger log = LoggerFactory.getLogger(KurentoUserSession.class);
 
   private final WebSocketSession session;
 

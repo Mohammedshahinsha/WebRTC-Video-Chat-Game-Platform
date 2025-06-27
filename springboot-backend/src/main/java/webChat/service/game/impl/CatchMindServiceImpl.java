@@ -2,8 +2,8 @@ package webChat.service.game.impl;
 
 import com.google.common.collect.Lists;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
@@ -11,16 +11,17 @@ import org.springframework.util.CollectionUtils;
 import webChat.config.CatchMindConfig;
 import webChat.controller.ExceptionController;
 import webChat.model.game.*;
-import webChat.model.room.ChatRoomMap;
+import webChat.model.redis.DataType;
 import webChat.model.room.KurentoRoom;
 import webChat.service.game.CatchMindService;
+import webChat.service.redis.RedisService;
 import webChat.utils.HttpUtil;
-
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class CatchMindServiceImpl implements CatchMindService {
 
     private final int WINNER_SCORE = 100;
@@ -28,6 +29,7 @@ public class CatchMindServiceImpl implements CatchMindService {
     private final int TOO_MANY_FAIL_SCORE = -50;
 
     private final CatchMindConfig catchMindAPI;
+    private final RedisService redisService;
 
     @Value("${catchmind.python.api.titles}")
     private String gameTitleUrl;
@@ -35,20 +37,16 @@ public class CatchMindServiceImpl implements CatchMindService {
     @Value("${catchmind.python.api.subjects}")
     private String gameSubjectUrl;
 
-    // python 서버와 통신 후 예외가 발생하는 경우 - 통신, 파싱 등 -
-    // titles 대체를 위한 list
+    // python 서버와 통신 후 예외가 발생하는 경우 titles 대체를 위한 list
     private final List<String> TITLES_EX = Lists.newArrayList("동물","식물","애니메이션","게임","영화");
 
-    private static final Logger log = LoggerFactory.getLogger(CatchMindServiceImpl.class);
-
     @Override
-    public boolean chkAlreadyPlayedGame(String roomId) {
-        KurentoRoom room = (KurentoRoom)ChatRoomMap.getInstance().getChatRooms().get(roomId);
-        if (Objects.isNull(room)) {
-            // TODO 예외처리
-
+    public boolean chkAlreadyPlayedGame(String roomId) throws BadRequestException {
+        KurentoRoom kurentoRoom = redisService.getRedisDataByDataType(roomId, DataType.CHATROOM, KurentoRoom.class);
+        if (Objects.isNull(kurentoRoom)) {
+            throw new ExceptionController.BadRequestException("Room not found with ID: " + roomId);
         }
-        if (Objects.nonNull(room.getGameSettingInfo()) && room.getGameSettingInfo().isAlreadyPlayedGame()) {
+        if (Objects.nonNull(kurentoRoom.getGameSettingInfo()) && kurentoRoom.getGameSettingInfo().isAlreadyPlayedGame()) {
             return true;
         }
         return false;
@@ -69,15 +67,15 @@ public class CatchMindServiceImpl implements CatchMindService {
     }
 
     @Override
-    public GameSubjects getSubjects(String roomId, GameSubjects gameSubjects) throws Exception {
+    public GameSubjects getSubjects(String roomId, GameSubjects gameSubjects) {
 
         try{
-            KurentoRoom room = (KurentoRoom) ChatRoomMap.getInstance().getChatRooms().get(roomId);
-            GameSettingInfo gameSettingInfo = room.getGameSettingInfo();
+            KurentoRoom kurentoRoom = redisService.getRedisDataByDataType(roomId, DataType.CHATROOM, KurentoRoom.class);
+            GameSettingInfo gameSettingInfo = kurentoRoom.getGameSettingInfo();
             if (Objects.isNull(gameSettingInfo)) {
                 gameSettingInfo = new GameSettingInfo();
                 gameSettingInfo.setRoomId(roomId);
-                room.setGameSettingInfo(gameSettingInfo);
+                kurentoRoom.setGameSettingInfo(gameSettingInfo);
             }
             setBeforeSubjects(gameSettingInfo, gameSubjects);
             gameSubjects = HttpUtil.post(catchMindAPI.getUrl()+ gameSubjectUrl, new HttpHeaders(), new ConcurrentHashMap<>(), gameSubjects, GameSubjects.class);
@@ -85,6 +83,7 @@ public class CatchMindServiceImpl implements CatchMindService {
             gameSettingInfo.getBeforeSubjects().put(gameSubjects.getTitle(), gameSubjects.getBeforeSubjects());
             log.info("subjects :: {}",gameSubjects.toString());
 
+            redisService.updateChatRoom(kurentoRoom);
             return gameSubjects;
         } catch (Exception e){ // 예외 발생 시 기본 리스트를 반환
             e.printStackTrace();
@@ -97,13 +96,13 @@ public class CatchMindServiceImpl implements CatchMindService {
     public void setGameSettingInfo(GameSettingInfo gameSettingInfo) {
         String roomId = gameSettingInfo.getRoomId();
         try {
-            KurentoRoom room = (KurentoRoom) ChatRoomMap.getInstance().getChatRooms().get(roomId);
-            GameSettingInfo gameInfo = room.getGameSettingInfo();
+            KurentoRoom kurentoRoom = redisService.getRedisDataByDataType(roomId, DataType.CHATROOM, KurentoRoom.class);
+            GameSettingInfo gameInfo = kurentoRoom.getGameSettingInfo();
             gameInfo.setGameUserList(gameSettingInfo.getGameUserList());
-//            gameInfo.setTotalGameRound(gameSettingInfo.getTotalGameRound());
             // TODO 추후에는 선택할 수 있게 하지만 현재는 3 라운드로 고정
             gameInfo.setTotalGameRound(3);
             gameInfo.setGameRound(gameSettingInfo.getGameRound());
+            redisService.updateChatRoom(kurentoRoom);
             log.info(">>>> CatchMind Game is Ready To GO");
         } catch (Exception e) {
             e.printStackTrace();
@@ -111,18 +110,17 @@ public class CatchMindServiceImpl implements CatchMindService {
     }
 
     @Override
-    public CatchMindUserDto updateUser(GameStatus gameStatus, String roomId, String userId) {
-        KurentoRoom room = (KurentoRoom) ChatRoomMap.getInstance().getChatRooms().get(roomId);
+    public CatchMindUserDto updateUser(GameStatus gameStatus, String roomId, String userId) throws BadRequestException {
+        KurentoRoom kurentoRoom = redisService.getRedisDataByDataType(roomId, DataType.CHATROOM, KurentoRoom.class);
         // TODO 예외처리 필요
-        if (Objects.isNull(room)) {
-
+        if (Objects.isNull(kurentoRoom)) {
+            throw new ExceptionController.BadRequestException("Room not found with ID: " + roomId);
         }
 
-        GameSettingInfo gameSettingInfo = room.getGameSettingInfo();
+        GameSettingInfo gameSettingInfo = kurentoRoom.getGameSettingInfo();
         List<CatchMindUserDto> catchMindUserList = gameSettingInfo.getGameUserList();
-        // TODO 예외처리 필요
         if (CollectionUtils.isEmpty(catchMindUserList)) {
-
+            // TODO 예외처리 필요
         }
 
         Optional<CatchMindUserDto> user = catchMindUserList.stream()
@@ -130,8 +128,9 @@ public class CatchMindServiceImpl implements CatchMindService {
                     return u.getUserId().equals(userId);
                 }).findFirst();
 
-        if (!user.isPresent()) {
+        if (user.isEmpty()) {
             // TODO 예외처리하기
+            throw new ExceptionController.BadRequestException("User not found with ID: " + userId);
         }
 
         CatchMindUserDto catchMindUser = user.get();
@@ -149,12 +148,13 @@ public class CatchMindServiceImpl implements CatchMindService {
                 updateUserScore(catchMindUser, this.TOO_MANY_FAIL_SCORE);
                 break;
         }
+        redisService.updateChatRoom(kurentoRoom);
         return catchMindUser;
     }
 
     @Override
-    public List<CatchMindUserDto> getGameUserInfos(String roomId) {
-        KurentoRoom kurentoRoom = (KurentoRoom) ChatRoomMap.getInstance().getChatRooms().get(roomId);
+    public List<CatchMindUserDto> getGameUserInfos(String roomId) throws BadRequestException {
+        KurentoRoom kurentoRoom = redisService.getRedisDataByDataType(roomId, DataType.CHATROOM, KurentoRoom.class);
         List<CatchMindUserDto> gameUserList = kurentoRoom.getGameSettingInfo().getGameUserList();
 
         return gameUserList;
@@ -166,11 +166,11 @@ public class CatchMindServiceImpl implements CatchMindService {
     }
 
     @Override
-    public GameSettingInfo getGameResult(String roomId) {
-        KurentoRoom room = (KurentoRoom) ChatRoomMap.getInstance().getChatRooms().get(roomId);
+    public GameSettingInfo getGameResult(String roomId) throws BadRequestException {
+        KurentoRoom kurentoRoom = redisService.getRedisDataByDataType(roomId, DataType.CHATROOM, KurentoRoom.class);
 
         // 게임 라운드 확인 및 결과 보내주기
-        GameSettingInfo gameSettingInfo = room.getGameSettingInfo();
+        GameSettingInfo gameSettingInfo = kurentoRoom.getGameSettingInfo();
         if (CollectionUtils.isEmpty(gameSettingInfo.getGameUserList())) {
             // TODO 예외처리 필요
         }
@@ -191,7 +191,7 @@ public class CatchMindServiceImpl implements CatchMindService {
 
         gameSettingInfo.getGameUserList().get(0).setWiner(true);
         gameSettingInfo.setAlreadyPlayedGame(true);
-
+        redisService.updateChatRoom(kurentoRoom);
         return gameSettingInfo;
     }
 
@@ -201,7 +201,7 @@ public class CatchMindServiceImpl implements CatchMindService {
         log.info(">>>> Round Winner and Get Score!! => {} :: {}", catchMindUser.getNickName(), catchMindUser.getScore());
     }
 
-    private GameSubjects setBeforeSubjects(GameSettingInfo gameSettingInfo, GameSubjects gameSubjects) {
+    private void setBeforeSubjects(GameSettingInfo gameSettingInfo, GameSubjects gameSubjects) {
         if (CollectionUtils.isEmpty(gameSettingInfo.getBeforeSubjects())) {
             Map<String, List<String>> beforeSubjects = new ConcurrentHashMap<>();
             beforeSubjects.put(gameSubjects.getTitle(), Collections.emptyList());
@@ -212,6 +212,5 @@ public class CatchMindServiceImpl implements CatchMindService {
                     .getOrDefault(gameSubjects.getTitle(), Collections.emptyList());
             gameSubjects.setBeforeSubjects(beforeSubjects);
         }
-        return gameSubjects;
     }
 }

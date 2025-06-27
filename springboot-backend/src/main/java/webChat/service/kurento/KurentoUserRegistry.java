@@ -20,7 +20,6 @@ package webChat.service.kurento;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.socket.WebSocketSession;
-import webChat.rtc.KurentoUserSession;
 
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -38,6 +37,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Service
 @RequiredArgsConstructor
+@Deprecated(since = "Kurento 리펙로링 적용 확인 후 제거예정")
 public class KurentoUserRegistry {
 
   /**

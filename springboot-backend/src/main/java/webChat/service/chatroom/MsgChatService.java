@@ -1,14 +1,9 @@
-package webChat.service.chat;
+package webChat.service.chatroom;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import webChat.model.room.ChatRoomMap;
-import webChat.model.chat.ChatType;
 import webChat.service.file.FileService;
-
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 
 @Slf4j

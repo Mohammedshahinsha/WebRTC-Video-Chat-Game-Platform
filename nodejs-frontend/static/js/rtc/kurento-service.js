@@ -238,7 +238,7 @@ function register() {
         id: 'joinRoom',
         nickName : nickName,
         userId: userId,
-        room: roomId,
+        roomId: roomId,
     }
     sendMessageToServer(message);
 }
@@ -266,7 +266,7 @@ function callResponse(message) {
 }
 
 function onExistingParticipants(msg) {
-    var participant = new Participant(userId, nickName);
+    var participant = new Participant(userId, nickName, roomId);
     participants[userId] = participant;
     dataChannel.initDataChannelUser(participant);
     var video = participant.getVideoElement();
@@ -334,7 +334,7 @@ function onExistingParticipants(msg) {
 }
 
 function receiveVideo(sender) {
-    var participant = new Participant(sender.userId, sender.nickName);
+    var participant = new Participant(sender.userId, sender.nickName, roomId);
     participants[sender.userId] = participant;
     var video = participant.getVideoElement();
     var audio = participant.getAudioElement();

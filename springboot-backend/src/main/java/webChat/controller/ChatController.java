@@ -4,8 +4,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.web.bind.annotation.*;
-import webChat.service.chat.ChatRoomService;
-import webChat.service.chat.MsgChatService;
+import webChat.service.chatroom.ChatRoomService;
+import webChat.service.chatroom.MsgChatService;
 
 
 @Slf4j
