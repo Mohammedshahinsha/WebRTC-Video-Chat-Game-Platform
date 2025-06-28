@@ -198,6 +198,9 @@ ws.onmessage = function (message) {
                 window.location.reload();  // 프로미스 완료 후 페이지 새로고침
             });
             break;
+        case 'textOverlayResponse':
+            console.log('textOverlayResponse', parsedMessage);
+            break;
         default:
             console.error('Unrecognized message', parsedMessage);
     }

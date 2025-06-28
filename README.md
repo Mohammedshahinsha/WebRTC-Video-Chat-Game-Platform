@@ -45,10 +45,11 @@ ChatForYou_v2/
 ## ✨ 주요 기능
 
 ### 🎯 기본 기능
-- **채팅방 관리**: 채팅방 생성, 입장, 퇴장, 삭제
+- **채팅방 관리**: 채팅방 조회, 생성, 삭제, 수정
+- **무중단 채팅방 관리** : Redis 기반 서버 재배포 시에도 채팅방 유지 관리
 - **보안 기능**: 채팅방 암호화 및 접근 제어
 - **사용자 관리**: 닉네임 중복 검사 및 자동 조정
-- **실시간 메시징**: WebSocket 기반 실시간 채팅
+- **실시간 메시징**: DataChannel 기반 실시간 채팅
 
 ### 🎥 화상채팅 기능
 - **WebRTC 화상채팅**: P2P 기반 음성/영상 통화
@@ -56,6 +57,7 @@ ChatForYou_v2/
 - **화면 공유**: 실시간 화면 공유 기능
 - **장비 선택**: 마이크/스피커 선택 기능
 - **DataChannel**: 파일 전송 및 추가 채팅
+- **텍스트 오버레이**: 문자 채팅 내용을 비디오에 표시하는 텍스트 오버레이 기능
 
 ### 🎮 게임 기능
 - **CatchMind 게임**: N 라운드 그림 맞추기 게임
@@ -95,6 +97,7 @@ This site is only for studying various functions using WebRTC and WebSocket tech
 - **Java 17** 설치
 - **Kurento Media Server** 설치
 - **TURN Server (coturn)** 설치
+- **Redis** 설치
 
 ### 2. 프론트엔드 실행
 ```bash
