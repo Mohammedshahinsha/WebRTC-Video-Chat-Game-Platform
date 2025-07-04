@@ -56,51 +56,31 @@ table {
 .btn-custom-primary {
   background-color: #3f87f5;
   border-color: #3f87f5;
-  color: #fff;
+  color: #ffffff;
 }
 .btn-custom-primary:hover {
   background-color: #306fd3;
   border-color: #306fd3;
-  color: #fff;
-}
-
-.btn-custom-info {
-  background-color: #53d6c5;
-  border-color: #53d6c5;
-  color: #fff;
-}
-.btn-custom-info:hover {
-  background-color: #3bb7a9;
-  border-color: #3bb7a9;
-  color: #fff;
-}
-
-.btn-warning {
-  background-color: #ffcc57;
-  border-color: #ffcc57;
-  color: #222;
-}
-.btn-warning:hover {
-  background-color: #f0b93e;
-  border-color: #f0b93e;
+  color: #ffffff;
 }
 
 .body-roomlist {
-  background: linear-gradient(135deg, #f5f7fa, #e4ecf7);
-  font-family: "Pretendard Variable", sans-serif;
-  color: #222;
+  background: linear-gradient(135deg, #1f1f2e, #2c2f36);
+  font-family: "Pretendard Variable", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  color: #ffffff;
   min-height: 100vh;
 }
 .body-roomlist .container {
   position: relative;
+  padding-bottom: 30px;
 }
 .body-roomlist .main_title {
   font-size: 2rem;
   font-weight: 600;
   margin-top: 2rem;
-  border-left: 4px solid #3fc1c9;
+  border-left: 4px solid #d15fff;
   padding-left: 1rem;
-  color: #3a3d46;
+  color: #ffffff;
 }
 .body-roomlist .button-group {
   display: flex;
@@ -110,38 +90,60 @@ table {
 }
 .body-roomlist .btn {
   transition: all 0.3s ease;
+  background: #8e4fff;
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 16px;
 }
 .body-roomlist .btn:hover {
-  transform: scale(1.03);
-  box-shadow: 0 4px 12px rgba(63, 193, 201, 0.4);
+  box-shadow: 0 4px 12px rgba(209, 95, 255, 0.3);
+  background: #e079ff;
 }
 .body-roomlist .table_wrap {
-  margin-top: 2rem;
-  background-color: #fff;
-  border-radius: 6px;
+  height: 72vh;
   padding: 6px;
+  margin-top: 2rem;
+  background-color: #1f1f2e;
+  border-radius: 6px;
+  overflow-y: auto;
 }
 .body-roomlist .table_wrap thead {
-  color: #3a3d46;
+  color: #d15fff;
+  background: #333348;
+}
+.body-roomlist .table_wrap tbody {
+  border-top: none;
 }
 .body-roomlist .table_wrap tbody tr {
-  color: #eaeaea;
+  color: #ffffff;
 }
 .body-roomlist .table_wrap tbody tr:hover {
-  background-color: #f9f9f9;
+  background-color: #333348;
   transition: background-color 0.3s;
 }
 .body-roomlist .table_wrap tbody tr td {
-  color: #3a3d46;
-  background-color: #fff;
+  color: #ffffff;
+  background-color: #1f1f2e;
   vertical-align: middle;
+  border-bottom: 1px solid #55556b;
+}
+.body-roomlist .table_wrap tbody tr td a:hover {
+  color: rgba(255, 255, 255, 0.6509803922);
+}
+.body-roomlist .table_wrap .table-scroll thead th {
+  position: sticky;
+  top: 0;
+  background: #333348;
+  z-index: 1;
 }
 .body-roomlist .visitor-count {
   position: absolute;
   top: 10px;
   right: 10px;
   font-size: 0.9rem;
-  z-index: 999;
+  z-index: 9999;
+  color: #c8c8d5;
 }
 .body-roomlist .toast-container {
   position: fixed;
@@ -152,14 +154,45 @@ table {
 .body-roomlist span.input-group-text.input-password-hide,
 .body-roomlist span.input-group-text.input-password-show {
   height: 40px;
+  background: #333348;
+  color: #ffffff;
+  border: 1px solid #55556b;
 }
 .body-roomlist input#maxUserCnt {
   width: 160px;
+  background-color: #333348;
+  border: 1px solid #77778a;
+  color: #ffffff;
 }
 
-.icon_wrap img {
+.body-kurentoroom h2 {
+  color: #d15fff;
+}
+.body-kurentoroom .icon_wrap img {
   width: 24px;
   height: 24px;
+  filter: brightness(1.2);
+}
+
+.sidebar {
+  background-color: #1b1c1e;
+}
+.sidebar .logo {
+  padding: 0 1rem;
+}
+.sidebar .logo img {
+  width: 60px;
+}
+.sidebar .nav-link {
+  font-size: 14px;
+  transition: background-color 0.2s ease;
+}
+.sidebar .nav-link .fas {
+  margin-right: 10px;
+}
+.sidebar .nav-link:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  text-decoration: none;
 }
 
 .modal-content {

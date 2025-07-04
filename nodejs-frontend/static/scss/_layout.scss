@@ -1,22 +1,23 @@
 @use "variables" as *;
 
 .body-roomlist {
-    background: linear-gradient(135deg, #f5f7fa, #e4ecf7); // 밝은 회색+푸른빛
-    font-family: "Pretendard Variable", sans-serif;
-    color: #222;
+    background: $background-dark; // ChatForYou 다크 배경 그라데이션
+    font-family: $font-base;
+    color: $color-white;
     min-height: 100vh;
 
     .container {
         position: relative;
+        padding-bottom: 30px;
     }
 
     .main_title {
         font-size: 2rem;
         font-weight: 600;
         margin-top: 2rem;
-        border-left: 4px solid #3fc1c9;
+        border-left: 4px solid $color-accent;
         padding-left: 1rem;
-        color: #3a3d46;
+        color: $color-white;
     }
 
     .button-group {
@@ -28,37 +29,61 @@
 
     .btn {
         transition: all 0.3s ease;
+        background: $gradient-start;
+        color: $color-white;
+        border: none;
+        border-radius: $btn-radius;
+        padding: 8px 16px;
 
         &:hover {
-            transform: scale(1.03);
-            box-shadow: 0 4px 12px rgba(63, 193, 201, 0.4);
+            box-shadow: 0 4px 12px rgba(209, 95, 255, 0.3); // 보라색 hover 효과
+            background: $gradient-end;
         }
     }
 
     .table_wrap {
-        margin-top: 2rem;
-        background-color: $color-white;
-        border-radius: 6px;
+        height: 72vh;
         padding: 6px;
+        margin-top: 2rem;
+        background-color: $color-gray-900;
+        border-radius: 6px;
+        overflow-y: auto;
 
         thead {
-            color: #3a3d46;
+            color: $color-accent;
+            background: $color-gray-800;
         }
 
         tbody {
+            border-top: none;
+
             tr {
-                color: $color-gray-300;
+                color: $color-white;
 
                 &:hover {
-                    background-color: $color-gray-100;
+                    background-color: $color-gray-800;
                     transition: background-color 0.3s;
                 }
 
                 td {
-                    color: #3a3d46;
-                    background-color: $color-white;
+                    color: $color-white;
+                    background-color: $color-gray-900;
                     vertical-align: middle;
+                    border-bottom: 1px solid $color-gray-700;
+
+                    a:hover {
+                        color: #ffffffa6;
+                    }
                 }
+            }
+        }
+
+        .table-scroll {
+            thead th {
+                position: sticky;
+                top: 0;
+                background: $color-gray-800;
+                z-index: 1;
             }
         }
     }
@@ -68,29 +93,69 @@
         top: 10px;
         right: 10px;
         font-size: 0.9rem;
-        z-index: 999;
+        z-index: $z-toast;
+        color: $color-gray-400;
     }
 
     .toast-container {
         position: fixed;
         top: 20px;
         right: 20px;
-        z-index: 9999;
+        z-index: $z-toast;
     }
 
     span.input-group-text.input-password-hide,
     span.input-group-text.input-password-show {
         height: 40px;
+        background: $color-gray-800;
+        color: $color-white;
+        border: 1px solid $color-gray-700;
     }
 
     input#maxUserCnt {
         width: 160px;
+        background-color: $color-gray-800;
+        border: 1px solid $color-gray-600;
+        color: $color-white;
     }
 }
 
-.icon_wrap {
-    img {
-        width: 24px;
-        height: 24px;
+.body-kurentoroom {
+    h2 {
+        color: $color-accent;
+    }
+
+    .icon_wrap {
+        img {
+            width: 24px;
+            height: 24px;
+            filter: brightness(1.2); // 다크모드에서 아이콘 밝기 증가
+        }
+    }
+}
+
+.sidebar {
+    background-color: #1b1c1e;
+
+    .logo {
+        padding: 0 1rem;
+
+        img {
+            width: 60px;
+        }
+    }
+
+    .nav-link {
+        font-size: 14px;
+        transition: background-color 0.2s ease;
+
+        .fas {
+            margin-right: 10px;
+        }
+
+        &:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            text-decoration: none;
+        }
     }
 }

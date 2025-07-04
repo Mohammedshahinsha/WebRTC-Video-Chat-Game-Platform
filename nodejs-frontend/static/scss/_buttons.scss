@@ -12,26 +12,3 @@
         color: $color-white;
     }
 }
-
-.btn-custom-info {
-    background-color: $color-info;
-    border-color: $color-info;
-    color: $color-white;
-
-    &:hover {
-        background-color: $color-info-dark;
-        border-color: $color-info-dark;
-        color: $color-white;
-    }
-}
-
-.btn-warning {
-    background-color: $color-warning;
-    border-color: $color-warning;
-    color: #222;
-
-    &:hover {
-        background-color: $color-warning-dark;
-        border-color: $color-warning-dark;
-    }
-}
