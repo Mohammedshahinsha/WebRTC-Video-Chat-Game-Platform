@@ -106,7 +106,7 @@ public class KurentoHandler extends TextWebSocketHandler {
             case "textOverlay": // 텍스트 오버레이 요청
                 if (user != null) {
                     String overlayText = JsonUtils.getStrOrEmpty(jsonMessage, "text");
-                    log.info("Received text overlay request from user {}: {}", user.getUserId(), overlayText);
+                    log.debug("Received text overlay request from user {}: {}", user.getUserId(), overlayText);
 
                     // 텍스트 오버레이 적용
                     user.showTextOverlay(overlayText);

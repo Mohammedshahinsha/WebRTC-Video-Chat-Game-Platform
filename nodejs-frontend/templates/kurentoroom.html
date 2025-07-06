@@ -21,6 +21,7 @@
     <link rel="styleSheet" href="css/rtc/floating_chat.css" type="text/css" media="screen">
     <link rel="styleSheet" href="css/rtc/media_device.css" type="text/css" media="screen">
     <link rel="styleSheet" href="css/rtc/catch_mind.css" type="text/css" media="screen">
+    <link rel="styleSheet" href="css/rtc/subtitle.css" type="text/css" media="screen">
 
     <!-- 로딩 관련 -->
     <script src="https://cdn.jsdelivr.net/npm/gasparesganga-jquery-loading-overlay@2.1.7/dist/loadingoverlay.min.js"></script>
@@ -53,6 +54,8 @@
                          alt="" id="videoBtn" data-flag="true">
                     <img src="images/webrtc/audio-speaker-on.svg" class="col-md-1 localAudioToggle" width="24px"
                          height="24px" alt="" id="audioBtn" data-flag="true">
+                    <img src="images/webrtc/subtitle-off.svg" class="col-md-1" width="24px" height="24px" alt=""
+                         id="subtitleBtn" data-flag="false" onclick="toggleSubtitle()" title="실시간 자막">
                     <img src="images/webrtc/setting.svg" class="col-md-1" width="24px" height="24px" id="userSetting"
                          alt="userSetting"
                          data-toggle="modal" data-target="#userSettingsModal">
@@ -169,6 +172,7 @@
     <script src="js/rtc/kurento-utils.js"></script>
     <script src="js/popup/popup-loader.js"></script>
     <script src="js/popup/audio_error_popup.js"></script>
+    <script src="js/rtc/speechSubtitleManager.js"></script>
     <script src="js/rtc/kurento-service.js"></script>
     <script src="js/rtc/dataChannel.js"></script>
     <script src="js/rtc/dataChannelChatting.js"></script>
