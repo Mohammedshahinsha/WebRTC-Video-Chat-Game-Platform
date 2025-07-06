@@ -4,6 +4,7 @@ const roomList = {
   init: function() {
     const self = this;
     self.loadRoomList();
+    self.initSse();
     self.checkVisitor();
     self.initModals();
     self.initInputLimits();
@@ -16,26 +17,69 @@ const roomList = {
     ajax(window.__CONFIG__.API_BASE_URL + '/chat/room/list', 'GET', true, '', function(list) {
       const $tbody = $('#roomTableBody');
       $tbody.empty();
-      list.forEach(function(room) {
-        const isSecret = room.secretChk;
-        const roomType = room.chatType === 'MSG' ? '일반 채팅' : '화상 채팅';
-        const lockIcon = isSecret ? '🔒︎' : '';
-        const btnSetting = `<button class='btn btn-primary btn-sm configRoomBtn' data-id='${room.roomId}'>채팅방 설정</button>`;
-        const roomNameHtml = isSecret
-          ? `<a href="#enterRoomModal" data-bs-toggle="modal" class="enterRoomBtn" data-id="${room.roomId}">${room.roomName}</a>`
-          : `<a href="#" class="directEnterBtn" data-roomid="${room.roomId}">${room.roomName}</a>`;
-        $tbody.append(`
-          <tr>
-            <td>${roomNameHtml}</td>
-            <td>${lockIcon}</td>
-            <td><span class="badge bg-primary rounded-pill">${room.userCount}/${room.maxUserCnt}</span></td>
-            <td>${roomType}</td>
-            <td>${btnSetting}</td>
-          </tr>
-        `);
-      });
+      self.renderRoomList(list);
     }, function(err) {
       $('#roomTableBody').html('<tr><td colspan="5">방 목록을 불러오지 못했습니다.</td></tr>');
+    });
+  },
+  renderRoomList: function(list) {
+    const $tbody = $('#roomTableBody');
+    list.forEach(function(room) {
+      roomList.addRoomToTable(room, false);
+    });
+  },
+
+  addRoomToTable: function(room, isPrepend) {
+    const isSecret = room.secretChk;
+    const roomType = room.chatType === 'MSG' ? '일반 채팅' : '화상 채팅';
+    const lockIcon = isSecret ? '🔒︎' : '';
+    const btnSetting = `<button class='btn btn-primary btn-sm configRoomBtn' data-id='${room.roomId}'>채팅방 설정</button>`;
+    const roomNameHtml = isSecret
+        ? `<a href="#enterRoomModal" data-bs-toggle="modal" class="enterRoomBtn" data-id="${room.roomId}">${room.roomName}</a>`
+        : `<a href="#" class="directEnterBtn" data-roomid="${room.roomId}">${room.roomName}</a>`;
+
+    if ($('#roomTableBody').find(`[data-id='${room.roomId}'], [data-roomid='${room.roomId}']`).length === 0) {
+      const html = `
+      <tr>
+        <td>${roomNameHtml}</td>
+        <td>${lockIcon}</td>
+        <td><span class="badge bg-primary rounded-pill">${room.userCount}/${room.maxUserCnt}</span></td>
+        <td>${roomType}</td>
+        <td>${btnSetting}</td>
+      </tr>
+    `;
+
+      if(isPrepend) {
+        $('#roomTableBody').prepend(html);
+      } else {
+        $('#roomTableBody').append(html);
+      }
+    }
+  },
+  initSse: function() {
+    const self = this;
+    const eventSource = new EventSource(window.__CONFIG__.API_BASE_URL + '/sse/room-events');
+
+    eventSource.addEventListener('roomCreated', function(event) {
+      const newRoom = JSON.parse(event.data);
+      self.addRoomToTable(newRoom, true);
+    });
+
+    eventSource.addEventListener('roomDeleted', function(event) {
+      const deletedRoom = JSON.parse(event.data);
+      const deletedRoomId = deletedRoom.roomId;
+      $('#roomTableBody')
+          .find(`[data-id='${deletedRoomId}'], [data-roomid='${deletedRoomId}']`)
+          .closest('tr')
+          .remove();
+    });
+
+    eventSource.addEventListener("ping", function (e) {
+      console.log("Ping Ping Ping Ping Ping Ping Ping Ping ");
+    });
+
+    window.addEventListener("beforeunload", () => {
+      eventSource.close();
     });
   },
   numberChk: function() {
