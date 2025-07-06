@@ -16,6 +16,16 @@
 
 // 오디오 권한 체크 함수
 async function checkAudioPermission() {
+    // Safari 지원불가 체크
+    const browser = detectBrowser();
+    if (browser === 'safari') {
+        return { 
+            success: false, 
+            errorType: 'safari_unsupported', 
+            error: new Error('Safari는 지원되지 않습니다') 
+        };
+    }
+    
     try {
         const audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
         // 테스트 후 즉시 스트림 해제
@@ -97,6 +107,13 @@ async function showAudioErrorModal(errorType = 'unknown', error = null) {
             helpText = '마이크를 사용 중인 다른 프로그램을 종료해주세요.';
             browserGuide = '1. 화상회의 프로그램(Zoom, Teams 등) 종료<br>2. 음성녹음 프로그램 종료<br>3. 브라우저의 다른 탭에서 마이크 사용 중단';
             break;
+        case 'safari_unsupported':
+            title = 'Safari는 지원되지 않습니다';
+            message = '죄송합니다. Safari 브라우저는 현재 지원되지 않습니다.';
+            icon = '🚫';
+            helpText = '다른 브라우저(Chrome, Firefox, Edge)를 사용해주세요.';
+            browserGuide = getBrowserPermissionGuide(browser);
+            break;
         default:
             title = '오디오 설정 문제';
             message = '오디오 장치에 문제가 발생했습니다.';
@@ -149,11 +166,13 @@ function getBrowserPermissionGuide(browser) {
             `;
         case 'safari':
             return `
-                <strong>Safari에서 마이크 권한 허용하기:</strong><br>
-                1. Safari 메뉴 → 환경설정<br>
-                2. 웹사이트 탭 → 마이크<br>
-                3. 이 웹사이트에 대해 "허용" 선택<br>
-                4. 페이지 새로고침
+                <strong>Safari는 현재 지원되지 않습니다</strong><br>
+                죄송합니다. Safari 브라우저는 현재 지원되지 않습니다.<br><br>
+                <strong>권장 브라우저:</strong><br>
+                • Chrome (권장)<br>
+                • Firefox<br>
+                • Microsoft Edge<br><br>
+                더 나은 서비스 이용을 위해 위 브라우저 중 하나를 사용해주세요.
             `;
         case 'edge':
             return `
