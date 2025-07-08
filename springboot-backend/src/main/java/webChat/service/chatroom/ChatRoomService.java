@@ -18,6 +18,7 @@ import webChat.model.room.KurentoRoom;
 import webChat.model.room.RoomState;
 import webChat.model.room.in.ChatRoomInVo;
 import webChat.service.analysis.AnalysisService;
+import webChat.service.chatroom.SseService;
 import webChat.service.file.FileService;
 import webChat.service.kurento.KurentoRoomManager;
 import webChat.service.redis.RedisService;
@@ -39,6 +40,8 @@ public class ChatRoomService {
 
     private final AnalysisService analysisService;
 
+    private final SseService sseService;
+
     @Value("${chatforyou.room.max_user_count}")
     private int MAX_USER_COUNT;
 
@@ -51,7 +54,10 @@ public class ChatRoomService {
 
         if(ChatType.RTC.equals(chatRoomInVo.getRoomType())) {
             analysisService.increaseDailyRoomCnt();
-            return kurentoRoomManager.createKurentoRoom(chatRoomInVo);
+            ChatRoom chatRoom = kurentoRoomManager.createKurentoRoom(chatRoomInVo);
+            // 새로운 방 생성 시 모든 클라이언트에 이벤트 전송
+            sseService.sendRoomCreatedEvent(chatRoom);
+            return chatRoom;
         } else {
             throw new ExceptionController.BadRequestException("room type is not exist : " + chatRoomInVo.getRoomType());
         }
@@ -154,7 +160,8 @@ public class ChatRoomService {
         } else {
             throw new ExceptionController.DelRoomException("Soft Delete Room Exception");
         }
-
+        // 방 삭제 시 모든 클라이언트에 이벤트 전송
+        sseService.sendRoomDeletedEvent(kurentoRoom);
         log.info("Room {} state changed {}", kurentoRoom.getRoomId(), RoomState.INACTIVE.getType());
         return true;
     }
