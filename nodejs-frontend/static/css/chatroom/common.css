@@ -1,0 +1,245 @@
+/* static/scss/_reset.scss */
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  font-family: sans-serif;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  background-color: #fff;
+  color: #000;
+}
+
+ul,
+ol {
+  list-style: none;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+img,
+video {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+  background: none;
+  border: none;
+  outline: none;
+}
+
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+/* _mixins.scss */
+.btn-custom-primary {
+  background-color: #3f87f5;
+  border-color: #3f87f5;
+  color: #ffffff;
+}
+.btn-custom-primary:hover {
+  background-color: #306fd3;
+  border-color: #306fd3;
+  color: #ffffff;
+}
+
+.body-roomlist {
+  background: linear-gradient(135deg, #1f1f2e, #2c2f36);
+  font-family: "Pretendard Variable", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  color: #ffffff;
+  min-height: 100vh;
+}
+.body-roomlist .container {
+  position: relative;
+  padding-bottom: 30px;
+}
+.body-roomlist .main_title {
+  font-size: 2rem;
+  font-weight: 600;
+  margin-top: 2rem;
+  border-left: 4px solid #d15fff;
+  padding-left: 1rem;
+  color: #ffffff;
+}
+.body-roomlist .button-group {
+  display: flex;
+  gap: 0.5rem;
+  margin: 1rem 0;
+  flex-wrap: wrap;
+}
+.body-roomlist .btn {
+  transition: all 0.3s ease;
+  background: #8e4fff;
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 16px;
+}
+.body-roomlist .btn:hover {
+  box-shadow: 0 4px 12px rgba(209, 95, 255, 0.3);
+  background: #e079ff;
+}
+.body-roomlist .table_wrap {
+  height: 72vh;
+  padding: 6px;
+  margin-top: 2rem;
+  background-color: #1f1f2e;
+  border-radius: 6px;
+  overflow-y: auto;
+}
+.body-roomlist .table_wrap thead {
+  color: #d15fff;
+  background: #333348;
+}
+.body-roomlist .table_wrap tbody {
+  border-top: none;
+}
+.body-roomlist .table_wrap tbody tr {
+  color: #ffffff;
+}
+.body-roomlist .table_wrap tbody tr:hover {
+  background-color: #333348;
+  transition: background-color 0.3s;
+}
+.body-roomlist .table_wrap tbody tr td {
+  color: #ffffff;
+  background-color: #1f1f2e;
+  vertical-align: middle;
+  border-bottom: 1px solid #55556b;
+}
+.body-roomlist .table_wrap tbody tr td a:hover {
+  color: rgba(255, 255, 255, 0.6509803922);
+}
+.body-roomlist .table_wrap .table-scroll thead th {
+  position: sticky;
+  top: 0;
+  background: #333348;
+  z-index: 1;
+}
+.body-roomlist .visitor-count {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 0.9rem;
+  z-index: 9999;
+  color: #c8c8d5;
+}
+.body-roomlist .toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+}
+.body-roomlist span.input-group-text.input-password-hide,
+.body-roomlist span.input-group-text.input-password-show {
+  height: 40px;
+  background: #333348;
+  color: #ffffff;
+  border: 1px solid #55556b;
+}
+.body-roomlist input#maxUserCnt {
+  width: 160px;
+  background-color: #333348;
+  border: 1px solid #77778a;
+  color: #ffffff;
+}
+
+.body-kurentoroom h2 {
+  color: #d15fff;
+}
+.body-kurentoroom .icon_wrap img {
+  width: 24px;
+  height: 24px;
+  filter: brightness(1.2);
+}
+
+.sidebar {
+  background-color: #1b1c1e;
+}
+.sidebar .logo {
+  padding: 0 1rem;
+}
+.sidebar .logo img {
+  width: 60px;
+}
+.sidebar .nav-link {
+  font-size: 14px;
+  transition: background-color 0.2s ease;
+}
+.sidebar .nav-link .fas {
+  margin-right: 10px;
+}
+.sidebar .nav-link:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  text-decoration: none;
+}
+
+.modal-content {
+  background-color: #ffffff;
+  color: #212529;
+  border-radius: 0.5rem;
+  font-family: "Pretendard Variable", sans-serif;
+}
+
+.modal-header {
+  border-bottom: 1px solid #dee2e6;
+}
+.modal-header .modal-title {
+  font-weight: 600;
+  font-size: 1.25rem;
+}
+
+.modal-body .form-label {
+  font-weight: 500;
+  color: #212529;
+}
+.modal-body .form-control {
+  background-color: #f8f9fa;
+  border: 1px solid #ced4da;
+  color: #212529;
+}
+.modal-body .form-control::placeholder {
+  color: #adb5bd;
+}
+.modal-body .form-check-label {
+  color: #212529;
+}
+.modal-body .form-text {
+  font-size: 0.85rem;
+  color: #6c757d;
+}
+
+.modal-footer {
+  border-top: 1px solid #dee2e6;
+}
+.modal-footer .btn {
+  font-weight: 500;
+}
+
+.spinner-border {
+  width: 2rem;
+  height: 2rem;
+}
+
+/*# sourceMappingURL=common.css.map */

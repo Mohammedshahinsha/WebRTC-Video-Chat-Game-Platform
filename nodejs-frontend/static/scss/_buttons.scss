@@ -1,0 +1,14 @@
+// _buttons.scss
+@use "variables" as *;
+
+.btn-custom-primary {
+    background-color: #3f87f5;
+    border-color: #3f87f5;
+    color: $color-white;
+
+    &:hover {
+        background-color: #306fd3;
+        border-color: #306fd3;
+        color: $color-white;
+    }
+}
