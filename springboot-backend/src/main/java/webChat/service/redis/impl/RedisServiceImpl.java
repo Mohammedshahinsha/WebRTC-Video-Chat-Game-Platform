@@ -428,7 +428,7 @@ public class RedisServiceImpl implements RedisService {
             return false; // 유효하지 않은 입력
         }
 
-        Set<String> keys = masterTemplate.keys("roomId:*");
+        Set<String> keys = slaveTemplate.keys("roomId:*");
         if (keys == null || keys.isEmpty()) {
             return false;
         }
@@ -436,7 +436,7 @@ public class RedisServiceImpl implements RedisService {
         return keys.stream()
                 .map(key -> {
                     try {
-                        return masterTemplate.opsForHash().get(key, "roomName");
+                        return slaveTemplate.opsForHash().get(key, "roomName");
                     } catch (Exception e) {
                         // 로깅 처리
                         return null;
