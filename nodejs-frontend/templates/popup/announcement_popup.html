@@ -20,20 +20,21 @@
                 <div class="tab-content" id="updateHistoryContent">
                     <div class="tab-pane fade show active" id="update" role="tabpanel" aria-labelledby="update-tab">
                         <br>
-                        <h6>25.05.29 업데이트</h6>
+                        <h6>25.07.08 업데이트</h6>
                         <ul>
-                            <li>전체 화상채팅 구조 변경 :: NodeJs + SpringBoot</li>
-                            <li>최신 인증서 적용</li>
-                            <li>버그 수정 및 서비스 안정화를 위해서 지속적으로 모니터링 중 입니다.</li>
+                            <li>1. 메인 대시보드 UI/UX 개선</li>
+                            <li>2. 실시간 자막 기능 추가</li>
+                            <li>3. SSE 기반 실시간 채팅 목록 확인 기능 추가</li>
                         </ul>
                     </div>
                     <div class="tab-pane fade" id="features" role="tabpanel" aria-labelledby="features-tab">
                         <br>
                         <h6>추가된 주요 기능들 : </h6>
                         <ul>
-                            <li>화상 채팅 CatchMind 게임 개발 및 실행 가능!</li>
-                            <!-- 이미지 경로를 base href에 맞게 수정 -->
-                            <img src="images/webrtc/catchmind_r60.gif" alt="CatchMind Game Example" style="width:100%; height:auto;">
+                            <li>실시간 자막 기능 추가</li>
+                            <img src="images/webrtc/info/chatforyou_subtitle.gif" alt="subtitle" style="width:100%; height:auto;">
+                            <li>SSE 기능 추가</li>
+                            <img src="images/webrtc/info/chatforyou_sse.gif" alt="subtitle" style="width:100%; height:auto;">
                         </ul>
                     </div>
                 </div>
@@ -68,34 +69,87 @@
                 </ul>
                 <div class="tab-content" id="announcementTabsContent">
                     <div aria-labelledby="korea-tab" class="tab-pane fade show active" id="korea" role="tabpanel">
-                        <!-- 개발자 소개 -->
-                        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
-                            <h6 style="margin: 0; font-size: 18px;">안녕하세요, <strong style="color: #0408f8;font-size: 25px;"> ChatForYou </strong> 개발자 SeJonJ 입니다.</h6>
-                            <p style="margin: 10px 0; line-height: 1.6;">
-                                본 서비스는 정보통신망 이용촉진 및 정보보호 등에 관한 법률(정보통신망법)을 준수합니다.<br>
-                                모든 사용자가 안전하고 쾌적하게 화상채팅을 이용할 수 있도록 아래 사항을 반드시 숙지해주시기 바랍니다.
-                            </p>
-                            <p style="margin: 10px 0 0 0;">
-                                저는 아래 사이트에서 저에 대한 정보를 더 확인하실 수 있습니다.<br>
-                                <a href="https://terianp.tistory.com/" style="color: #FFD700;">📝 Tistory Blog</a> | 
-                                <a href="https://github.com/SeJonJ" style="color: #FFD700;">💻 GitHub</a> | 
-                                <a href="https://www.linkedin.com/in/%EC%84%B8%EC%A1%B4-%EC%9E%A5-b437ba28b/" style="color: #FFD700;">💼 LinkedIn</a>
-                            </p>
-                        </div>
+                        <!-- 전체 한글 섹션을 accordion으로 구성 -->
+                        <div class="accordion" id="termsAccordionKor">
+                            <!-- 프로젝트 소개 -->
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="headingIntroKor">
+                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" 
+                                            data-bs-target="#collapseIntroKor" aria-expanded="true" aria-controls="collapseIntroKor">
+                                        📋 프로젝트 소개
+                                    </button>
+                                </h2>
+                                <div id="collapseIntroKor" class="accordion-collapse collapse show" aria-labelledby="headingIntroKor" data-bs-parent="#termsAccordionKor">
+                                    <div class="accordion-body">
+                                        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 10px;">
+                                            <h6 style="margin: 0; font-size: 18px;">안녕하세요, <strong style="color: #0408f8;font-size: 25px;"> 프로젝트 ChatForYou </strong> 입니다.</h6>
+                                            <p style="margin: 10px 0; line-height: 1.6;">
+                                                본 서비스는 오직 Spring Boot와 Node.js 를 기반으로 하여 다양한 기능을 공부하고, 구현하고, 배포하며 공유하기 위한 사이트입니다.
+                                                <br><br>
+                                                따라서 해당 사이트를 이용함에 있어 발생할 수 있는 모든 법적 책임은 사이트를 이용하시는 본인에게 있음을 명시해주시기 바랍니다.
+                                                <br><br>
+                                                또한 본 서비스는 정보통신망 이용촉진 및 정보보호 등에 관한 법률(정보통신망법)을 준수합니다.<br><br>
+                                                모든 사용자가 안전하고 쾌적하게 화상채팅을 이용할 수 있도록 아래 사항을 반드시 숙지해주시기 바랍니다.<br>
+                                                <br>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
 
-                        <!-- 접을 수 있는 상세 내용 -->
-                        <div class="accordion" id="termsAccordion">
+                            <!-- 개발팀 소개 -->
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="headingTeamKor">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                                            data-bs-target="#collapseTeamKor" aria-expanded="false" aria-controls="collapseTeamKor">
+                                        👥 개발팀 소개
+                                    </button>
+                                </h2>
+                                <div id="collapseTeamKor" class="accordion-collapse collapse" aria-labelledby="headingTeamKor" data-bs-parent="#termsAccordionKor">
+                                    <div class="accordion-body">
+                                        <div style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; padding: 20px; border-radius: 10px;">
+                                            <!-- 장세존 -->
+                                            <div class="team-member" style="margin-bottom: 15px; padding: 12px; background: rgba(255,255,255,0.15); border-radius: 8px; border-left: 4px solid #FFD700;">
+                                                <div style="font-weight: bold; margin-bottom: 8px; font-size: 16px;">👑 장세존 - 프로젝트 총괄 · 풀스택 개발 · DevOps 담당</div>
+                                                <div style="font-size: 14px; line-height: 1.4;">
+                                                    <a href="https://terianp.tistory.com/" style="color: #FFD700; text-decoration: none;">📝 티스토리 블로그</a> | 
+                                                    <a href="https://github.com/SeJonJ" style="color: #FFD700; text-decoration: none;">💻 깃허브</a> | 
+                                                    <a href="https://www.linkedin.com/in/%EC%84%B8%EC%A1%B4-%EC%9E%A5-b437ba28b/" style="color: #FFD700; text-decoration: none;">💼 LinkedIn</a>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- 김동현 -->
+                                            <div class="team-member" style="margin-bottom: 15px; padding: 12px; background: rgba(255,255,255,0.15); border-radius: 8px; border-left: 4px solid #20c997;">
+                                                <div style="font-weight: bold; margin-bottom: 8px; font-size: 16px;">⚙️ 김동현 - 백엔드 · 프론트엔드 기능 개발</div>
+                                                <div style="font-size: 14px; color: #e3f2fd;">📧 포트폴리오 준비 중</div>
+                                            </div>
+                                            
+                                            <!-- 박태식 -->
+                                            <div class="team-member" style="margin-bottom: 15px; padding: 12px; background: rgba(255,255,255,0.15); border-radius: 8px; border-left: 4px solid #6f42c1;">
+                                                <div style="font-weight: bold; margin-bottom: 8px; font-size: 16px;">💻 박태식 - 백엔드 · 프론트엔드 기능 개발</div>
+                                                <div style="font-size: 14px; color: #e3f2fd;">📧 포트폴리오 준비 중</div>
+                                            </div>
+                                            
+                                            <!-- 임가현 -->
+                                            <div class="team-member" style="margin-bottom: 0; padding: 12px; background: rgba(255,255,255,0.15); border-radius: 8px; border-left: 4px solid #e91e63;">
+                                                <div style="font-weight: bold; margin-bottom: 8px; font-size: 16px;">🎨 임가현 - 디자인 및 웹 퍼블리싱 총괄</div>
+                                                <div style="font-size: 14px; color: #e3f2fd;">📧 포트폴리오 준비 중</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                             <!-- 개인정보 처리 안내 -->
                             <div class="accordion-item">
                                 <h2 class="accordion-header" id="headingPrivacy">
-                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePrivacy" aria-expanded="true" aria-controls="collapsePrivacy">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePrivacy" aria-expanded="false" aria-controls="collapsePrivacy">
                                         🔒 개인정보 처리 안내 (정보통신망법 제22조, 제27조)
                                     </button>
                                 </h2>
-                                <div id="collapsePrivacy" class="accordion-collapse collapse show" aria-labelledby="headingPrivacy">
+                                <div id="collapsePrivacy" class="accordion-collapse collapse" aria-labelledby="headingPrivacy" data-bs-parent="#termsAccordionKor">
                                     <div class="accordion-body">
                                         <h6><strong style="color: #2c5aa0;">수집하는 개인정보</strong></h6>
-                                        <p>• IP주소, 접속시간, 서비스 이용기록을 자동으로 수집합니다</p>
+                                        <p>• IP주소, 접속시간, 서비스 이용기록 등을 자동으로 수집합니다</p>
                                         
                                         <h6><strong style="color: #2c5aa0;">수집 목적</strong></h6>
                                         <p>• 서비스 제공 및 운영, 이용 통계 분석, 보안 및 부정이용 방지</p>
@@ -121,11 +175,10 @@
                                         👶 청소년 보호 정책 (정보통신망법 제44조의2)
                                     </button>
                                 </h2>
-                                <div id="collapseYouth" class="accordion-collapse collapse" aria-labelledby="headingYouth">
+                                <div id="collapseYouth" class="accordion-collapse collapse" aria-labelledby="headingYouth" data-bs-parent="#termsAccordionKor">
                                     <div class="accordion-body">
                                         <h6><strong style="color: #2c5aa0;">연령 제한</strong></h6>
-                                        <p>• 만 14세 이상만 이용 가능<br>
-                                        • 만 19세 미만은 보호자 확인 권장</p>
+                                        <p>• 모든 사용자 이용 가능<br>
                                         
                                         <h6><strong style="color: #2c5aa0;">유해정보 차단</strong></h6>
                                         <p>• 음란물, 폭력물, 도박 등 청소년 유해 내용 게시 금지<br>
@@ -145,7 +198,7 @@
                                         📋 서비스 이용 규칙 및 금지사항
                                     </button>
                                 </h2>
-                                <div id="collapseRules" class="accordion-collapse collapse" aria-labelledby="headingRules">
+                                <div id="collapseRules" class="accordion-collapse collapse" aria-labelledby="headingRules" data-bs-parent="#termsAccordionKor">
                                     <div class="accordion-body">
                                         <h6><strong style="color: #dc3545;">금지행위</strong></h6>
                                         <ul>
@@ -173,7 +226,7 @@
                                         📞 신고 및 문의
                                     </button>
                                 </h2>
-                                <div id="collapseReport" class="accordion-collapse collapse" aria-labelledby="headingReport">
+                                <div id="collapseReport" class="accordion-collapse collapse" aria-labelledby="headingReport" data-bs-parent="#termsAccordionKor">
                                     <div class="accordion-body">
                                         <h6><strong style="color: #2c5aa0;">불법정보 신고</strong></h6>
                                         <p>• 신고 이메일: <strong>wkdtpwhs@gmail.com</strong><br>
@@ -182,17 +235,10 @@
                                         <h6><strong style="color: #2c5aa0;">처리 절차</strong></h6>
                                         <p>1. 신고 접수 및 확인<br>
                                         2. 내용 검토 및 사실관계 확인<br>
-                                        3. 위반 여부 판단 및 조치 결정<br>
-                                        4. 조치 시행 (삭제, 계정 제재 등)<br>
-                                        5. 결과 통보</p>
+                                        3. 위반 여부 판단 및 즉시 차단</p>
                                         
                                         <h6><strong style="color: #2c5aa0;">처리 기간</strong></h6>
-                                        <p>• 일반 사안: 신고 접수 후 7일 이내<br>
-                                        • 긴급 사안: 24시간 내 우선 처리</p>
-                                        
-                                        <div style="background-color: #d1ecf1; padding: 10px; border-radius: 5px; margin-top: 10px;">
-                                            <small><strong>이의제기:</strong> 조치 결과에 불만이 있을 경우, 통보 후 7일 이내에 wkdtpwhs@gmail.com으로 이의제기 가능합니다.</small>
-                                        </div>
+                                        <p>• 신고 접수 후 즉시 처리</p>
                                     </div>
                                 </div>
                             </div>
@@ -200,36 +246,89 @@
 
                         <br>
                         <p style="text-align: center; color: #666; font-size: 14px;">
-                            본 약관은 「정보통신망 이용촉진 및 정보보호 등에 관한 법률」을 완전히 준수하여 작성되었습니다.<br>
-                            <strong>시행일:</strong> 2024년 1월 1일 | <strong>문의:</strong> wkdtpwhs@gmail.com
+                            본 약관은 「정보통신망 이용촉진 및 정보보호 등에 관한 법률」을 준수하여 작성되었습니다.<br>
+                            <strong>시행일:</strong> 2025년 1월 1일 | <strong>문의:</strong> wkdtpwhs@gmail.com
                         </p>
                     </div>
                     <div aria-labelledby="eng-tab" class="tab-pane fade" id="eng" role="tabpanel">
-                        <!-- Developer Introduction -->
-                        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
-                            <h6 style="margin: 0; font-size: 18px;">Hello, I am SeJonJ, the developer of <strong style="color: #0408f8;font-size: 25px;">ChatForYou</strong>.</h6>
-                            <p style="margin: 10px 0; line-height: 1.6;">
-                                This service complies with the Act on Promotion of Information and Communications Network Utilization and Information Protection.<br>
-                                Please make sure to understand the following matters so that all users can use video chat safely and comfortably.
-                            </p>
-                            <p style="margin: 10px 0 0 0;">
-                                You can find more information about me on the following websites:<br>
-                                <a href="https://terianp.tistory.com/" style="color: #FFD700;">📝 Tistory Blog</a> | 
-                                <a href="https://github.com/SeJonJ" style="color: #FFD700;">💻 GitHub</a> | 
-                                <a href="https://www.linkedin.com/in/%EC%84%B8%EC%A1%B4-%EC%9E%A5-b437ba28b/" style="color: #FFD700;">💼 LinkedIn</a>
-                            </p>
-                        </div>
-
-                        <!-- Collapsible detailed content -->
+                        <!-- 전체 영어 섹션을 accordion으로 구성 -->
                         <div class="accordion" id="termsAccordionEng">
+                            <!-- Project Introduction -->
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="headingIntroEng">
+                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" 
+                                            data-bs-target="#collapseIntroEng" aria-expanded="true" aria-controls="collapseIntroEng">
+                                        📋 Project Introduction
+                                    </button>
+                                </h2>
+                                <div id="collapseIntroEng" class="accordion-collapse collapse show" aria-labelledby="headingIntroEng" data-bs-parent="#termsAccordionEng">
+                                    <div class="accordion-body">
+                                        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 10px;">
+                                            <h6 style="margin: 0; font-size: 18px;">Hello, this is <strong style="color: #0408f8;font-size: 25px;">Project ChatForYou</strong>.</h6>
+                                            <p style="margin: 10px 0; line-height: 1.6;">
+                                                This service is a site for studying, implementing, deploying and sharing various features based on Spring Boot and Node.js.
+                                                <br><br>
+                                                Please note that all legal responsibilities that may arise from using this site rest with the user.
+                                                <br><br>
+                                                This service complies with the Act on Promotion of Information and Communications Network Utilization and Information Protection.<br><br>
+                                                Please make sure to understand the following matters so that all users can use video chat safely and comfortably.<br>
+                                                <br>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Development Team Introduction -->
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="headingTeamEng">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" 
+                                            data-bs-target="#collapseTeamEng" aria-expanded="false" aria-controls="collapseTeamEng">
+                                        👥 Development Team Introduction
+                                    </button>
+                                </h2>
+                                <div id="collapseTeamEng" class="accordion-collapse collapse" aria-labelledby="headingTeamEng" data-bs-parent="#termsAccordionEng">
+                                    <div class="accordion-body">
+                                        <div style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; padding: 20px; border-radius: 10px;">
+                                            <!-- SeJonJ -->
+                                            <div class="team-member" style="margin-bottom: 15px; padding: 12px; background: rgba(255,255,255,0.15); border-radius: 8px; border-left: 4px solid #FFD700;">
+                                                <div style="font-weight: bold; margin-bottom: 8px; font-size: 16px;">👑 SeJonJ (Jang Se Jon) - Project Lead · Full-stack Development · DevOps</div>
+                                                <div style="font-size: 14px; line-height: 1.4;">
+                                                    <a href="https://terianp.tistory.com/" style="color: #FFD700; text-decoration: none;">📝 Tistory Blog</a> | 
+                                                    <a href="https://github.com/SeJonJ" style="color: #FFD700; text-decoration: none;">💻 GitHub</a> | 
+                                                    <a href="https://www.linkedin.com/in/%EC%84%B8%EC%A1%B4-%EC%9E%A5-b437ba28b/" style="color: #FFD700; text-decoration: none;">💼 LinkedIn</a>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Kim Dong Hyun -->
+                                            <div class="team-member" style="margin-bottom: 15px; padding: 12px; background: rgba(255,255,255,0.15); border-radius: 8px; border-left: 4px solid #20c997;">
+                                                <div style="font-weight: bold; margin-bottom: 8px; font-size: 16px;">⚙️ Kim Dong Hyun - Backend · Frontend Development</div>
+                                                <div style="font-size: 14px; color: #e3f2fd;">📧 Portfolio Coming Soon</div>
+                                            </div>
+                                            
+                                            <!-- Park Tae Sik -->
+                                            <div class="team-member" style="margin-bottom: 15px; padding: 12px; background: rgba(255,255,255,0.15); border-radius: 8px; border-left: 4px solid #6f42c1;">
+                                                <div style="font-weight: bold; margin-bottom: 8px; font-size: 16px;">💻 Park Tae Sik - Backend · Frontend Development</div>
+                                                <div style="font-size: 14px; color: #e3f2fd;">📧 Portfolio Coming Soon</div>
+                                            </div>
+                                            
+                                            <!-- Im Ga Hyun -->
+                                            <div class="team-member" style="margin-bottom: 0; padding: 12px; background: rgba(255,255,255,0.15); border-radius: 8px; border-left: 4px solid #e91e63;">
+                                                <div style="font-weight: bold; margin-bottom: 8px; font-size: 16px;">🎨 Im Ga Hyun - Design & Web Publishing</div>
+                                                <div style="font-size: 14px; color: #e3f2fd;">📧 Portfolio Coming Soon</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                             <!-- Personal Information Processing Notice -->
                             <div class="accordion-item">
                                 <h2 class="accordion-header" id="headingPrivacyEng">
-                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePrivacyEng" aria-expanded="true" aria-controls="collapsePrivacyEng">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePrivacyEng" aria-expanded="false" aria-controls="collapsePrivacyEng">
                                         🔒 Personal Information Processing Notice (Articles 22, 27)
                                     </button>
                                 </h2>
-                                <div id="collapsePrivacyEng" class="accordion-collapse collapse show" aria-labelledby="headingPrivacyEng">
+                                <div id="collapsePrivacyEng" class="accordion-collapse collapse" aria-labelledby="headingPrivacyEng" data-bs-parent="#termsAccordionEng">
                                     <div class="accordion-body">
                                         <h6><strong style="color: #2c5aa0;">Personal Information Collected</strong></h6>
                                         <p>• IP address, access time, service usage records are automatically collected</p>
@@ -258,11 +357,10 @@
                                         👶 Youth Protection Policy (Article 44-2)
                                     </button>
                                 </h2>
-                                <div id="collapseYouthEng" class="accordion-collapse collapse" aria-labelledby="headingYouthEng">
+                                <div id="collapseYouthEng" class="accordion-collapse collapse" aria-labelledby="headingYouthEng" data-bs-parent="#termsAccordionEng">
                                     <div class="accordion-body">
                                         <h6><strong style="color: #2c5aa0;">Age Restrictions</strong></h6>
-                                        <p>• Available only for users aged 14 and above<br>
-                                        • Guardian confirmation recommended for users under 19</p>
+                                        <p>• Available for all users<br>
                                         
                                         <h6><strong style="color: #2c5aa0;">Harmful Information Blocking</strong></h6>
                                         <p>• Posting of harmful content such as pornography, violence, gambling is prohibited<br>
@@ -282,7 +380,7 @@
                                         📋 Service Use Rules and Prohibited Activities
                                     </button>
                                 </h2>
-                                <div id="collapseRulesEng" class="accordion-collapse collapse" aria-labelledby="headingRulesEng">
+                                <div id="collapseRulesEng" class="accordion-collapse collapse" aria-labelledby="headingRulesEng" data-bs-parent="#termsAccordionEng">
                                     <div class="accordion-body">
                                         <h6><strong style="color: #dc3545;">Prohibited Activities</strong></h6>
                                         <ul>
@@ -310,7 +408,7 @@
                                         📞 Report and Inquiry
                                     </button>
                                 </h2>
-                                <div id="collapseReportEng" class="accordion-collapse collapse" aria-labelledby="headingReportEng">
+                                <div id="collapseReportEng" class="accordion-collapse collapse" aria-labelledby="headingReportEng" data-bs-parent="#termsAccordionEng">
                                     <div class="accordion-body">
                                         <h6><strong style="color: #2c5aa0;">Illegal Information Reporting</strong></h6>
                                         <p>• Report Email: <strong>wkdtpwhs@gmail.com</strong><br>
@@ -324,8 +422,7 @@
                                         5. Result notification</p>
                                         
                                         <h6><strong style="color: #2c5aa0;">Processing Period</strong></h6>
-                                        <p>• General cases: Within 7 days of report reception<br>
-                                        • Urgent cases: Priority processing within 24 hours</p>
+                                        <p>• Report processed immediately after reception</p>
                                         
                                         <div style="background-color: #d1ecf1; padding: 10px; border-radius: 5px; margin-top: 10px;">
                                             <small><strong>Appeal:</strong> If dissatisfied with action results, appeals can be made to wkdtpwhs@gmail.com within 7 days of notification.</small>
@@ -338,7 +435,7 @@
                         <br>
                         <p style="text-align: center; color: #666; font-size: 14px;">
                             These terms are written in full compliance with the "Act on Promotion of Information and Communications Network Utilization and Information Protection".<br>
-                            <strong>Effective Date:</strong> January 1, 2024 | <strong>Inquiries:</strong> wkdtpwhs@gmail.com
+                                                                        <strong>Effective Date:</strong> January 1, 2025 | <strong>Inquiries:</strong> wkdtpwhs@gmail.com
                         </p>
                     </div>
                 </div>

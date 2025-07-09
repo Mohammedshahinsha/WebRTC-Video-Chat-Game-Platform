@@ -58,6 +58,8 @@ ChatForYou_v2/
 - **장비 선택**: 마이크/스피커 선택 기능
 - **DataChannel**: 파일 전송 및 추가 채팅
 - **텍스트 오버레이**: 문자 채팅 내용을 비디오에 표시하는 텍스트 오버레이 기능
+- **실시간 자막**: 음성을 통한 실시간 자막 기능
+- **SSE 기반 실시간 채팅 목록 확인**: SSE 기반 실시간 채팅 목록 확인 기능
 
 ### 🎮 게임 기능
 - **CatchMind 게임**: N 라운드 그림 맞추기 게임
@@ -166,15 +168,21 @@ docker-compose up -d
 
 ### 화상 채팅 화면
 ![ChatForYou.gif](info/ChatForYou.gif)
-  
-### CatchMind 게임
-![catchmind_r60.gif](info/catchmind_r60.gif)
 
 ### DataChannel 파일 업로드/다운로드
 ![chatforyou_fileupdown.gif](info/chatforyou_fileupdown.gif)
 
+### CatchMind 게임
+![catchmind_r60.gif](info/catchmind_r60.gif)
+
 ### Grafana 성능 모니터링
 ![monitoring.png](info/monitoring.png)
+
+### 실시간 자막 기능
+![chatforyou_subtitle.gif](info/chatforyou_subtitle.gif)
+
+### SSE 기능
+![chatforyou_sse.gif](info/chatforyou_sse.gif)
 
 ## 📈 성능 개선
 ### CI/CD Pipeline with GitHub Actions for K8S Deployment
@@ -205,6 +213,14 @@ This project is licensed under the GNU Affero General Public License v3.0 (the "
 
 Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
 
-## 📧 Contact
-- **Email**: wkdtpwhs@gmail.com
-- **Blog**: https://terianp.tistory.com
+## 👥 팀 소개
+
+| 역할 | 이름 | 담당 업무 | 이메일 | 프로필 |
+|------|------|-----------|---------|---------|
+| 👑 **프로젝트 리더** | 장세존 | 프로젝트 총괄 · 풀스택 개발 · DevOps 담당 | wkdtpwhs@gmail.com | [GitHub](https://github.com/SeJonJ) [Tistory](https://terianp.tistory.com) |
+| ⚙️ **백엔드 개발** | 김동현 | 백엔드 · 프론트엔드 기능 개발 | `이메일 예정` | `GitHub 예정` |
+| 💻 **풀스택 개발** | 박태식 | 백엔드 · 프론트엔드 기능 개발 | `이메일 예정` | `GitHub 예정` |
+| 🎨 **디자인 및 웹 퍼블리싱 총괄** | 임가현 | 웹 퍼블리싱 · UI/UX 디자인 | `이메일 예정` | `GitHub 예정` |
+
+### 📬 연락처
+팀원들의 개별 연락처와 GitHub 프로필은 곧 업데이트될 예정입니다.

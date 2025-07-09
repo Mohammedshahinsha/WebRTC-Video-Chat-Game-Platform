@@ -9,7 +9,6 @@ const roomList = {
     self.initModals();
     self.initInputLimits();
     self.initAnnouncement();
-    self.initUpdateButton();
     window.loadRoomList = self.loadRoomList.bind(self); // 외부 노출
   },
   loadRoomList: function() {
@@ -184,12 +183,6 @@ const roomList = {
       fetch(window.__CONFIG__.API_BASE_URL + "/user_agree", { method: 'GET' })
         .then(response => { console.info("user agree!!") });
       $('#announcementModal').modal('hide');
-    });
-  },
-  initUpdateButton: function() {
-    $('#showUpdatesButton').on('click', function() {
-      const updateHistoryModal = new bootstrap.Modal($('#updateHistoryModal'));
-      updateHistoryModal.show();
     });
   }
 };

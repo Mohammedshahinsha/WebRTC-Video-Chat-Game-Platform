@@ -109,7 +109,11 @@ const RoomPopup = {
             };
 
             let errorCallback = function(err) {
-                self.showToast('방 생성에 실패했습니다. \n 잠시뒤에 다시 시도해주세요.');
+                if(err.responseJSON && err.responseJSON.code === '40042'){
+                    self.showToast('이미 존재하는 방입니다. \n 다른 방 이름을 입력해주세요.');
+                } else {
+                    self.showToast('방 생성에 실패했습니다. \n 잠시뒤에 다시 시도해주세요.');
+                }
                 console.error(err.responseText, 'error');
                 // 로딩 UI 원복
                 $btn.prop('disabled', false);
