@@ -1,6 +1,7 @@
 package webChat.service.game;
 
 import org.apache.coyote.BadRequestException;
+import webChat.controller.ExceptionController;
 import webChat.model.game.*;
 
 import java.util.List;
@@ -49,7 +50,7 @@ public interface CatchMindService {
      * @param roomId
      * @return 방에서의 게임 결과
      */
-    GameSettingInfo getGameResult(String roomId) throws BadRequestException;
+    GameSettingInfo getGameResult(String roomId) throws BadRequestException, ExceptionController.SyncGameRound;
     List<CatchMindUserDto> getGameUserInfos(String roomId) throws BadRequestException;
     boolean chkDuplicateNickName(String nickName);
 }

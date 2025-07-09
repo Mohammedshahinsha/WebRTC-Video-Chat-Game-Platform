@@ -56,7 +56,7 @@ public class CatchMindController {
     }
 
     @GetMapping(value = "/catchmind/gameResult", produces = "application/json; charset=UTF8")
-    public Map<String, Object> gameResult(@RequestParam("roomId") String roomId) throws BadRequestException {
+    public Map<String, Object> gameResult(@RequestParam("roomId") String roomId) throws BadRequestException, ExceptionController.SyncGameRound {
         Map<String, Object> result = new ConcurrentHashMap<>();
 
         result.put("result", "success");

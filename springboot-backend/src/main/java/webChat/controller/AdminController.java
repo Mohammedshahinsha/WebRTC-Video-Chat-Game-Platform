@@ -1,6 +1,7 @@
 package webChat.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -34,7 +35,7 @@ public class AdminController {
     @PostMapping("/gentoken")
     public String generateToken(
             @RequestParam String key,
-            @RequestParam String user) {
+            @RequestParam String user) throws BadRequestException, ExceptionController.UnauthorizedException {
         return jwtUtil.generateToken(key, user);
     }
 
@@ -76,7 +77,7 @@ public class AdminController {
      * @return del room result
      * @throws Exception 400, 401
      */
-    @DeleteMapping("/delete/{roomId}")
+    @DeleteMapping("/{roomId}")
     public ResponseEntity<ChatForYouResponse> delRoom(@PathVariable String roomId, @RequestHeader("Authorization") String token) throws Exception {
         String jwtToken = token.replace("Bearer ", "");
 

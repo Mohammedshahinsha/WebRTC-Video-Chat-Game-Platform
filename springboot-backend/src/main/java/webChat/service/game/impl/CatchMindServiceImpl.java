@@ -44,7 +44,7 @@ public class CatchMindServiceImpl implements CatchMindService {
     public boolean chkAlreadyPlayedGame(String roomId) throws BadRequestException {
         KurentoRoom kurentoRoom = redisService.getRedisDataByDataType(roomId, DataType.CHATROOM, KurentoRoom.class);
         if (Objects.isNull(kurentoRoom)) {
-            throw new ExceptionController.BadRequestException("Room not found with ID: " + roomId);
+            throw new BadRequestException("Room not found with ID: " + roomId);
         }
         if (Objects.nonNull(kurentoRoom.getGameSettingInfo()) && kurentoRoom.getGameSettingInfo().isAlreadyPlayedGame()) {
             return true;
@@ -114,7 +114,7 @@ public class CatchMindServiceImpl implements CatchMindService {
         KurentoRoom kurentoRoom = redisService.getRedisDataByDataType(roomId, DataType.CHATROOM, KurentoRoom.class);
         // TODO 예외처리 필요
         if (Objects.isNull(kurentoRoom)) {
-            throw new ExceptionController.BadRequestException("Room not found with ID: " + roomId);
+            throw new BadRequestException("Room not found with ID: " + roomId);
         }
 
         GameSettingInfo gameSettingInfo = kurentoRoom.getGameSettingInfo();
@@ -130,7 +130,7 @@ public class CatchMindServiceImpl implements CatchMindService {
 
         if (user.isEmpty()) {
             // TODO 예외처리하기
-            throw new ExceptionController.BadRequestException("User not found with ID: " + userId);
+            throw new BadRequestException("User not found with ID: " + userId);
         }
 
         CatchMindUserDto catchMindUser = user.get();
@@ -166,7 +166,7 @@ public class CatchMindServiceImpl implements CatchMindService {
     }
 
     @Override
-    public GameSettingInfo getGameResult(String roomId) throws BadRequestException {
+    public GameSettingInfo getGameResult(String roomId) throws BadRequestException, ExceptionController.SyncGameRound {
         KurentoRoom kurentoRoom = redisService.getRedisDataByDataType(roomId, DataType.CHATROOM, KurentoRoom.class);
 
         // 게임 라운드 확인 및 결과 보내주기
