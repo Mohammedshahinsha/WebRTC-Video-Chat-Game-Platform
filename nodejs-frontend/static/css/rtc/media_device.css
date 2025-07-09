@@ -29,11 +29,6 @@
     animation: dropdown 0.4s ease;
 }
 
-#output_displayText {
-    cursor: pointer;
-    color: #e9e8d8;
-}
-
 /* input audio */
 #input_dropDownContainer {
     position: relative; /* 상대적 위치 지정 */
@@ -63,11 +58,6 @@
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
     background-color: #31343e;
     animation: dropdown 0.4s ease;
-}
-
-#input_displayText {
-    cursor: pointer;
-    color: #e9e8d8;
 }
 
 @keyframes dropdown {

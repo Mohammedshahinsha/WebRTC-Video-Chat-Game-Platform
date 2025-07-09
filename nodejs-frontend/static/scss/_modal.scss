@@ -1,0 +1,54 @@
+.modal-content {
+    background-color: #ffffff; // 모달 전체 배경 흰색
+    color: #212529; // 기본 텍스트 어두운 색
+    border-radius: 0.5rem;
+    font-family: "Pretendard Variable", sans-serif;
+}
+
+.modal-header {
+    border-bottom: 1px solid #dee2e6;
+
+    .modal-title {
+        font-weight: 600;
+        font-size: 1.25rem;
+    }
+}
+
+.modal-body {
+    .form-label {
+        font-weight: 500;
+        color: #212529;
+    }
+
+    .form-control {
+        background-color: #f8f9fa;
+        border: 1px solid #ced4da;
+        color: #212529;
+
+        &::placeholder {
+            color: #adb5bd;
+        }
+    }
+
+    .form-check-label {
+        color: #212529;
+    }
+
+    .form-text {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+}
+
+.modal-footer {
+    border-top: 1px solid #dee2e6;
+
+    .btn {
+        font-weight: 500;
+    }
+}
+
+.spinner-border {
+    width: 2rem;
+    height: 2rem;
+}

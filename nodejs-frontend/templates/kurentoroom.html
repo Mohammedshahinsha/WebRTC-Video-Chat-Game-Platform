@@ -22,6 +22,8 @@
     <link rel="styleSheet" href="css/rtc/media_device.css" type="text/css" media="screen">
     <link rel="styleSheet" href="css/rtc/catch_mind.css" type="text/css" media="screen">
     <link rel="styleSheet" href="css/rtc/subtitle.css" type="text/css" media="screen">
+    <!-- 내부 CSS -->
+    <link rel="stylesheet" href="static/css/chatroom/common.css">
 
     <!-- 로딩 관련 -->
     <script src="https://cdn.jsdelivr.net/npm/gasparesganga-jquery-loading-overlay@2.1.7/dist/loadingoverlay.min.js"></script>
@@ -34,136 +36,135 @@
 <!--    <script src="https://cdnjs.cloudflare.com/ajax/libs/pace/1.0.2/pace.min.js"></script>-->
 
 </head>
-<style>
-</style>
-<body>
-<input type="hidden" id="roomId" th:value="${roomId}">
-<input type="hidden" id="uuid" th:value="${uuid}">
-<input type="hidden" id="nickName" th:value="${nickName}">
-<input type="hidden" id="roomName" th:value="${roomName}">
-<div id="container">
-    <div id="wrapper">
-        <div id="room" style="margin-top:25px">
-            <div class="justify-content-around mb-3">
-                <h2 class="row justify-content-md-center" id="room-header"></h2>
-                <div class="row justify-content-md-center">
-                    <img class="col-md-1" src="images/webrtc/screen-share-on.svg" width="24px" height="24px" alt=""
-                         id="screenShareBtn"
-                         data-flag="false" onclick="screenShare()">
-                    <img src="images/webrtc/video-on.svg" class="col-md-1 localVideoToggle" width="24px" height="24px"
-                         alt="" id="videoBtn" data-flag="true">
-                    <img src="images/webrtc/audio-speaker-on.svg" class="col-md-1 localAudioToggle" width="24px"
-                         height="24px" alt="" id="audioBtn" data-flag="true">
-                    <img src="images/webrtc/subtitle-off.svg" class="col-md-1" width="24px" height="24px" alt=""
-                         id="subtitleBtn" data-flag="false" onclick="toggleSubtitle()" title="실시간 자막">
-                    <img src="images/webrtc/setting.svg" class="col-md-1" width="24px" height="24px" id="userSetting"
-                         alt="userSetting"
-                         data-toggle="modal" data-target="#userSettingsModal">
-                </div>
-            </div>
-            <div class="col-lg-12 mb-3">
-                <div class="d-flex justify-content-around mb-3">
-                    <div class="d-flex justify-content-around mb-3" id="output_dropDownContainer">
-                        <img src="images/webrtc/speaker.svg" width="24px" height="24px">
-                        <span id="output_displayText"></span>
-                        <div id="bottomArrow">
-                            <svg fill="#000000" height="15px" width="15px" version="1.1" id="Layer_1"
-                                 xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-                                 viewBox="0 0 512 512" xml:space="preserve">
-                                 <g>
-                                     <path d="M256,0C114.618,0,0,114.618,0,256s114.618,256,256,256s256-114.618,256-256S397.382,0,256,0z M256,469.333
-                                                c-117.818,0-213.333-95.515-213.333-213.333S138.182,42.667,256,42.667S469.333,138.182,469.333,256S373.818,469.333,256,469.333
-                                                z"/>
-                                     <path d="M347.582,198.248L256,289.83l-91.582-91.582c-8.331-8.331-21.839-8.331-30.17,0c-8.331,8.331-8.331,21.839,0,30.17
-                                                l106.667,106.667c8.331,8.331,21.839,8.331,30.17,0l106.667-106.667c8.331-8.331,8.331-21.839,0-30.17
-                                                C369.42,189.917,355.913,189.917,347.582,198.248z"/>
-                                 </g>
-                            </svg>
-                        </div>
-                        <div id="output_dropDownPosition" style="display: none;">
-                            <div id="output_dropDown">
-                                <!-- Device items will be added here dynamically -->
-                            </div>
-                        </div>
-                    </div>
-                    <div class="d-flex justify-content-around mb-3" id="input_dropDownContainer">
-                        <img src="images/webrtc/headphone.svg" width="24px" height="24px">
-                        <span id="input_displayText"></span>
-                        <div id="bottomArrow">
-                            <svg fill="#000000" height="15px" width="15px" version="1.1" id="Layer_1"
-                                 xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-                                 viewBox="0 0 512 512" xml:space="preserve">
-                                 <g>
-                                     <path d="M256,0C114.618,0,0,114.618,0,256s114.618,256,256,256s256-114.618,256-256S397.382,0,256,0z M256,469.333
-                                                c-117.818,0-213.333-95.515-213.333-213.333S138.182,42.667,256,42.667S469.333,138.182,469.333,256S373.818,469.333,256,469.333
-                                                z"/>
-                                     <path d="M347.582,198.248L256,289.83l-91.582-91.582c-8.331-8.331-21.839-8.331-30.17,0c-8.331,8.331-8.331,21.839,0,30.17
-                                                l106.667,106.667c8.331,8.331,21.839,8.331,30.17,0l106.667-106.667c8.331-8.331,8.331-21.839,0-30.17
-                                                C369.42,189.917,355.913,189.917,347.582,198.248z"/>
-                                 </g>
-                            </svg>
-                        </div>
-                        <div id="input_dropDownPosition" style="display: none;">
-                            <div id="input_dropDown">
-                                <!-- Device items will be added here dynamically -->
-                            </div>
-                        </div>
+<body class="body-kurentoroom">
+    <input type="hidden" id="roomId" th:value="${roomId}">
+    <input type="hidden" id="uuid" th:value="${uuid}">
+    <input type="hidden" id="nickName" th:value="${nickName}">
+    <input type="hidden" id="roomName" th:value="${roomName}">
+    <header class="d-flex align-items-center justify-content-center p-4">
+        <h1 class="h4 mb-0">ChatForYou</h1>
+    </header>
+    <div id="container">
+        <div id="wrapper">
+            <div id="room">
+                <div class="justify-content-around mb-3">
+                    <h2 class="justify-content-md-center" id="room-header"></h2>
+                    <div class="row justify-content-md-center icon_wrap">
+                        <img class="col-md-1" src="images/webrtc/screen-share-on.svg" width="24px" height="24px" alt=""
+                            id="screenShareBtn"
+                            data-flag="false" >
+                        <img src="images/webrtc/video-on.svg" class="col-md-1 localVideoToggle" width="24px" height="24px"
+                            alt="" id="videoBtn" data-flag="true">
+                        <img src="images/webrtc/audio-speaker-on.svg" class="col-md-1 localAudioToggle" width="24px" height="24px" alt="" id="audioBtn" data-flag="true">
+                        <img src="images/webrtc/subtitle-off.svg" class="col-md-1" width="24px" height="24px" alt=""
+                            id="subtitleBtn" data-flag="false" title="실시간 자막">
+                        <img src="images/webrtc/setting.svg" class="col-md-1" width="24px" height="24px" id="userSetting"
+                            alt="userSetting"
+                            data-toggle="modal" data-target="#userSettingsModal">
                     </div>
                 </div>
-            </div>
-            <div id="participants"></div>
-            <input type="button" id="button-leave"
-                   value="Leave room">
-        </div>
-    </div>
-
-    <div class="floating-game-canvas">
-        <button type="button" data-toggle="modal" data-target="#subjectModal">
-            <img src="images/canvas-paint-svgrepo-com.svg" width="25px" height="25px" alt="">
-        </button>
-    </div>
-
-    <!-- chatting start -->
-    <div class="floating-chat">
-        <i class="fa fa-comments" aria-hidden="true"></i>
-        <div class="chat">
-            <div class="header">
-                <span class="title">
-                    Tell Me Your Story
-                </span>
-                <button>
-                    <i class="fa fa-times" aria-hidden="true"></i>
-                </button>
-            </div>
-            <ul class="messages">
-
-            </ul>
-            <div class="footer">
-                <div class="absolute bottom-2 md:bottom-3 left-2 md:left-4">
-                    <div class="flex">
-                        <button class="btn relative p-0 text-black dark:text-white" id="uploadFile"
-                                aria-label="Attach files">
-                            <div class="flex w-full gap-2 items-center justify-center">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
-                                     xmlns="http://www.w3.org/2000/svg">
-                                    <path fill-rule="evenodd" clip-rule="evenodd"
-                                          d="M9 7C9 4.23858 11.2386 2 14 2C16.7614 2 19 4.23858 19 7V15C19 18.866 15.866 22 12 22C8.13401 22 5 18.866 5 15V9C5 8.44772 5.44772 8 6 8C6.55228 8 7 8.44772 7 9V15C7 17.7614 9.23858 20 12 20C14.7614 20 17 17.7614 17 15V7C17 5.34315 15.6569 4 14 4C12.3431 4 11 5.34315 11 7V15C11 15.5523 11.4477 16 12 16C12.5523 16 13 15.5523 13 15V9C13 8.44772 13.4477 8 14 8C14.5523 8 15 8.44772 15 9V15C15 16.6569 13.6569 18 12 18C10.3431 18 9 16.6569 9 15V7Z"
-                                          fill="currentColor"></path>
+                <div class="col-lg-12 mb-3">
+                    <div class="d-flex justify-content-around mb-3">
+                        <div class="d-flex justify-content-around mb-3" id="output_dropDownContainer">
+                            <img src="images/webrtc/speaker.svg" width="24px" height="24px">
+                            <span id="output_displayText"></span>
+                            <div id="bottomArrow">
+                                <svg fill="#000000" height="15px" width="15px" version="1.1" id="Layer_1"
+                                    xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                                    viewBox="0 0 512 512" xml:space="preserve">
+                                    <g>
+                                        <path d="M256,0C114.618,0,0,114.618,0,256s114.618,256,256,256s256-114.618,256-256S397.382,0,256,0z M256,469.333
+                                                    c-117.818,0-213.333-95.515-213.333-213.333S138.182,42.667,256,42.667S469.333,138.182,469.333,256S373.818,469.333,256,469.333
+                                                    z"/>
+                                        <path d="M347.582,198.248L256,289.83l-91.582-91.582c-8.331-8.331-21.839-8.331-30.17,0c-8.331,8.331-8.331,21.839,0,30.17
+                                                    l106.667,106.667c8.331,8.331,21.839,8.331,30.17,0l106.667-106.667c8.331-8.331,8.331-21.839,0-30.17
+                                                    C369.42,189.917,355.913,189.917,347.582,198.248z"/>
+                                    </g>
                                 </svg>
                             </div>
-                        </button>
-                        <input type="file" id="file" style="display: none;"/>
+                            <div id="output_dropDownPosition" style="display: none;">
+                                <div id="output_dropDown">
+                                    <!-- Device items will be added here dynamically -->
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-around mb-3" id="input_dropDownContainer">
+                            <img src="images/webrtc/headphone.svg" width="24px" height="24px">
+                            <span id="input_displayText"></span>
+                            <div id="bottomArrow">
+                                <svg fill="#000000" height="15px" width="15px" version="1.1" id="Layer_1"
+                                    xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                                    viewBox="0 0 512 512" xml:space="preserve">
+                                    <g>
+                                        <path d="M256,0C114.618,0,0,114.618,0,256s114.618,256,256,256s256-114.618,256-256S397.382,0,256,0z M256,469.333
+                                                    c-117.818,0-213.333-95.515-213.333-213.333S138.182,42.667,256,42.667S469.333,138.182,469.333,256S373.818,469.333,256,469.333
+                                                    z"/>
+                                        <path d="M347.582,198.248L256,289.83l-91.582-91.582c-8.331-8.331-21.839-8.331-30.17,0c-8.331,8.331-8.331,21.839,0,30.17
+                                                    l106.667,106.667c8.331,8.331,21.839,8.331,30.17,0l106.667-106.667c8.331-8.331,8.331-21.839,0-30.17
+                                                    C369.42,189.917,355.913,189.917,347.582,198.248z"/>
+                                    </g>
+                                </svg>
+                            </div>
+                            <div id="input_dropDownPosition" style="display: none;">
+                                <div id="input_dropDown">
+                                    <!-- Device items will be added here dynamically -->
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="text-box" contenteditable="true" disabled="true"></div>
-                <button id="sendMessage">send</button>
+                <div id="participants"></div>
+                <input type="button" id="button-leave"
+                    value="Leave room">
             </div>
         </div>
+        </div>
+
+        <div class="floating-game-canvas">
+            <button type="button" data-toggle="modal" data-target="#subjectModal">
+                <img src="images/canvas-paint-svgrepo-com.svg" width="25px" height="25px" alt="">
+            </button>
+        </div>
+
+        <!-- chatting start -->
+        <div class="floating-chat">
+            <i class="fa fa-comments" aria-hidden="true"></i>
+            <div class="chat">
+                <div class="header">
+                    <span class="title">
+                        Tell Me Your Story
+                    </span>
+                    <button>
+                        <i class="fa fa-times" aria-hidden="true"></i>
+                    </button>
+                </div>
+                <ul class="messages">
+
+                </ul>
+                <div class="footer">
+                    <div class="absolute bottom-2 md:bottom-3 left-2 md:left-4">
+                        <div class="flex">
+                            <button class="btn relative p-0 text-black dark:text-white" id="uploadFile"
+                                    aria-label="Attach files">
+                                <div class="flex w-full gap-2 items-center justify-center">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path fill-rule="evenodd" clip-rule="evenodd"
+                                            d="M9 7C9 4.23858 11.2386 2 14 2C16.7614 2 19 4.23858 19 7V15C19 18.866 15.866 22 12 22C8.13401 22 5 18.866 5 15V9C5 8.44772 5.44772 8 6 8C6.55228 8 7 8.44772 7 9V15C7 17.7614 9.23858 20 12 20C14.7614 20 17 17.7614 17 15V7C17 5.34315 15.6569 4 14 4C12.3431 4 11 5.34315 11 7V15C11 15.5523 11.4477 16 12 16C12.5523 16 13 15.5523 13 15V9C13 8.44772 13.4477 8 14 8C14.5523 8 15 8.44772 15 9V15C15 16.6569 13.6569 18 12 18C10.3431 18 9 16.6569 9 15V7Z"
+                                            fill="currentColor"></path>
+                                    </svg>
+                                </div>
+                            </button>
+                            <input type="file" id="file" style="display: none;"/>
+                        </div>
+                    </div>
+                    <div class="text-box" contenteditable="true" disabled="true"></div>
+                    <button id="sendMessage">send</button>
+                </div>
+            </div>
+        </div>
+        <!-- chatting end -->
     </div>
-    <!-- chatting end -->
-</div>
-<script>
-</script>
     <script src='config/config.js'></script>
     <script src="js/common/common.js"></script>
     <script src="js/common/spinnerOpt.js"></script>

@@ -36,6 +36,7 @@ ws.onopen = () => {
     initTurnServer();
     register();
     initScript();
+    initEvent();
 }
 
 var initTurnServer = function(){
@@ -79,6 +80,15 @@ let constraints = {
         volume: 0.5
     }
 };
+
+let initEvent = function(){
+    $('#subtitleBtn').click(function(){
+        toggleSubtitle();
+    });    
+    $('#screenShareBtn').click(function(){
+        screenShare();
+    });
+}
 
 // 오디오 권한 체크 후 미디어 초기화
 async function initializeMediaDevices() {
@@ -1361,7 +1371,7 @@ async function stopScreenShare() {
         
         // 버튼 상태 초기화
         const screenShareBtn = $("#screenShareBtn");
-    screenShareBtn.data("flag", false);
+        screenShareBtn.data("flag", false);
         screenShareBtn.attr("src", "/images/webrtc/screen-share-on.svg");
         
         console.log('화면 공유가 중지되었습니다.');

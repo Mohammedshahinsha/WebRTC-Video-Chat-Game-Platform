@@ -182,7 +182,7 @@ class SpeechRecognitionManager {
             !this.isDuplicateText(cleanText)) {
             
             this.lastTranscript = cleanText;
-            this.updatePerformanceMetrics(startTime);
+            // this.updatePerformanceMetrics(startTime);
             
             // 적응적 디바운스 적용
             const debounceDelay = this.calculateAdaptiveDebounce(cleanText);
