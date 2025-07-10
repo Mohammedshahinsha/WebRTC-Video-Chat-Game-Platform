@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.coyote.BadRequestException;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import webChat.controller.ExceptionController;
 import webChat.entity.DailyInfo;
 import webChat.model.room.KurentoRoom;
 import webChat.repository.DailyInfoRepository;
@@ -30,7 +31,7 @@ public class RoomBatchJob {
 
     @Scheduled(cron = "0 0,30 * * * *", zone = "Asia/Seoul") // 매 시간 30분에 실행 , 타임존 seoul 기준
 //    @Scheduled(cron = "0/10 * * * * *", zone = "Asia/Seoul")
-    public void checkDeleteRoom() {
+    public void checkDeleteRoom() throws ExceptionController.DelRoomException {
 
         AtomicInteger totalDelRoomCnt = new AtomicInteger();
         AtomicInteger rtcRoomCnt = new AtomicInteger();

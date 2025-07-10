@@ -48,7 +48,7 @@ public class ChatRoomService {
     private final List<RoomState> ROOM_STATES = Lists.newArrayList(RoomState.ACTIVE, RoomState.CREATED);
 
     // roomName 로 채팅방 만들기
-    public ChatRoom createChatRoom(ChatRoomInVo chatRoomInVo) {
+    public ChatRoom createChatRoom(ChatRoomInVo chatRoomInVo) throws BadRequestException {
 
         this.validateRoomInfo(chatRoomInVo.getRoomName(), chatRoomInVo.getMaxUserCnt());
 
@@ -59,7 +59,7 @@ public class ChatRoomService {
             sseService.sendRoomCreatedEvent(chatRoom);
             return chatRoom;
         } else {
-            throw new ExceptionController.BadRequestException("room type is not exist : " + chatRoomInVo.getRoomType());
+            throw new BadRequestException("room type is not exist : " + chatRoomInVo.getRoomType());
         }
     }
 
@@ -130,7 +130,7 @@ public class ChatRoomService {
      * @return
      * @throws BadRequestException
      */
-    public void delChatRoom(KurentoRoom kurentoRoom) throws BadRequestException {
+    public void delChatRoom(KurentoRoom kurentoRoom) throws BadRequestException, ExceptionController.DelRoomException {
         try {
             kurentoRoomManager.deleteKurentoRoom(kurentoRoom);
             redisService.deleteAllChatRoomData(kurentoRoom.getRoomId());
@@ -177,18 +177,14 @@ public class ChatRoomService {
         return chatRoom;
     }
 
-    public void validateRoomInfo(String roomName, int maxUserCnt) {
+    public void validateRoomInfo(String roomName, int maxUserCnt) throws BadRequestException {
         if(maxUserCnt > MAX_USER_COUNT) {
-            throw new ExceptionController.BadRequestException("can not over max user count : " + maxUserCnt);
+            throw new BadRequestException("can not over max user count : " + maxUserCnt);
         }
-        RoomSearchCriteria searchCriteria = RoomSearchCriteria.builder()
-                .redisIndex(RedisIndex.CHATROOM)
-                .keyword(roomName)
-                .roomStates(ROOM_STATES)
-                .build();
-        List<Document> documents = redisService.searchRoomListByOptions(searchCriteria);
-        if(!CollectionUtils.isEmpty(documents)) {
-            throw new ExceptionController.BadRequestException("room name is already exist : " + roomName);
+
+        boolean hasRoomName = redisService.checkRoomName(roomName);
+        if(hasRoomName) {
+            throw new ExceptionController.AlreadyExistRoomNameException("room name is already exist : " + roomName);
         }
     }
 }

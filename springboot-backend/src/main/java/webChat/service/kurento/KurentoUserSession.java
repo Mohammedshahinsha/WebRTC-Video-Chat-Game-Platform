@@ -63,6 +63,11 @@ public class KurentoUserSession extends UserDto implements Closeable {
   private final ConcurrentMap<String, WebRtcEndpoint> incomingMedia = new ConcurrentHashMap<>();
 
   /**
+   * @desc 텍스트 오버레이를 위한 GStreamerFilter
+   * */
+  private GStreamerFilter textOverlayFilter;
+
+  /**
    * @Param String 유저명, String 방이름, WebSocketSession 세션객체, MediaPipline (kurento)mediaPipeline 객체
    */
   public KurentoUserSession(String userId, String nickName, String roomId, WebSocketSession session,
@@ -77,6 +82,21 @@ public class KurentoUserSession extends UserDto implements Closeable {
     this.outgoingMedia = new WebRtcEndpoint.Builder(pipeline)
             .useDataChannels()
             .build();
+
+    // 텍스트 오버레이 필터 생성 (한글 지원 폰트 fallback 체인)
+    this.textOverlayFilter = new GStreamerFilter.Builder(pipeline, 
+        "textoverlay text='' font-desc='Noto Sans CJK KR' halignment=center valignment=top deltay=50")
+        .build();
+
+    log.info("TextOverlay filter created for user: {}", userId);
+
+    // 미디어 파이프라인에 textoverlay 필터를 연결
+    // outgoingMedia의 비디오를 textoverlay 필터를 거쳐서 다시 outgoingMedia로 연결
+    try {
+      log.debug("Connecting textOverlay filter to media pipeline for user: {}", userId);
+    } catch (Exception e) {
+      log.error("Failed to connect textOverlay filter for user {}: {}", userId, e.getMessage());
+    }
 
     // iceCandidateFounder 이벤트 리스너 등록
     // 이벤트가 발생했을 때 다른 유저들에게 새로운 iceCnadidate 후보를 알림
@@ -149,9 +169,23 @@ public class KurentoUserSession extends UserDto implements Closeable {
    * */
   private WebRtcEndpoint getEndpointForUser(final KurentoUserSession sender) {
     // 만약 sender 명이 현재 user명과 일치한다면, 즉 sdpOffer 제안을 보내는 쪽과 받는 쪽이 동일하다면?
-    // loopback 임을 찍고, 그대로 outgoinMedia 를 return
+    // loopback 임을 찍고, textoverlay 필터를 연결한 후 outgoingMedia 를 return
     if (sender.getUserId().equals(this.getUserId())) {
-      log.debug("PARTICIPANT {}: configuring loopback", this.getUserId());
+      log.debug("PARTICIPANT {}: configuring loopback with textoverlay", this.getUserId());
+
+      // textoverlay 필터를 outgoingMedia에 연결
+      if (this.textOverlayFilter != null) {
+        try {
+          // outgoingMedia → textOverlayFilter → outgoingMedia : 자신의 비디오에 text overlay 기능 활성화
+          // 이렇게 하면 자신의 비디오에 텍스트 오버레이가 적용
+          this.outgoingMedia.connect(this.textOverlayFilter);
+          this.textOverlayFilter.connect(this.outgoingMedia);
+          log.debug("Connecting textoverlay filter for loopback user: {}", this.getUserId());
+        } catch (Exception e) {
+          log.error("Failed to connect textoverlay for loopback user {}: {}", this.getUserId(), e.getMessage());
+        }
+      }
+
       return outgoingMedia;
     }
 
@@ -171,6 +205,24 @@ public class KurentoUserSession extends UserDto implements Closeable {
       incomingMedia = new WebRtcEndpoint.Builder(pipeline)
               .useDataChannels()
               .build();
+
+      // sender의 textoverlay 필터를 이 incomingMedia에 연결
+      if (sender.textOverlayFilter != null) {
+        try {
+          log.debug("Connecting sender's textoverlay filter from {} to {}", sender.getUserId(), this.getUserId());
+          // sender의 outgoingMedia → sender의 textOverlayFilter → 이 incomingMedia
+          sender.outgoingMedia.connect(sender.textOverlayFilter);
+          sender.textOverlayFilter.connect(incomingMedia);
+          log.debug("Successfully connected textoverlay filter from {} to {}", sender.getUserId(), this.getUserId());
+        } catch (Exception e) {
+          log.error("Failed to connect textoverlay filter from {} to {}: {}", sender.getUserId(), this.getUserId(), e.getMessage());
+          // 실패 시 직접 연결
+          sender.outgoingMedia.connect(incomingMedia);
+        }
+      } else {
+        // textoverlay 필터가 없으면 직접 연결
+        sender.outgoingMedia.connect(incomingMedia);
+      }
 
       // incomingMedia 객체의 addIceCandidateFoundListener 메서드 실행
       incomingMedia.addIceCandidateFoundListener(new EventListener<IceCandidateFoundEvent>() {
@@ -204,10 +256,6 @@ public class KurentoUserSession extends UserDto implements Closeable {
     }
 
     log.debug("PARTICIPANT {}: obtained endpoint for {}", this.getUserId(), sender.getUserId());
-
-    /** 여기가 이해가 안갔었음 */
-    // sender 기존에 갖고 있던 webRtcEndPoint 와 새로 생성된 incomingMedia 을 연결한다
-    sender.getOutgoingMedia().connect(incomingMedia);
 
     return incomingMedia;
   }
@@ -334,5 +382,38 @@ public class KurentoUserSession extends UserDto implements Closeable {
     result = 31 * result + this.getUserId().hashCode();
     result = 31 * result + roomId.hashCode();
     return result;
+  }
+
+  /**
+   * @desc 텍스트 오버레이 표시
+   * @param text 오버레이할 텍스트
+   */
+  public void showTextOverlay(String text) {
+    try {
+      if (textOverlayFilter != null && text != null && !text.trim().isEmpty()) {
+        log.debug("Showing text overlay for user {}: {}", this.getUserId(), text);
+
+        // GStreamer textoverlay 필터의 text 속성 업데이트
+        textOverlayFilter.setElementProperty("text", text);
+
+        log.debug("Text overlay updated successfully: {}", text);
+
+        // 3초 후 텍스트 제거
+        new Thread(() -> {
+          try {
+            Thread.sleep(3000);
+            textOverlayFilter.setElementProperty("text", "");
+            log.debug("Text overlay cleared for user: {}", this.getUserId());
+          } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+          }
+        }).start();
+
+      } else {
+        log.warn("Cannot show text overlay - filter not initialized or text is empty for user: {}", this.getUserId());
+      }
+    } catch (Exception e) {
+      log.error("Error showing text overlay for user {}: {}", this.getUserId(), e.getMessage());
+    }
   }
 }

@@ -421,4 +421,30 @@ public class RedisServiceImpl implements RedisService {
         return documents;
     }
 
+    // TODO roomId:* 는 성능상 안좋을 수 있음으로 추후 roomName 만을 갖는 set 을 만들어 확인하는 것으로 수정필요!
+    @Override
+    public boolean checkRoomName(String roomName) {
+        if (roomName == null || roomName.trim().isEmpty()) {
+            return false; // 유효하지 않은 입력
+        }
+
+        Set<String> keys = slaveTemplate.keys("roomId:*");
+        if (keys == null || keys.isEmpty()) {
+            return false;
+        }
+
+        return keys.stream()
+                .map(key -> {
+                    try {
+                        return slaveTemplate.opsForHash().get(key, "roomName");
+                    } catch (Exception e) {
+                        // 로깅 처리
+                        return null;
+                    }
+                })
+                .filter(Objects::nonNull)
+                .map(Object::toString)
+                .anyMatch(roomName::equals);
+    }
+
 }

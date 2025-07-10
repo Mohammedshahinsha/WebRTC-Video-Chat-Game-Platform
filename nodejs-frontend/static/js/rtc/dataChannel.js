@@ -45,7 +45,7 @@ const dataChannel = {
 
         } else if (recvMessage.type === 'gameEvent') {
             this.gameEvent(recvMessage.message);
-        } else {
+        } else if(recvMessage.userName !== this.user.nickName) {
             // 일반 메시지 처리
             let message = recvMessage.userName + " : " + recvMessage.message;
             this.showNewMessage(message, "other");
@@ -90,6 +90,9 @@ const dataChannel = {
 
             this.sendMessage(recvMessage);
 
+            // 텍스트 오버레이 기능 추가 - 자신이 보낸 메시지를 비디오에 오버레이
+            this.sendTextOverlay(recvMessage);
+
             // clean out old message
             dataChannelChatting.$userTextInput.html('');
 
@@ -133,6 +136,25 @@ const dataChannel = {
 
         // $messagesContainer에 contentElement 추가
         dataChannelChatting.$messagesContainer.append(contentElement);
+    },
+    sendTextOverlay: function (text) {
+        if (this.isNullOrUndefined(text) || this.isNullOrUndefined(this.user)) return;
+        
+        // WebSocket을 통해 서버로 텍스트 오버레이 요청 전송
+        let overlayMessage = {
+            id: "textOverlay",
+            text: text,
+            userId: this.user.userId,
+            roomId: this.user.roomId
+        };
+        
+        // WebSocket 으로 textOverlay 요청 전송
+        if (typeof sendMessageToServer === 'function') {
+            sendMessageToServer(overlayMessage);
+            console.log("Text overlay request sent:", text);
+        } else {
+            console.error("sendMessageToServer function not available");
+        }
     },
     gameEvent: function (event) {
         switch (event.gameEvent) {

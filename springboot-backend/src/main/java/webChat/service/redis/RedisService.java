@@ -53,4 +53,6 @@ public interface RedisService {
     boolean deleteAllChatRoomData(String str);
 
     void updateChatRoom(ChatRoom chatRoom);
+
+    boolean checkRoomName(String roomName);
 }

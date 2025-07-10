@@ -1,6 +1,7 @@
 package webChat.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.apache.coyote.BadRequestException;
 import org.apache.tomcat.util.http.fileupload.impl.FileSizeLimitExceededException;
 import org.apache.tomcat.util.http.fileupload.impl.SizeLimitExceededException;
 import org.slf4j.Logger;
@@ -59,8 +60,8 @@ public class ExceptionController {
     }
 
     // 잘못된 요청을 받았을 때 발생하는 커스텀 예외
-    public static class BadRequestException extends RuntimeException {
-        public BadRequestException(String message) {
+    public static class AlreadyExistRoomNameException extends BadRequestException {
+        public AlreadyExistRoomNameException(String message) {
             super(message);
         }
     }
@@ -200,6 +201,15 @@ public class ExceptionController {
         Map<String, Object> result = new HashMap<>();
         result.put("code", "40041");
         result.put("message", "Can't Delete Room! Somebody use the  room XD");
+        return result;
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(AlreadyExistRoomNameException.class)
+    public @ResponseBody Map<String, Object> existRoomName(){
+        Map<String, Object> result = new HashMap<>();
+        result.put("code", "40042");
+        result.put("message", "RoomName Already Exists. Please try another room name.");
         return result;
     }
 

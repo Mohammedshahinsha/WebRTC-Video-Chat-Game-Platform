@@ -21,6 +21,7 @@
     <link rel="styleSheet" href="css/rtc/floating_chat.css" type="text/css" media="screen">
     <link rel="styleSheet" href="css/rtc/media_device.css" type="text/css" media="screen">
     <link rel="styleSheet" href="css/rtc/catch_mind.css" type="text/css" media="screen">
+    <link rel="styleSheet" href="css/rtc/subtitle.css" type="text/css" media="screen">
     <!-- 내부 CSS -->
     <link rel="stylesheet" href="static/css/chatroom/common.css">
 
@@ -49,13 +50,15 @@
                 <div class="justify-content-around mb-3">
                     <h2 class="justify-content-md-center" id="room-header"></h2>
                     <div class="row justify-content-md-center icon_wrap">
-                        <img class="col-md-1" src="images/webrtc/screen-share-on.svg" alt=""
+                        <img class="col-md-1" src="images/webrtc/screen-share-on.svg" width="24px" height="24px" alt=""
                             id="screenShareBtn"
-                            data-flag="false" onclick="screenShare()">
-                        <img src="images/webrtc/video-on.svg" class="col-md-1 localVideoToggle" 
+                            data-flag="false" >
+                        <img src="images/webrtc/video-on.svg" class="col-md-1 localVideoToggle" width="24px" height="24px"
                             alt="" id="videoBtn" data-flag="true">
-                        <img src="images/webrtc/audio-speaker-on.svg" class="col-md-1 localAudioToggle" alt="" id="audioBtn" data-flag="true">
-                        <img src="images/webrtc/setting.svg" class="col-md-1" id="userSetting"
+                        <img src="images/webrtc/audio-speaker-on.svg" class="col-md-1 localAudioToggle" width="24px" height="24px" alt="" id="audioBtn" data-flag="true">
+                        <img src="images/webrtc/subtitle-off.svg" class="col-md-1" width="24px" height="24px" alt=""
+                            id="subtitleBtn" data-flag="false" title="실시간 자막">
+                        <img src="images/webrtc/setting.svg" class="col-md-1" width="24px" height="24px" id="userSetting"
                             alt="userSetting"
                             data-toggle="modal" data-target="#userSettingsModal">
                     </div>
@@ -115,6 +118,7 @@
                     value="Leave room">
             </div>
         </div>
+        </div>
 
         <div class="floating-game-canvas">
             <button type="button" data-toggle="modal" data-target="#subjectModal">
@@ -169,6 +173,7 @@
     <script src="js/rtc/kurento-utils.js"></script>
     <script src="js/popup/popup-loader.js"></script>
     <script src="js/popup/audio_error_popup.js"></script>
+    <script src="js/rtc/speechSubtitleManager.js"></script>
     <script src="js/rtc/kurento-service.js"></script>
     <script src="js/rtc/dataChannel.js"></script>
     <script src="js/rtc/dataChannelChatting.js"></script>

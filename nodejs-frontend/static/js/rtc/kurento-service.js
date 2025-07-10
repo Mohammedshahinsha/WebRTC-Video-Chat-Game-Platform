@@ -36,6 +36,7 @@ ws.onopen = () => {
     initTurnServer();
     register();
     initScript();
+    initEvent();
 }
 
 var initTurnServer = function(){
@@ -61,6 +62,10 @@ var initScript = function () {
     dataChannelChatting.init();
     dataChannelFileUtil.init();
     catchMind.init();
+    
+    // 실시간 자막 기능
+    initSpeechRecognition();
+    initSubtitleUI();
 }
 
 let constraints = {
@@ -75,6 +80,15 @@ let constraints = {
         volume: 0.5
     }
 };
+
+let initEvent = function(){
+    $('#subtitleBtn').click(function(){
+        toggleSubtitle();
+    });    
+    $('#screenShareBtn').click(function(){
+        screenShare();
+    });
+}
 
 // 오디오 권한 체크 후 미디어 초기화
 async function initializeMediaDevices() {
@@ -197,6 +211,9 @@ ws.onmessage = function (message) {
                 leaveRoom('error');
                 window.location.reload();  // 프로미스 완료 후 페이지 새로고침
             });
+            break;
+        case 'textOverlayResponse':
+            console.debug('textOverlayResponse', parsedMessage);
             break;
         default:
             console.error('Unrecognized message', parsedMessage);
@@ -1354,7 +1371,7 @@ async function stopScreenShare() {
         
         // 버튼 상태 초기화
         const screenShareBtn = $("#screenShareBtn");
-    screenShareBtn.data("flag", false);
+        screenShareBtn.data("flag", false);
         screenShareBtn.attr("src", "/images/webrtc/screen-share-on.svg");
         
         console.log('화면 공유가 중지되었습니다.');
@@ -2610,4 +2627,96 @@ function hideScreenShareControls() {
     document.querySelectorAll('.screen-share-overlay').forEach(overlay => {
         overlay.remove();
     });
+}
+
+// ===== 자막 기능 관련 함수들 =====
+
+/**
+ * 자막 UI 초기화
+ */
+function initSubtitleUI() {
+    // SpeechRecognitionManager 상태 변경 이벤트 리스너
+    document.addEventListener('speechRecognitionStatusChanged', function(event) {
+        updateSubtitleButtonUI(event.detail);
+    });
+    
+    // 초기 상태 설정
+    updateSubtitleButtonUI({
+        status: 'stopped',
+        isEnabled: false,
+        isRecognizing: false
+    });
+}
+
+/**
+ * 자막 토글 함수
+ */
+function toggleSubtitle() {
+    try {
+        const isEnabled = toggleSpeechRecognition();
+        console.log('자막 기능 토글:', isEnabled ? '켜짐' : '꺼짐');
+        
+        // 사용자에게 피드백 제공
+        if (isEnabled) {
+            showToast('실시간 자막이 시작되었습니다', 'success');
+        } else {
+            showToast('실시간 자막이 중지되었습니다', 'info');
+        }
+        
+    } catch (error) {
+        console.error('자막 토글 실패:', error);
+        showToast('자막 기능을 사용할 수 없습니다', 'error');
+    }
+}
+
+/**
+ * 자막 버튼 UI 업데이트
+ */
+function updateSubtitleButtonUI(status) {
+    const subtitleBtn = document.getElementById('subtitleBtn');
+    if (!subtitleBtn) return;
+    
+    const { isEnabled, isRecognizing, status: currentStatus } = status;
+    
+    // 버튼 상태 업데이트
+    subtitleBtn.setAttribute('data-flag', isEnabled.toString());
+    
+    // 아이콘 변경
+    if (isEnabled) {
+        subtitleBtn.src = 'images/webrtc/subtitle-on.svg';
+        subtitleBtn.title = '실시간 자막 (켜짐)';
+    } else {
+        subtitleBtn.src = 'images/webrtc/subtitle-off.svg';
+        subtitleBtn.title = '실시간 자막 (꺼짐)';
+    }
+    
+    // 상태에 따른 시각적 피드백
+    subtitleBtn.style.opacity = isEnabled ? '1.0' : '0.6';
+    
+    // 인식 중일 때 애니메이션 효과
+    if (isRecognizing) {
+        subtitleBtn.style.animation = 'pulse 1.5s infinite';
+    } else {
+        subtitleBtn.style.animation = 'none';
+    }
+    
+    // 에러 상태 처리
+    if (currentStatus === 'error' || currentStatus === 'permission-denied') {
+        subtitleBtn.style.opacity = '0.4';
+        subtitleBtn.title = '자막 기능 오류';
+    }
+}
+
+/**
+ * 브라우저 지원 여부 확인 및 사용자 알림
+ */
+function checkSubtitleSupport() {
+    const status = getSpeechRecognitionStatus();
+    
+    if (!status.isSupported) {
+        showToast('이 브라우저는 음성 인식을 지원하지 않습니다', 'warning');
+        return false;
+    }
+    
+    return true;
 }

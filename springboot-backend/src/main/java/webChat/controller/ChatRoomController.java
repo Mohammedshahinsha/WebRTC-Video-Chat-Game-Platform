@@ -52,7 +52,7 @@ public class ChatRoomController {
     // 채팅방 생성 후 다시 / 로 return
     @PostMapping("/room")
     public ResponseEntity<ChatForYouResponse> createRoom(
-            @RequestBody ChatRoomInVo chatRoomInVo) {
+            @RequestBody ChatRoomInVo chatRoomInVo) throws BadRequestException {
 
         // 매개변수 : 방 이름, 패스워드, 방 잠금 여부, 방 인원수
         ChatRoom room = chatRoomService.createChatRoom(chatRoomInVo);
@@ -116,7 +116,7 @@ public class ChatRoomController {
 
     // 채팅방 삭제
     @DeleteMapping("/room/{roomId}")
-    public ResponseEntity<ChatForYouResponse> delChatRoom(@PathVariable String roomId) throws BadRequestException {
+    public ResponseEntity<ChatForYouResponse> delChatRoom(@PathVariable String roomId) throws BadRequestException, ExceptionController.DelRoomException {
 
         // roomId 기준으로 chatRoomMap 에서 삭제, 해당 채팅룸 안에 있는 사진 삭제
         return ResponseEntity.ok(ChatForYouResponse.builder()

@@ -20,6 +20,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
+    private final PrincipalOauth2UserService principalOauth2UserService;
 
     @Value("${endpoint.allowed_subnet}")
     private List<String> allowedSubnet;
@@ -56,6 +57,12 @@ public class SecurityConfig {
                         .logoutUrl("/logout") // 로그아웃 URL
                         .logoutSuccessUrl("/") // 로그아웃 성공 후 이동할 URL
                         .permitAll()
+                )
+                .oauth2Login(oauth2 -> oauth2
+                        .loginPage("/chatlogin") // 소셜 로그인 URL
+                        .userInfoEndpoint(userInfo -> userInfo
+                                .userService(principalOauth2UserService) // OAuth2 사용자 서비스
+                        )
                 );
 
         return http.build();
