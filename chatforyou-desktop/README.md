@@ -95,7 +95,7 @@ npm install -g sass
 ### 2. 개발 환경 설정
 ```bash
 # 프로젝트 클론
-git clone https://github.com/SeJonJ/ChatForYou_v2.git
+git clone https://github.com/SeJonJ/ChatForYou.git
 cd ChatForYou_v2/chatforyou-desktop
 
 # 의존성 설치
@@ -209,7 +209,7 @@ window.__CONFIG__ = {
 # app-update.yml
 provider: github
 owner: sejon
-repo: ChatForYou_v2
+repo: ChatForYou
 updaterCacheDirName: chatforyou-updater
 ```
 
@@ -346,8 +346,8 @@ tail -f scripts/.logs/main.log
 
 ## 📞 지원 및 피드백
 
-- **Issues**: [GitHub Issues](https://github.com/SeJonJ/ChatForYou_v2/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/SeJonJ/ChatForYou_v2/discussions)
+- **Issues**: [GitHub Issues](https://github.com/SeJonJ/ChatForYou/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/SeJonJ/ChatForYou/discussions)
 - **Email**: wkdtpwhs@gmail.com
 
 ## 📄 라이선스

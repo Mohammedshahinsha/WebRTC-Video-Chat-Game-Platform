@@ -121,7 +121,7 @@ jobs:
           
           ## 📞 지원
           
-          문제가 발생하거나 기능 요청이 있으시면 [GitHub Issues](https://github.com/sejon/ChatForYou_v2/issues)에 알려주세요!
+          문제가 발생하거나 기능 요청이 있으시면 [GitHub Issues](https://github.com/SeJonJ/ChatForYou/issues)에 알려주세요!
           
         draft: false
         prerelease: false

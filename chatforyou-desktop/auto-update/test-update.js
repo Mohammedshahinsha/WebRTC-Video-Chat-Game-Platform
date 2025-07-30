@@ -118,7 +118,7 @@ class UpdateTester {
             // dev-app-update.yml 생성 (개발용)
             const devUpdateConfig = `provider: github
 owner: sejon
-repo: ChatForYou_v2
+repo: ChatForYou
 updaterCacheDirName: chatforyou-updater-dev`;
             
             const devConfigPath = path.join(this.projectRoot, 'dev-app-update.yml');

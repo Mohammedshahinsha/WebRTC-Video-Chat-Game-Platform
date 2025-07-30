@@ -49,6 +49,10 @@
   },
   "build": {
     "publish": "never",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/SeJonJ/ChatForYou.git"
+    },
     "appId": "com.chatforyou.desktop",
     "productName": "ChatForYou",
     "directories": {

@@ -133,7 +133,7 @@ window.__CONFIG__ = {
 # app-update.yml
 provider: github
 owner: sejon
-repo: ChatForYou_v2
+repo: ChatForYou
 updaterCacheDirName: chatforyou-updater
 ```
 
