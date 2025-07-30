@@ -161,6 +161,10 @@ class ChatForYouBuilder {
           builderCmd += ` --${this.platform}`;
       }
 
+
+    // publish 강제 비활성화
+    builderCmd += ' --publish never';
+
       log.info(`Electron 앱 빌드 중... (${this.platform})`);
       execSync(builderCmd, { stdio: 'inherit' });
       log.success('Electron 앱 빌드 완료');

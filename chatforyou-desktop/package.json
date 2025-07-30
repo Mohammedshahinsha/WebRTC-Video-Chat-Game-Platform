@@ -47,12 +47,7 @@
     "commander": "^11.0.0",
     "chokidar": "^3.5.3"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/SeJonJ/ChatForYou.git"
-  },
   "build": {
-    "publish": "never",
     "appId": "com.chatforyou.desktop",
     "productName": "ChatForYou",
     "directories": {
