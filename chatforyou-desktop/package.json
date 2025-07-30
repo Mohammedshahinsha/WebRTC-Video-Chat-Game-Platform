@@ -38,7 +38,7 @@
     "desktop-app"
   ],
   "author": "sejon",
-  "license": "MIT",
+  "license": "by-nc-sa 4.0",
   "devDependencies": {
     "electron": "^28.0.0",
     "electron-builder": "^24.0.0",
@@ -46,6 +46,10 @@
     "rimraf": "^5.0.0",
     "commander": "^11.0.0",
     "chokidar": "^3.5.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/SeJonJ/ChatForYou.git"
   },
   "build": {
     "appId": "com.chatforyou.desktop",
