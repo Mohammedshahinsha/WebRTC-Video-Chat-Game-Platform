@@ -48,6 +48,7 @@
     "chokidar": "^3.5.3"
   },
   "build": {
+    "publish": "never",
     "appId": "com.chatforyou.desktop",
     "productName": "ChatForYou",
     "directories": {
@@ -67,12 +68,6 @@
       "!src/**/*.scss",
       "!src/.backup/**/*"
     ],
-    "publish": {
-      "provider": "github",
-      "owner": "sejon",
-      "repo": "ChatForYou_v2",
-      "releaseType": "release"
-    },
     "mac": {
       "category": "public.app-category.social-networking",
       "target": "dmg",
