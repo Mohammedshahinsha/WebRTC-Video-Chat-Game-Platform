@@ -1,0 +1,47 @@
+name: Release ChatForYou Desktop by major version
+
+on:
+  push:
+    branches:
+      - chatforyou_v2  # 메인 브랜치 이름
+
+jobs:
+  bump_major_version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # 전체 커밋과 태그 히스토리 모두 가져오기 위해 필요
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Configure Git User
+        run: |
+          git config user.name "ChatForYou Release Bot"
+          git config user.email "sejon@gmail.com"
+
+      - name: Install dependencies
+        run: |
+          cd chatforyou-desktop
+          npm ci
+
+      - name: Bump major version
+        id: bump_version
+        run: |
+          cd chatforyou-desktop
+          # package.json의 메이저 버전을 1 상승시키고, git 커밋과 태그 자동 생성
+          npm version major -m "ChatForYou Electron App Released %s"
+          NEW_VERSION=$(node -p "require('./package.json').version")
+          echo "new_version=v${NEW_VERSION}" >> $GITHUB_OUTPUT
+
+      - name: Push commit and tag
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # 메이저 버전 올라간 커밋과 생성된 태그를 원격 저장소에 푸시
+          git push origin chatforyou_v2
+          git push origin ${{ steps.bump_version.outputs.new_version }}

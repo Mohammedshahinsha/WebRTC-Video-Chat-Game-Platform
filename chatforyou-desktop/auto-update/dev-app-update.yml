@@ -1,0 +1,4 @@
+provider: github
+owner: sejon
+repo: ChatForYou_v2
+updaterCacheDirName: chatforyou-updater-dev

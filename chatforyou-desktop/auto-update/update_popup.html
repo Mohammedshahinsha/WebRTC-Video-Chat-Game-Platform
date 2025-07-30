@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>업데이트 알림</title>
+    <link rel="stylesheet" href="../static/css/common/spin.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            min-height: calc(100vh - 40px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .update-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 30px;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .update-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+
+        .update-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 36px;
+        }
+
+        .update-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+
+        .update-message {
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            color: #666;
+        }
+
+        .version-info {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            border-left: 4px solid #667eea;
+        }
+
+        .version-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .version-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .version-label {
+            font-weight: 500;
+            color: #555;
+        }
+
+        .version-value {
+            font-family: 'Courier New', monospace;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        .progress-section {
+            margin: 20px 0;
+            display: none;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            font-size: 14px;
+            color: #666;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #666;
+            border: 2px solid #e9ecef;
+        }
+
+        .btn-secondary:hover {
+            background: #e9ecef;
+            color: #555;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn:disabled:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        .status-message {
+            margin: 15px 0;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .status-success {
+            background: #d1f2eb;
+            color: #0f5132;
+            border: 1px solid #a7e1d4;
+        }
+
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f1aeb5;
+        }
+
+        .status-info {
+            background: #cce7ff;
+            color: #084298;
+            border: 1px solid #9ec5fe;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid transparent;
+            border-top: 2px solid currentColor;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .release-notes {
+            text-align: left;
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .release-notes h4 {
+            margin: 0 0 10px 0;
+            color: #2c3e50;
+            font-size: 16px;
+        }
+
+        .release-notes ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        .release-notes li {
+            margin-bottom: 5px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="update-container">
+        <div class="update-icon">
+            🔄
+        </div>
+        
+        <h1 class="update-title" id="updateTitle">업데이트 알림</h1>
+        <p class="update-message" id="updateMessage">새로운 업데이트가 있습니다!</p>
+        
+        <div class="version-info">
+            <div class="version-row">
+                <span class="version-label">현재 버전:</span>
+                <span class="version-value" id="currentVersion">-</span>
+            </div>
+            <div class="version-row">
+                <span class="version-label">최신 버전:</span>
+                <span class="version-value" id="latestVersion">-</span>
+            </div>
+        </div>
+
+        <div class="release-notes" id="releaseNotes">
+            <h4>새로운 기능</h4>
+            <ul id="releaseNotesList">
+                <li>로딩 중...</li>
+            </ul>
+        </div>
+
+        <div class="status-message" id="statusMessage"></div>
+
+        <div class="progress-section" id="progressSection">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="progress-text">
+                <span id="progressText">다운로드 중...</span>
+                <span id="progressPercent">0%</span>
+            </div>
+        </div>
+
+        <div class="button-group" id="buttonGroup">
+            <button class="btn btn-primary" id="downloadBtn">
+                <span>지금 다운로드</span>
+            </button>
+            <button class="btn btn-secondary" id="laterBtn">
+                나중에
+            </button>
+        </div>
+    </div>
+
+    <script>
+        class UpdateManager {
+            constructor() {
+                this.updateInfo = null;
+                this.isDownloading = false;
+                this.isDownloaded = false;
+                this.init();
+            }
+
+            init() {
+                this.setupEventListeners();
+                this.setupUpdateListeners();
+                this.loadCurrentVersion();
+            }
+
+            setupEventListeners() {
+                document.getElementById('downloadBtn').addEventListener('click', () => {
+                    if (this.isDownloaded) {
+                        this.installUpdate();
+                    } else {
+                        this.startDownload();
+                    }
+                });
+
+                document.getElementById('laterBtn').addEventListener('click', () => {
+                    this.closeWindow();
+                });
+            }
+
+            setupUpdateListeners() {
+                if (!window.electronAPI) return;
+
+                // 업데이트 다운로드 진행률
+                window.electronAPI.update.onProgress((event, data) => {
+                    this.updateProgress(data);
+                });
+
+                // 업데이트 다운로드 완료
+                window.electronAPI.update.onDownloaded((event, version) => {
+                    this.onDownloadComplete(version);
+                });
+
+                // 업데이트 오류
+                window.electronAPI.update.onError((event, error) => {
+                    this.showError('업데이트 중 오류가 발생했습니다: ' + error);
+                });
+            }
+
+            async loadCurrentVersion() {
+                if (window.electronAPI) {
+                    try {
+                        const info = await window.electronAPI.update.getInfo();
+                        document.getElementById('currentVersion').textContent = info.currentVersion;
+                        
+                        // URL 파라미터에서 업데이트 정보 가져오기
+                        const urlParams = new URLSearchParams(window.location.search);
+                        const latestVersion = urlParams.get('version');
+                        if (latestVersion) {
+                            document.getElementById('latestVersion').textContent = latestVersion;
+                        }
+                    } catch (error) {
+                        console.error('버전 정보 로드 실패:', error);
+                    }
+                }
+            }
+
+            async startDownload() {
+                if (this.isDownloading) return;
+
+                this.isDownloading = true;
+                this.showProgress();
+                this.showStatus('다운로드를 시작합니다...', 'info');
+
+                const downloadBtn = document.getElementById('downloadBtn');
+                downloadBtn.disabled = true;
+                downloadBtn.innerHTML = '<span class="spinner"></span> 다운로드 중...';
+
+                try {
+                    if (window.electronAPI) {
+                        await window.electronAPI.update.startDownload();
+                    }
+                } catch (error) {
+                    this.showError('다운로드 시작 실패: ' + error.message);
+                    this.resetDownloadButton();
+                }
+            }
+
+            updateProgress(data) {
+                const progressFill = document.getElementById('progressFill');
+                const progressPercent = document.getElementById('progressPercent');
+                const progressText = document.getElementById('progressText');
+
+                const percent = Math.round(data.percent || 0);
+                progressFill.style.width = percent + '%';
+                progressPercent.textContent = percent + '%';
+
+                if (data.bytesPerSecond) {
+                    const speed = (data.bytesPerSecond / 1024 / 1024).toFixed(1);
+                    progressText.textContent = `다운로드 중... ${speed} MB/s`;
+                }
+            }
+
+            onDownloadComplete(version) {
+                this.isDownloaded = true;
+                this.isDownloading = false;
+                
+                this.showStatus('다운로드가 완료되었습니다!', 'success');
+                
+                const downloadBtn = document.getElementById('downloadBtn');
+                downloadBtn.disabled = false;
+                downloadBtn.innerHTML = '지금 설치하고 재시작';
+                downloadBtn.className = 'btn btn-primary';
+
+                document.getElementById('updateTitle').textContent = '설치 준비 완료';
+                document.getElementById('updateMessage').textContent = 
+                    `버전 ${version} 업데이트가 다운로드되었습니다. 지금 설치하고 앱을 재시작하시겠습니까?`;
+            }
+
+            async installUpdate() {
+                try {
+                    if (window.electronAPI) {
+                        await window.electronAPI.update.install();
+                    }
+                } catch (error) {
+                    this.showError('설치 실패: ' + error.message);
+                }
+            }
+
+            showProgress() {
+                document.getElementById('progressSection').style.display = 'block';
+            }
+
+            showStatus(message, type) {
+                const statusMessage = document.getElementById('statusMessage');
+                statusMessage.textContent = message;
+                statusMessage.className = 'status-message status-' + type;
+                statusMessage.style.display = 'block';
+            }
+
+            showError(message) {
+                this.showStatus(message, 'error');
+                this.resetDownloadButton();
+            }
+
+            resetDownloadButton() {
+                this.isDownloading = false;
+                const downloadBtn = document.getElementById('downloadBtn');
+                downloadBtn.disabled = false;
+                downloadBtn.innerHTML = '<span>지금 다운로드</span>';
+            }
+
+            closeWindow() {
+                if (window.electronAPI) {
+                    window.electronAPI.closeWindow();
+                } else {
+                    window.close();
+                }
+            }
+        }
+
+        // 페이지 로드 시 UpdateManager 초기화
+        document.addEventListener('DOMContentLoaded', () => {
+            new UpdateManager();
+        });
+    </script>
+</body>
+</html>
