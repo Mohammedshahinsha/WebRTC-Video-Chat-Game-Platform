@@ -72,11 +72,12 @@
       "!src/.backup/**/*"
     ],
     "mac": {
+      "identity": null,
+      "gatekeeperAssess": false,
       "category": "public.app-category.social-networking",
       "target": "dmg",
       "icon": "src/static/images/logo/chatforyou_logo_512.png",
       "hardenedRuntime": true,
-      "gatekeeperAssess": false,
       "entitlements": "build/entitlements.mac.plist",
       "entitlementsInherit": "build/entitlements.mac.inherit.plist"
     },
