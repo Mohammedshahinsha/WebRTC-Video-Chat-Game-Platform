@@ -74,10 +74,10 @@
     "mac": {
       "identity": null,
       "gatekeeperAssess": false,
+      "hardenedRuntime": false,
       "category": "public.app-category.social-networking",
       "target": "dmg",
       "icon": "src/static/images/logo/chatforyou_logo_512.png",
-      "hardenedRuntime": true,
       "entitlements": "build/entitlements.mac.plist",
       "entitlementsInherit": "build/entitlements.mac.inherit.plist"
     },
