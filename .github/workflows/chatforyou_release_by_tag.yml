@@ -52,6 +52,7 @@ jobs:
         npm run ${{ matrix.build-script }}
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        CSC_IDENTITY_AUTO_DISCOVERY: false
         
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
@@ -84,6 +85,77 @@ jobs:
         echo "Downloaded artifacts:"
         find . -type f -name "*.dmg" -o -name "*.exe" -o -name "*.AppImage" -o -name "*.yml" | sort
         
+    - name: Generate Release Notes
+      id: release_notes
+      run: |
+        # 이전 태그와 현재 태그 사이의 커밋들로부터 릴리즈 노트 생성
+        CURRENT_TAG="${{ steps.get_version.outputs.version }}"
+        PREVIOUS_TAG=$(git tag --sort=-version:refname | grep -v "$CURRENT_TAG" | head -n 1)
+        
+        echo "Current tag: $CURRENT_TAG"
+        echo "Previous tag: $PREVIOUS_TAG"
+        
+        if [ -z "$PREVIOUS_TAG" ]; then
+          echo "No previous tag found, using all commits"
+          COMMITS=$(git log --pretty=format:"- %s (%h)" --reverse)
+        else
+          echo "Getting commits between $PREVIOUS_TAG and $CURRENT_TAG"
+          COMMITS=$(git log --pretty=format:"- %s (%h)" --reverse "$PREVIOUS_TAG..$CURRENT_TAG")
+        fi
+        
+        # 릴리즈 노트 생성
+        cat > release_notes.md << 'EOF'
+        ## 🎉 ChatForYou ${{ steps.get_version.outputs.version }} 릴리스
+        
+        ### 📝 변경사항
+        
+        EOF
+        
+        if [ -n "$COMMITS" ]; then
+          echo "$COMMITS" >> release_notes.md
+        else
+          echo "- 버그 수정 및 성능 개선" >> release_notes.md
+        fi
+        
+        cat >> release_notes.md << 'EOF'
+        
+        ## 📥 다운로드
+        
+        | 플랫폼 | 파일 | 설명 |
+        |--------|------|------|
+        | macOS (Apple Silicon) | ChatForYou-${{ steps.get_version.outputs.version_number }}-arm64.dmg | Apple M1/M2 Mac용 |
+        | macOS (Intel) | ChatForYou-${{ steps.get_version.outputs.version_number }}.dmg | Intel Mac용 |
+        | Windows | ChatForYou-Setup-${{ steps.get_version.outputs.version_number }}.exe | Windows 10/11 64-bit |
+        
+        ## 🚀 설치 방법
+        
+        ### macOS
+        1. 해당하는 DMG 파일을 다운로드합니다
+        2. DMG 파일을 열고 ChatForYou 아이콘을 Applications 폴더로 드래그합니다
+        3. Launchpad 또는 Applications 폴더에서 ChatForYou를 실행합니다
+        
+        ### Windows
+        1. Setup.exe 파일을 다운로드합니다
+        2. 파일을 실행하고 설치 마법사를 따라 진행합니다
+        3. 바탕화면 또는 시작 메뉴에서 ChatForYou를 실행합니다
+        
+        ## 🔄 자동 업데이트
+        
+        앱이 백그라운드에서 자동으로 새 버전을 확인하고, 업데이트가 있을 때 알림을 표시합니다.
+        
+        ## 📞 지원
+        
+        문제가 발생하거나 기능 요청이 있으시면 [GitHub Issues](https://github.com/SeJonJ/ChatForYou/issues)에 알려주세요!
+        
+        EOF
+        
+        # multiline output을 위한 EOF delimiter 설정
+        {
+          echo 'release_body<<EOF'
+          cat release_notes.md
+          echo 'EOF'
+        } >> $GITHUB_OUTPUT
+        
     - name: Create Release
       id: create_release
       uses: softprops/action-gh-release@v1
@@ -92,37 +164,7 @@ jobs:
       with:
         tag_name: ${{ steps.get_version.outputs.version }}
         name: ChatForYou ${{ steps.get_version.outputs.version }}
-        body: |
-          ## 🎉 ChatForYou ${{ steps.get_version.outputs.version }} 릴리스
-          
-          ## 📥 다운로드
-          
-          | 플랫폼 | 파일 | 설명 |
-          |--------|------|------|
-          | macOS (Apple Silicon) | ChatForYou-${{ steps.get_version.outputs.version_number }}-arm64.dmg | Apple M1/M2 Mac용 |
-          | macOS (Intel) | ChatForYou-${{ steps.get_version.outputs.version_number }}.dmg | Intel Mac용 |
-          | Windows | ChatForYou-Setup-${{ steps.get_version.outputs.version_number }}.exe | Windows 10/11 64-bit |
-          
-          ## 🚀 설치 방법
-          
-          ### macOS
-          1. 해당하는 DMG 파일을 다운로드합니다
-          2. DMG 파일을 열고 ChatForYou 아이콘을 Applications 폴더로 드래그합니다
-          3. Launchpad 또는 Applications 폴더에서 ChatForYou를 실행합니다
-          
-          ### Windows
-          1. Setup.exe 파일을 다운로드합니다
-          2. 파일을 실행하고 설치 마법사를 따라 진행합니다
-          3. 바탕화면 또는 시작 메뉴에서 ChatForYou를 실행합니다
-          
-          ## 🔄 자동 업데이트
-          
-          앱이 백그라운드에서 자동으로 새 버전을 확인하고, 업데이트가 있을 때 알림을 표시합니다.
-          
-          ## 📞 지원
-          
-          문제가 발생하거나 기능 요청이 있으시면 [GitHub Issues](https://github.com/SeJonJ/ChatForYou/issues)에 알려주세요!
-          
+        body: ${{ steps.release_notes.outputs.release_body }}
         draft: false
         prerelease: false
         files: |

@@ -95,7 +95,7 @@ desktop.ini
 *CLAUDE*.md
 
 # ========================================
-# ChatForYou 프로젝트 특화 설정
+# ChatForYou 프로젝트
 # ========================================
 
 # Desktop 앱 동기화 관련
@@ -108,6 +108,10 @@ sync-*.log
 # SCSS 컴파일 결과물
 src/static/css/*.map
 chatforyou-desktop/src/static/css/*.map
+
+# 프론트 빌드 결과물
+chatforyou-desktop/src/static
+chatforyou-desktop/src/templates
 
 # 빌드 로그
 build-scripts/.logs/

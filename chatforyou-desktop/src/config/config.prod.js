@@ -1,5 +1,5 @@
 // ChatForYou Electron Configuration
-// Auto-generated from web config on 2025-07-30T13:53:07.867Z
+// Auto-generated from web config on 2025-07-31T14:13:17.611Z
 
 window.__CONFIG__ = {
   "API_BASE_URL": "https://hjproject.kro.kr/chatforyou/api",
@@ -13,7 +13,7 @@ window.__CONFIG__ = {
   "APP_VERSION": "1.0.0",
   "PLATFORM_TYPE": "desktop",
   "CONVERTED_FROM": "web",
-  "CONVERSION_DATE": "2025-07-30T13:53:07.867Z"
+  "CONVERSION_DATE": "2025-07-31T14:13:17.611Z"
 };
 
 // Electron specific utilities
