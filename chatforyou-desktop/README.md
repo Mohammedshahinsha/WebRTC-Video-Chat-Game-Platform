@@ -268,11 +268,36 @@ Electron의 보안 모범 사례를 준수합니다:
 - **Intel**: x86_64 Mac 호환
 - **설치**: 드래그 앤 드롭으로 Applications 폴더에 설치
 
+#### ⚠️ macOS "손상된 파일" 에러 해결
+
+macOS에서 "손상된 파일" 또는 "확인되지 않은 개발자" 에러가 발생할 경우:
+
+**방법 1: 우클릭으로 열기 (가장 쉬움)**
+1. ChatForYou 앱을 우클릭 → "열기" 선택
+2. 경고 대화상자에서 "열기" 클릭
+3. 한 번 허용하면 이후 정상 실행됩니다
+
+**방법 2: 터미널 명령어 (권장)**
+```bash
+# 다운로드한 DMG 파일의 quarantine 속성 제거
+xattr -r -d com.apple.quarantine ~/Downloads/ChatForYou-*.dmg
+
+# 또는 설치된 앱의 quarantine 속성 제거  
+xattr -r -d com.apple.quarantine /Applications/ChatForYou.app
+```
+
+**왜 이런 에러가 발생하나요?**
+- macOS Gatekeeper는 Apple 개발자 인증서로 서명되지 않은 앱을 자동으로 차단합니다
+- ChatForYou는 개인 프로젝트로 Apple Developer Program에 등록되지 않았습니다
+- 이는 macOS만의 보안 정책으로, Windows에서는 발생하지 않는 문제입니다
+
 ### Windows (.exe)
 - **NSIS 설치관리자**: GUI 기반 설치 과정
 - **아키텍처**: x64, ia32 지원
 - **바탕화면 바로가기**: 자동 생성
 - **시작 메뉴**: 자동 등록
+
+Windows Defender SmartScreen에서 경고가 나타날 수 있지만, "추가 정보" → "실행"을 클릭하여 진행할 수 있습니다.
 
 ## 🔍 문제 해결
 

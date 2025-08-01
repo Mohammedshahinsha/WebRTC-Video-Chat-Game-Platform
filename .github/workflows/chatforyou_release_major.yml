@@ -60,6 +60,8 @@ jobs:
             artifact-pattern: |
               chatforyou-desktop/dist/*.dmg
               chatforyou-desktop/dist/*.dmg.blockmap
+              chatforyou-desktop/dist/*.zip
+              chatforyou-desktop/dist/*.zip.blockmap
               chatforyou-desktop/dist/latest-mac.yml
           - os: windows-latest
             platform: win
@@ -174,6 +176,28 @@ jobs:
         2. DMG 파일을 열고 ChatForYou 아이콘을 Applications 폴더로 드래그합니다
         3. Launchpad 또는 Applications 폴더에서 ChatForYou를 실행합니다
         
+        ⚠️ **macOS "손상된 파일" 에러 해결 방법**
+        
+        macOS에서 "손상된 파일"이라는 에러가 발생할 경우:
+        
+        **방법 1: 우클릭으로 열기**
+        1. ChatForYou 앱을 우클릭 → "열기" 선택
+        2. 경고 대화상자에서 "열기" 클릭
+        
+        **방법 2: 터미널 명령어 (권장)**
+        ```bash
+        # 다운로드한 DMG 파일의 quarantine 속성 제거
+        xattr -r -d com.apple.quarantine ~/Downloads/ChatForYou-*.dmg
+        
+        # 또는 설치된 앱의 quarantine 속성 제거
+        xattr -r -d com.apple.quarantine /Applications/ChatForYou.app
+        ```
+        
+        **왜 이런 에러가 발생하나요?**
+        - macOS Gatekeeper는 Apple 개발자 인증서로 서명되지 않은 앱을 자동으로 차단합니다
+        - ChatForYou는 개인 프로젝트로 Apple Developer Program에 등록되지 않았습니다
+        - 이는 macOS만의 보안 정책으로, Windows에서는 발생하지 않는 문제입니다
+        
         ### Windows
         1. Setup.exe 파일을 다운로드합니다
         2. 파일을 실행하고 설치 마법사를 따라 진행합니다
@@ -210,6 +234,8 @@ jobs:
         files: |
           macos-build/*.dmg
           macos-build/*.dmg.blockmap
+          macos-build/*.zip
+          macos-build/*.zip.blockmap
           macos-build/latest-mac.yml
           windows-build/*.exe
           windows-build/*.exe.blockmap
