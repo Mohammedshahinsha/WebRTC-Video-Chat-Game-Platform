@@ -1,5 +1,5 @@
 // ChatForYou Electron Configuration
-// Auto-generated from web config on 2025-08-01T13:25:28.351Z
+// Auto-generated from web config on 2025-08-01T13:36:45.913Z
 
 window.__CONFIG__ = {
   "API_BASE_URL": "http://localhost:8080/chatforyou/api",
@@ -13,7 +13,7 @@ window.__CONFIG__ = {
   "APP_VERSION": "1.0.0",
   "PLATFORM_TYPE": "desktop",
   "CONVERTED_FROM": "web",
-  "CONVERSION_DATE": "2025-08-01T13:25:28.351Z"
+  "CONVERSION_DATE": "2025-08-01T13:36:45.913Z"
 };
 
 // Electron specific utilities

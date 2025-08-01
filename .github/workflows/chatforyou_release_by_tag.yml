@@ -82,6 +82,21 @@ jobs:
             # Cleanup
             rm -rf "$temp_dir"
             echo "Re-signed ZIP: $zipfile"
+            
+            # Update SHA512 checksum in latest-mac.yml
+            if [ -f "dist/latest-mac.yml" ]; then
+              echo "Updating SHA512 checksum for $(basename "$zipfile")"
+              new_sha512=$(shasum -a 512 "$zipfile" | cut -d' ' -f1 | base64)
+              new_size=$(stat -f%z "$zipfile" 2>/dev/null || stat -c%s "$zipfile")
+              
+              # Update the yml file with new checksum and size
+              sed -i.bak "s/sha512: .*/sha512: $new_sha512/" dist/latest-mac.yml
+              sed -i.bak "s/size: .*/size: $new_size/" dist/latest-mac.yml
+              rm -f dist/latest-mac.yml.bak
+              
+              echo "Updated latest-mac.yml with new checksum: $new_sha512"
+              echo "Updated size: $new_size"
+            fi
           fi
         done
         
