@@ -103,18 +103,83 @@
 
         .progress-bar {
             width: 100%;
-            height: 8px;
+            height: 12px;
             background: #e9ecef;
-            border-radius: 4px;
+            border-radius: 6px;
             overflow: hidden;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
+            position: relative;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
         }
 
         .progress-fill {
             height: 100%;
             background: linear-gradient(90deg, #667eea, #764ba2);
             width: 0%;
-            transition: width 0.3s ease;
+            transition: width 0.5s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255,255,255,0.2),
+                transparent
+            );
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .progress-info {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 10px;
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .progress-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+            text-align: center;
+            padding: 10px 0;
+            border-top: 1px solid #eee;
+            margin-top: 10px;
+        }
+
+        .progress-detail-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .progress-detail-label {
+            font-size: 11px;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .progress-detail-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: #2c3e50;
+            font-family: 'Courier New', monospace;
         }
 
         .progress-text {
@@ -122,6 +187,13 @@
             color: #666;
             display: flex;
             justify-content: space-between;
+            align-items: center;
+        }
+
+        .progress-percent {
+            font-weight: 600;
+            color: #667eea;
+            font-size: 16px;
         }
 
         .button-group {
@@ -275,12 +347,26 @@
         <div class="status-message" id="statusMessage"></div>
 
         <div class="progress-section" id="progressSection">
+            <div class="progress-info">
+                <span id="progressText">다운로드 준비 중...</span>
+                <span class="progress-percent" id="progressPercent">0%</span>
+            </div>
             <div class="progress-bar">
                 <div class="progress-fill" id="progressFill"></div>
             </div>
-            <div class="progress-text">
-                <span id="progressText">다운로드 중...</span>
-                <span id="progressPercent">0%</span>
+            <div class="progress-details">
+                <div class="progress-detail-item">
+                    <div class="progress-detail-label">속도</div>
+                    <div class="progress-detail-value" id="downloadSpeed">0 MB/s</div>
+                </div>
+                <div class="progress-detail-item">
+                    <div class="progress-detail-label">남은 시간</div>
+                    <div class="progress-detail-value" id="timeRemaining">계산 중...</div>
+                </div>
+                <div class="progress-detail-item">
+                    <div class="progress-detail-label">파일 크기</div>
+                    <div class="progress-detail-value" id="fileSize">0 MB</div>
+                </div>
             </div>
         </div>
 
@@ -385,14 +471,54 @@
                 const progressFill = document.getElementById('progressFill');
                 const progressPercent = document.getElementById('progressPercent');
                 const progressText = document.getElementById('progressText');
+                const downloadSpeed = document.getElementById('downloadSpeed');
+                const timeRemaining = document.getElementById('timeRemaining');
+                const fileSize = document.getElementById('fileSize');
 
                 const percent = Math.round(data.percent || 0);
                 progressFill.style.width = percent + '%';
                 progressPercent.textContent = percent + '%';
 
+                // 다운로드 속도 표시
                 if (data.bytesPerSecond) {
-                    const speed = (data.bytesPerSecond / 1024 / 1024).toFixed(1);
-                    progressText.textContent = `다운로드 중... ${speed} MB/s`;
+                    const speedMB = (data.bytesPerSecond / 1024 / 1024).toFixed(1);
+                    downloadSpeed.textContent = `${speedMB} MB/s`;
+                    
+                    // 남은 시간 계산
+                    if (data.total && data.transferred && data.bytesPerSecond > 0) {
+                        const remainingBytes = data.total - data.transferred;
+                        const remainingSeconds = remainingBytes / data.bytesPerSecond;
+                        timeRemaining.textContent = this.formatTime(remainingSeconds);
+                    }
+                } else {
+                    downloadSpeed.textContent = '0 MB/s';
+                }
+
+                // 파일 크기 표시
+                if (data.total) {
+                    const totalMB = (data.total / 1024 / 1024).toFixed(1);
+                    fileSize.textContent = `${totalMB} MB`;
+                }
+
+                // 상태 텍스트 업데이트
+                if (percent > 0) {
+                    progressText.textContent = '다운로드 중...';
+                } else {
+                    progressText.textContent = '다운로드 시작 중...';
+                }
+            }
+
+            formatTime(seconds) {
+                if (seconds < 60) {
+                    return `${Math.round(seconds)}초`;
+                } else if (seconds < 3600) {
+                    const minutes = Math.floor(seconds / 60);
+                    const remainingSeconds = Math.round(seconds % 60);
+                    return `${minutes}분 ${remainingSeconds}초`;
+                } else {
+                    const hours = Math.floor(seconds / 3600);
+                    const minutes = Math.floor((seconds % 3600) / 60);
+                    return `${hours}시간 ${minutes}분`;
                 }
             }
 

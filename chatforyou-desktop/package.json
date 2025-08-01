@@ -1,6 +1,6 @@
 {
   "name": "chatforyou-desktop",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "ChatForYou Desktop Application built with Electron",
   "main": "src/main/electron-main.js",
   "scripts": {
@@ -91,7 +91,12 @@
       ],
       "icon": "src/static/images/logo/chatforyou_logo_512.png",
       "entitlements": "build/entitlements.mac.plist",
-      "entitlementsInherit": "build/entitlements.mac.inherit.plist"
+      "entitlementsInherit": "build/entitlements.mac.inherit.plist",
+      "extendInfo": {
+        "NSAppleEventsUsageDescription": "ChatForYou가 시스템 이벤트에 접근하여 원활한 업데이트를 제공합니다.",
+        "NSCameraUsageDescription": "ChatForYou가 화상 채팅을 위해 카메라에 접근합니다.",
+        "NSMicrophoneUsageDescription": "ChatForYou가 음성 채팅을 위해 마이크에 접근합니다."
+      }
     },
     "win": {
       "target": {

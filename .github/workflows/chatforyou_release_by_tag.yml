@@ -56,6 +56,35 @@ jobs:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         CSC_IDENTITY_AUTO_DISCOVERY: false
         
+    - name: Sign macOS ZIP contents (for macOS)
+      if: matrix.platform == 'mac'
+      run: |
+        cd chatforyou-desktop
+        # Find and sign all .app bundles in ZIP files
+        for zipfile in dist/*.zip; do
+          if [ -f "$zipfile" ]; then
+            echo "Processing ZIP file: $zipfile"
+            # Create temp directory
+            temp_dir=$(mktemp -d)
+            # Extract ZIP
+            unzip -q "$zipfile" -d "$temp_dir"
+            # Find .app bundles and sign them
+            find "$temp_dir" -name "*.app" -type d | while read -r app_path; do
+              echo "Signing app: $app_path"
+              codesign --force --deep --sign - "$app_path"
+              codesign --verify --verbose "$app_path"
+            done
+            # Re-create ZIP with signed apps
+            cd "$temp_dir"
+            zip -r -q "../$(basename "$zipfile")" .
+            cd - > /dev/null
+            mv "$temp_dir/../$(basename "$zipfile")" "$zipfile"
+            # Cleanup
+            rm -rf "$temp_dir"
+            echo "Re-signed ZIP: $zipfile"
+          fi
+        done
+        
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
