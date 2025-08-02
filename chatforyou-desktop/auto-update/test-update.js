@@ -1,8 +1,13 @@
 #!/usr/bin/env node
 
 /**
- * 자동 업데이트 테스트 스크립트
- * 개발 환경에서 업데이트 기능을 테스트하기 위한 유틸리티
+ * 업데이트 테스트용 스크립트
+ * 
+ * 사용법:
+ * 1. 현재 버전을 GitHub Release 보다 낮은 버전으로 변경 : node test-update.js build [버전]
+ * 2. 앱 실행
+ * 3. 다운로드 확인
+ * 4. 테스트 버전 복원 : node test-update.js restore
  */
 
 const fs = require('fs');
@@ -70,7 +75,7 @@ class UpdateTester {
             if (fs.existsSync(this.backupPath)) {
                 fs.copyFileSync(this.backupPath, this.packageJsonPath);
                 fs.unlinkSync(this.backupPath);
-                log.success('버전 복원 완료');
+                log.success('✅ package.json 복원 완료');
                 return true;
             } else {
                 log.warn('백업 파일이 없습니다');

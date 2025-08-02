@@ -410,22 +410,38 @@
             }
 
             setupUpdateListeners() {
-                if (!window.electronAPI) return;
+                if (!window.electronAPI) {
+                    console.error('❌ electronAPI가 사용 불가능합니다');
+                    return;
+                }
+                
+                console.log('🔧 업데이트 이벤트 리스너 설정 중...');
+
+                // 업데이트 다운로드 시작
+                window.electronAPI.update.onDownloadStarted(() => {
+                    console.log('📥 다운로드 시작 이벤트 수신');
+                    this.onDownloadStarted();
+                });
 
                 // 업데이트 다운로드 진행률
                 window.electronAPI.update.onProgress((event, data) => {
+                    console.log('📊 프로그레스 이벤트 수신:', data);
                     this.updateProgress(data);
                 });
 
                 // 업데이트 다운로드 완료
                 window.electronAPI.update.onDownloaded((event, version) => {
+                    console.log('✅ 다운로드 완료 이벤트 수신:', version);
                     this.onDownloadComplete(version);
                 });
 
                 // 업데이트 오류
                 window.electronAPI.update.onError((event, error) => {
+                    console.error('❌ 업데이트 오류 이벤트 수신:', error);
                     this.showError('업데이트 중 오류가 발생했습니다: ' + error);
                 });
+                
+                console.log('✅ 업데이트 이벤트 리스너 설정 완료');
             }
 
             async loadCurrentVersion() {
@@ -449,6 +465,7 @@
             async startDownload() {
                 if (this.isDownloading) return;
 
+                console.log('🚀 다운로드 시작 요청');
                 this.isDownloading = true;
                 this.showProgress();
                 this.showStatus('다운로드를 시작합니다...', 'info');
@@ -459,12 +476,27 @@
 
                 try {
                     if (window.electronAPI) {
-                        await window.electronAPI.update.startDownload();
+                        const result = await window.electronAPI.update.startDownload();
+                        console.log('📤 다운로드 시작 응답:', result);
                     }
                 } catch (error) {
+                    console.error('❌ 다운로드 시작 실패:', error);
                     this.showError('다운로드 시작 실패: ' + error.message);
                     this.resetDownloadButton();
                 }
+            }
+
+            onDownloadStarted() {
+                console.log('🎯 onDownloadStarted 호출됨');
+                this.isDownloading = true;
+                this.showProgress();
+                this.showStatus('다운로드가 시작되었습니다...', 'info');
+
+                const downloadBtn = document.getElementById('downloadBtn');
+                downloadBtn.disabled = true;
+                downloadBtn.innerHTML = '<span class="spinner"></span> 다운로드 중...';
+                
+                console.log('✅ 프로그레스 바 표시됨');
             }
 
             updateProgress(data) {

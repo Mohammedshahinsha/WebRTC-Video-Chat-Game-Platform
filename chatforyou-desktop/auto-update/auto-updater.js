@@ -18,9 +18,22 @@ class AutoUpdateManager {
   }
 
   setupAutoUpdater() {
+    // 개발 모드에서 업데이트 테스트를 위한 설정
     if (this.isDev) {
-      this.logger.info('개발 모드에서는 자동 업데이트를 비활성화합니다.');
-      return;
+      const forceDevUpdate = process.env.FORCE_DEV_UPDATE === 'true' || 
+                           process.argv.includes('--force-dev-update') ||
+                           process.argv.includes('FORCE_DEV_UPDATE=true');
+      
+      this.logger.info(`개발 모드 감지. FORCE_DEV_UPDATE=${process.env.FORCE_DEV_UPDATE}, argv=${process.argv.join(' ')}`);
+      
+      if (!forceDevUpdate) {
+        this.logger.info('개발 모드에서는 자동 업데이트를 비활성화합니다. (FORCE_DEV_UPDATE=true로 활성화 가능)');
+        return;
+      } else {
+        this.logger.info('개발 모드에서 강제 업데이트 테스트 활성화');
+        // 개발용 업데이트 설정 파일 사용
+        autoUpdater.updateConfigPath = path.join(__dirname, 'dev-app-update.yml');
+      }
     }
     
     autoUpdater.logger = this.logger;

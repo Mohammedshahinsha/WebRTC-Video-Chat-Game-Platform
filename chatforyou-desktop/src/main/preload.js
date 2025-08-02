@@ -119,6 +119,16 @@ contextBridge.exposeInMainWorld('electronAPI', {
             return () => ipcRenderer.removeListener('update:downloaded', wrappedCallback);
         },
 
+        // 다운로드 시작 이벤트
+        onDownloadStarted: (callback) => {
+            const wrappedCallback = (event, ...args) => {
+                console.log('업데이트 다운로드 시작됨');
+                callback(event, ...args);
+            };
+            ipcRenderer.on('update:download-started', wrappedCallback);
+            return () => ipcRenderer.removeListener('update:download-started', wrappedCallback);
+        },
+
         // 유틸리티 메소드들
         removeAllListeners: (channel) => {
             if (typeof channel === 'string' && channel.startsWith('update:')) {
@@ -136,7 +146,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
                 'update:not-available',
                 'update:error',
                 'update:progress',
-                'update:downloaded'
+                'update:downloaded',
+                'update:download-started'
             ];
             
             updateChannels.forEach(channel => {

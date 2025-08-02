@@ -3,12 +3,14 @@ const { autoUpdater } = require('electron-updater');
 const path = require('path');
 const crypto = require('crypto');
 const fs = require('fs');
+const AutoUpdateManager = require('../../auto-update/auto-updater');
 
 // 개발 모드 감지
 const isDev = process.env.NODE_ENV === 'development' || process.argv.includes('--dev');
+const forceDevUpdate = process.argv.includes('--force-dev-update');
 
 let mainWindow;
-let updateInfo = null; // 업데이트 정보를 저장하는 변수
+let updateManager = null; // AutoUpdateManager 인스턴스
 
 const log = {
     info: (message) => {
@@ -31,106 +33,12 @@ const log = {
     }
 };
 
-// 자동 업데이트 설정 - 개선된 버전
+// 자동 업데이트 설정 - AutoUpdateManager 사용
 function setupAutoUpdater() {
-    autoUpdater.logger = log;
-    autoUpdater.autoDownload = false; // 수동으로 다운로드 확인하도록 변경
-    
-    autoUpdater.on('checking-for-update', () => {
-        log.info('업데이트 확인 중...');
-        if (mainWindow) mainWindow.webContents.send('update:checking');
-    });
-
-    autoUpdater.on('update-available', async (info) => {
-        log.info(`업데이트 있음. 최신버전: ${info.version}`);
-        updateInfo = info;
-        if (mainWindow) mainWindow.webContents.send('update:available', info.version);
-        
-        // 사용자에게 다운로드 확인 다이얼로그 표시
-        const result = await dialog.showMessageBox(mainWindow, {
-            type: 'info',
-            title: '업데이트 알림',
-            message: '새로운 업데이트가 있습니다!',
-            detail: `현재 버전: ${app.getVersion()}\n최신 버전: ${info.version}\n\n업데이트를 다운로드하시겠습니까?`,
-            buttons: ['지금 다운로드', '나중에'],
-            defaultId: 0,
-            cancelId: 1
-        });
-
-        if (result.response === 0) {
-            log.info('사용자가 업데이트 다운로드를 승인했습니다.');
-            autoUpdater.downloadUpdate();
-        } else {
-            log.info('사용자가 업데이트를 나중으로 연기했습니다.');
-        }
-    });
-
-    autoUpdater.on('update-not-available', async (info) => {
-        log.info('현재 최신버전입니다.');
-        if (mainWindow) mainWindow.webContents.send('update:not-available');
-        
-        // 수동 업데이트 확인 시에만 다이얼로그 표시
-        if (updateInfo === 'manual-check') {
-            await dialog.showMessageBox(mainWindow, {
-                type: 'info',
-                title: '업데이트 확인',
-                message: '현재 최신 버전을 사용 중입니다.',
-                detail: `현재 버전: ${app.getVersion()}`,
-                buttons: ['확인']
-            });
-            updateInfo = null;
-        }
-    });
-
-    autoUpdater.on('error', async (err) => {
-        log.error('업데이트 오류: ' + err);
-        if (mainWindow) mainWindow.webContents.send('update:error', String(err));
-        
-        // 오류 다이얼로그 표시
-        await dialog.showMessageBox(mainWindow, {
-            type: 'error',
-            title: '업데이트 오류',
-            message: '업데이트 중 오류가 발생했습니다.',
-            detail: String(err),
-            buttons: ['확인']
-        });
-    });
-
-    autoUpdater.on('download-progress', (progressObj) => {
-        log.info(`업데이트 다운로드 중... ${progressObj.percent.toFixed(1)}%`);
-        if (mainWindow) {
-            mainWindow.webContents.send('update:progress', {
-                percent: progressObj.percent,
-                bytesPerSecond: progressObj.bytesPerSecond,
-                transferred: progressObj.transferred,
-                total: progressObj.total
-            });
-        }
-    });
-
-    autoUpdater.on('update-downloaded', async (info) => {
-        log.info('업데이트 다운로드 완료. 설치 확인 대기 중');
-        if (mainWindow) mainWindow.webContents.send('update:downloaded', info.version);
-        
-        // 설치 확인 다이얼로그 표시
-        const result = await dialog.showMessageBox(mainWindow, {
-            type: 'info',
-            title: '업데이트 설치',
-            message: '업데이트 다운로드가 완료되었습니다!',
-            detail: `버전 ${info.version} 업데이트가 준비되었습니다.\n지금 설치하고 앱을 재시작하시겠습니까?`,
-            buttons: ['지금 설치', '나중에 설치'],
-            defaultId: 0,
-            cancelId: 1
-        });
-
-        if (result.response === 0) {
-            log.info('사용자가 업데이트 설치를 승인했습니다. 재시작 중...');
-            setTimeout(() => {
-                autoUpdater.quitAndInstall();
-            }, 1000);
-        } else {
-            log.info('사용자가 업데이트 설치를 나중으로 연기했습니다.');
-        }
+    updateManager = new AutoUpdateManager({
+        mainWindow: mainWindow,
+        isDev: isDev && !forceDevUpdate, // forceDevUpdate가 true면 개발 모드를 무시
+        logger: log
     });
 }
 
@@ -210,6 +118,12 @@ function createMainWindow() {
     mainWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription) => {
         log.error(`페이지 로드 실패: ${errorCode} - ${errorDescription}`);
     });
+    
+    // UpdateManager에 mainWindow 설정
+    if (updateManager) {
+        updateManager.setMainWindow(mainWindow);
+    }
+    
     return mainWindow;
 }
 
@@ -516,60 +430,44 @@ function setupIpcHandlers() {
 
     // === 새로 추가된 업데이트 관련 IPC 핸들러들 ===
     
-    // 수동 업데이트 확인 (개선된 버전)
+    // 수동 업데이트 확인 - updateManager 사용
     ipcMain.handle('manual-update-check', async () => {
-        if (!isDev) {
-            log.info('렌더러에서 수동 업데이트 확인 요청');
-            updateInfo = 'manual-check';
-            try {
-                await autoUpdater.checkForUpdatesAndNotify();
-                return { success: true };
-            } catch (error) {
-                log.error('수동 업데이트 확인 오류:', error);
-                return { success: false, error: String(error) };
-            }
-        } else {
-            return { success: false, error: '개발 모드에서는 업데이트를 확인할 수 없습니다.' };
+        if (updateManager) {
+            return await updateManager.checkForUpdates();
         }
+        return { success: false, error: 'UpdateManager not initialized' };
     });
 
     // 업데이트 정보 조회
     ipcMain.handle('get-update-info', () => {
-        return {
-            currentVersion: app.getVersion(),
-            updateInfo: updateInfo,
-            isDev: isDev
-        };
+        if (updateManager) {
+            return updateManager.getUpdateInfo();
+        }
+        return { currentVersion: app.getVersion(), updateInfo: null, isDev: isDev };
     });
 
     // 업데이트 다운로드 시작
-    ipcMain.handle('start-update-download', () => {
-        if (updateInfo && typeof updateInfo === 'object') {
-            log.info('렌더러에서 업데이트 다운로드 시작 요청');
-            autoUpdater.downloadUpdate();
-            return { success: true };
-        } else {
-            return { success: false, error: '사용 가능한 업데이트가 없습니다.' };
+    ipcMain.handle('start-update-download', async () => {
+        if (updateManager) {
+            return await updateManager.startDownload();
         }
+        return { success: false, error: 'UpdateManager not initialized' };
     });
 
     // 업데이트 설치
-    ipcMain.handle('install-update', () => {
-        log.info('렌더러에서 업데이트 설치 요청');
-        setTimeout(() => {
-            autoUpdater.quitAndInstall();
-        }, 1000);
-        return { success: true };
+    ipcMain.handle('install-update', async () => {
+        if (updateManager) {
+            return await updateManager.installUpdate();
+        }
+        return { success: false, error: 'UpdateManager not initialized' };
     });
 
     // 업데이트 상태 조회
     ipcMain.handle('get-update-status', () => {
-        return {
-            hasUpdate: updateInfo && typeof updateInfo === 'object',
-            isChecking: updateInfo === 'checking',
-            isManualCheck: updateInfo === 'manual-check',
-            updateVersion: updateInfo && typeof updateInfo === 'object' ? updateInfo.version : null
-        };
+        if (updateManager) {
+            return updateManager.getUpdateStatus();
+        }
+        return { hasUpdate: false, isChecking: false, isManualCheck: false, updateVersion: null };
     });
 
     log.debug('IPC 핸들러 설정 완료 (업데이트 관련 핸들러 포함)');
