@@ -102,12 +102,12 @@ jobs:
               # sed를 사용한 간단한 업데이트 방식
               if [[ "$OSTYPE" == "darwin"* ]]; then
                 # macOS
-                sed -i '' "s/sha512: .*/sha512: $new_sha512/" dist/latest-mac.yml
-                sed -i '' "s/size: .*/size: $new_size/" dist/latest-mac.yml
+                sed -i '' "s#sha512: .*#sha512: $new_sha512#" dist/latest-mac.yml
+                sed -i '' "s#size: .*#size: $new_size#" dist/latest-mac.yml
               else
                 # Linux
-                sed -i "s/sha512: .*/sha512: $new_sha512/" dist/latest-mac.yml
-                sed -i "s/size: .*/size: $new_size/" dist/latest-mac.yml
+                sed -i "s#sha512: .*#sha512: $new_sha512#" dist/latest-mac.yml
+                sed -i "s#size: .*#size: $new_size#" dist/latest-mac.yml
               fi
               
               echo "Updated latest-mac.yml"
