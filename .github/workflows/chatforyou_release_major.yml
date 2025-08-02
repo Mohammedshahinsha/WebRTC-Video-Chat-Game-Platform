@@ -141,64 +141,16 @@ jobs:
               # YAML 파일을 정확하게 업데이트
               zip_filename=$(basename "$zipfile")
               
-              # 환경변수 설정
-              export ZIP_FILENAME="$zip_filename"
-              export NEW_SHA512="$new_sha512"
-              export NEW_SIZE="$new_size"
-              
-              # Python을 사용해 YAML을 정확히 업데이트
-              python3 << EOF
-import yaml
-import sys
-import os
-
-try:
-    yml_path = 'dist/latest-mac.yml'
-    with open(yml_path, 'r') as f:
-        content = f.read()
-    
-    print(f"Original YAML content:")
-    print(content)
-    
-    # YAML 파싱
-    data = yaml.safe_load(content)
-    
-    # 환경변수에서 값 읽기
-    zip_filename = os.environ.get('ZIP_FILENAME', '')
-    new_sha512 = os.environ.get('NEW_SHA512', '')
-    new_size = int(os.environ.get('NEW_SIZE', '0'))
-    
-    print(f"ZIP filename: {zip_filename}")
-    print(f"New SHA512: {new_sha512}")
-    print(f"New size: {new_size}")
-    
-    # files 배열에서 해당 ZIP 파일 찾기
-    if 'files' in data:
-        for file_info in data['files']:
-            if 'url' in file_info and file_info['url'].endswith(zip_filename):
-                print(f"Updating file: {file_info['url']}")
-                file_info['sha512'] = new_sha512
-                file_info['size'] = new_size
-                print(f"New sha512: {file_info['sha512']}")
-                print(f"New size: {file_info['size']}")
-    
-    # 업데이트된 YAML 저장
-    with open(yml_path, 'w') as f:
-        yaml.dump(data, f, default_flow_style=False, sort_keys=False)
-    
-    print("YAML file updated successfully")
-    
-except Exception as e:
-    print(f"Error: {e}")
-    print("Falling back to sed replacement")
-    # Fallback with environment variables
-    import subprocess
-    sed_sha512_cmd = f'sed -i.bak "s/sha512: .*/sha512: {new_sha512}/" dist/latest-mac.yml'
-    sed_size_cmd = f'sed -i.bak "s/size: .*/size: {new_size}/" dist/latest-mac.yml'
-    subprocess.run(sed_sha512_cmd, shell=True)
-    subprocess.run(sed_size_cmd, shell=True)
-    subprocess.run('rm -f dist/latest-mac.yml.bak', shell=True)
-EOF
+              # sed를 사용한 간단한 업데이트 방식
+              if [[ "$OSTYPE" == "darwin"* ]]; then
+                # macOS
+                sed -i '' "s/sha512: .*/sha512: $new_sha512/" dist/latest-mac.yml
+                sed -i '' "s/size: .*/size: $new_size/" dist/latest-mac.yml
+              else
+                # Linux
+                sed -i "s/sha512: .*/sha512: $new_sha512/" dist/latest-mac.yml
+                sed -i "s/size: .*/size: $new_size/" dist/latest-mac.yml
+              fi
               
               echo "Updated latest-mac.yml"
             fi
