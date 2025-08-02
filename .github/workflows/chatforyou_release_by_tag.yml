@@ -86,16 +86,62 @@ jobs:
             # Update SHA512 checksum in latest-mac.yml
             if [ -f "dist/latest-mac.yml" ]; then
               echo "Updating SHA512 checksum for $(basename "$zipfile")"
-              new_sha512=$(shasum -a 512 "$zipfile" | cut -d' ' -f1 | base64)
+              # 올바른 방법: hex를 바이너리로 변환 후 base64 인코딩
+              new_sha512_hex=$(shasum -a 512 "$zipfile" | cut -d' ' -f1)
+              new_sha512=$(echo -n "$new_sha512_hex" | xxd -r -p | base64)
               new_size=$(stat -f%z "$zipfile" 2>/dev/null || stat -c%s "$zipfile")
               
-              # Update the yml file with new checksum and size
-              sed -i.bak "s/sha512: .*/sha512: $new_sha512/" dist/latest-mac.yml
-              sed -i.bak "s/size: .*/size: $new_size/" dist/latest-mac.yml
-              rm -f dist/latest-mac.yml.bak
+              echo "Original file: $zipfile"
+              echo "SHA512 hex: $new_sha512_hex"
+              echo "SHA512 base64: $new_sha512"
+              echo "File size: $new_size"
               
-              echo "Updated latest-mac.yml with new checksum: $new_sha512"
-              echo "Updated size: $new_size"
+              # YAML 파일을 정확하게 업데이트
+              zip_filename=$(basename "$zipfile")
+              
+              # Python을 사용해 YAML을 정확히 업데이트
+              python3 << EOF
+import yaml
+import sys
+import os
+
+try:
+    yml_path = 'dist/latest-mac.yml'
+    with open(yml_path, 'r') as f:
+        content = f.read()
+    
+    print(f"Original YAML content:")
+    print(content)
+    
+    # YAML 파싱
+    data = yaml.safe_load(content)
+    
+    # files 배열에서 해당 ZIP 파일 찾기
+    if 'files' in data:
+        for file_info in data['files']:
+            if 'url' in file_info and file_info['url'].endswith('$zip_filename'):
+                print(f"Updating file: {file_info['url']}")
+                file_info['sha512'] = '$new_sha512'
+                file_info['size'] = $new_size
+                print(f"New sha512: {file_info['sha512']}")
+                print(f"New size: {file_info['size']}")
+    
+    # 업데이트된 YAML 저장
+    with open(yml_path, 'w') as f:
+        yaml.dump(data, f, default_flow_style=False, sort_keys=False)
+    
+    print("YAML file updated successfully")
+    
+except Exception as e:
+    print(f"Error: {e}")
+    print("Falling back to sed replacement")
+    # Fallback
+    os.system('sed -i.bak "s/sha512: .*/sha512: $new_sha512/" dist/latest-mac.yml')
+    os.system('sed -i.bak "s/size: .*/size: $new_size/" dist/latest-mac.yml')
+    os.system('rm -f dist/latest-mac.yml.bak')
+EOF
+              
+              echo "Updated latest-mac.yml"
             fi
           fi
         done
