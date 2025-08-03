@@ -71,7 +71,7 @@
       "!src/.backup/**/*"
     ],
     "mac": {
-      "identity": "Developer ID Application: SeJonJ (2508031628)",
+      "identity": "ChatForYou Team & SeJonJ (2508031628)",
       "gatekeeperAssess": false,
       "hardenedRuntime": true,
       "signIgnore": [
