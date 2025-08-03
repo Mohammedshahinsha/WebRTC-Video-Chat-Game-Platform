@@ -25,9 +25,7 @@
     "info:prod": "node build-scripts/build-log.js --env=prod --platform=info --type=info --save",
     "postinstall": "electron-builder install-app-deps",
     "postbuild": "node build-scripts/sha512-builder.js",
-    "postbuild:mac": "node build-scripts/sha512-builder.js",
-    "postbuild:win": "node build-scripts/sha512-builder.js",
-    "postbuild:linux": "node build-scripts/sha512-builder.js"
+    "postbuild:mac": "node build-scripts/sha512-builder.js"
   },
   "keywords": [
     "electron",
@@ -71,7 +69,7 @@
       "!src/.backup/**/*"
     ],
     "mac": {
-      "identity": "ChatForYou Team & SeJonJ (2508031628)",
+      "identity": null,
       "gatekeeperAssess": false,
       "hardenedRuntime": true,
       "signIgnore": [
