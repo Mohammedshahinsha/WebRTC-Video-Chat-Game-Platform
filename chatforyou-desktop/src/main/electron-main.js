@@ -12,6 +12,63 @@ const forceDevUpdate = process.argv.includes('--force-dev-update');
 let mainWindow;
 let updateManager = null; // AutoUpdateManager 인스턴스
 
+/**
+ * 보안: file:// URL의 경로가 허용되는 디렉터리인지 검증
+ * Directory Traversal 공격 방지
+ */
+function isValidLocalPath(fileUrl) {
+    try {
+        // file:// 프로토콜 제거
+        const urlPath = fileUrl.replace('file://', '');
+        
+        // URL 디코딩 (..%2F 등의 인코딩된 경로 탐색 시도 방지)
+        const decodedPath = decodeURIComponent(urlPath);
+        
+        // 정규화된 절대 경로로 변환
+        const normalizedPath = path.resolve(decodedPath.split('?')[0]); // 쿼리 파라미터 제거
+        
+        // 허용되는 디렉터리 목록 (앱 디렉터리 내부만 허용)
+        const appDir = path.resolve(__dirname, '..');
+        const allowedDirs = [
+            path.join(appDir, 'templates'),
+            path.join(appDir, 'static'),
+            path.join(appDir, 'config')
+        ];
+        
+        // 경로가 허용된 디렉터리 내부에 있는지 확인
+        const isInAllowedDir = allowedDirs.some(allowedDir => {
+            return normalizedPath.startsWith(path.resolve(allowedDir));
+        });
+        
+        if (!isInAllowedDir) {
+            log.warn(`보안: 허용되지 않은 디렉터리 접근 시도: ${normalizedPath}`);
+            return false;
+        }
+        
+        // .. 경로 탐색 시도 차단 (정규화 후에도 추가 검사)
+        if (normalizedPath.includes('..') || decodedPath.includes('..')) {
+            log.warn(`보안: 경로 탐색 시도 차단: ${decodedPath}`);
+            return false;
+        }
+        
+        // 파일 확장자 검증 (허용되는 파일만)
+        const allowedExtensions = ['.html', '.css', '.js', '.json', '.svg', '.png', '.jpg', '.jpeg', '.gif', '.ico'];
+        const fileExtension = path.extname(normalizedPath).toLowerCase();
+        
+        if (!allowedExtensions.includes(fileExtension)) {
+            log.warn(`보안: 허용되지 않은 파일 확장자: ${fileExtension}`);
+            return false;
+        }
+        
+        log.debug(`보안: 유효한 로컬 경로 검증 통과: ${normalizedPath}`);
+        return true;
+        
+    } catch (error) {
+        log.error(`보안: 경로 검증 중 오류 발생: ${error.message}`);
+        return false;
+    }
+}
+
 const log = {
     info: (message) => {
         const timestamp = new Date().toISOString();
@@ -541,8 +598,14 @@ app.on('will-quit', () => {
 app.on('web-contents-created', (event, contents) => {
     contents.setWindowOpenHandler(({ url }) => {
         if (url.startsWith('file://')) {
-            log.debug(`로컬 파일 네비게이션 허용: ${url}`);
-            return { action: 'allow' };
+            // 보안: file:// URL의 경로 유효성 검사
+            if (isValidLocalPath(url)) {
+                log.debug(`로컬 파일 네비게이션 허용: ${url}`);
+                return { action: 'allow' };
+            } else {
+                log.warn(`보안: 허용되지 않은 파일 경로 차단: ${url}`);
+                return { action: 'deny' };
+            }
         }
         shell.openExternal(url);
         log.debug(`외부 링크를 기본 브라우저에서 열기: ${url}`);
@@ -550,6 +613,13 @@ app.on('web-contents-created', (event, contents) => {
     });
     contents.on('will-navigate', (event, url) => {
         if (url.startsWith('file://')) {
+            // 보안: 경로 유효성 검사
+            if (!isValidLocalPath(url)) {
+                log.warn(`보안: will-navigate에서 허용되지 않은 경로 차단: ${url}`);
+                event.preventDefault();
+                return;
+            }
+            
             // 로컬 파일 네비게이션 처리
             const urlPath = url.replace('file://', '');
             
@@ -567,6 +637,12 @@ app.on('web-contents-created', (event, contents) => {
                 // 올바른 경로로 로드
                 const correctPath = path.join(__dirname, '../templates', fileName);
                 const correctUrl = `file://${correctPath}${queryString}`;
+                
+                // 수정된 URL도 보안 검증
+                if (!isValidLocalPath(correctUrl)) {
+                    log.warn(`보안: 수정된 URL도 허용되지 않음: ${correctUrl}`);
+                    return;
+                }
                 
                 log.debug(`HTML 네비게이션 수정: ${url} -> ${correctUrl}`);
                 contents.loadURL(correctUrl);

@@ -527,15 +527,13 @@ class WatchSyncSystem extends EventEmitter {
     }
     
     // 파일 크기 비교
-    if (sourceStats.size === targetStats.size) {
-      // 내용 해시 비교 (옵션)
-      if (this.options.useContentHash) {
-        const crypto = require('crypto');
-        const sourceHash = crypto.createHash('md5').update(fs.readFileSync(sourcePath)).digest('hex');
-        const targetHash = crypto.createHash('md5').update(fs.readFileSync(targetPath)).digest('hex');
-        return sourceHash === targetHash;
-      }
+    if (sourceStats.size === targetStats.size && this.options.useContentHash) {
+          const crypto = require('crypto');
+          const sourceHash = crypto.createHash('md5').update(fs.readFileSync(sourcePath)).digest('hex');
+          const targetHash = crypto.createHash('md5').update(fs.readFileSync(targetPath)).digest('hex');
+          return sourceHash === targetHash;
     }
+
     
     return false;
   }

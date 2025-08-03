@@ -431,7 +431,7 @@ class ErrorLoggingSystem extends EventEmitter {
 
     // 스택 트레이스 추가 (에러 레벨인 경우)
     if (level === 'error' && !error) {
-      const stack = new Error().stack;
+      const { stack } = new Error();
       logEntry.stack = stack?.split('\n').slice(2).join('\n');
     }
 

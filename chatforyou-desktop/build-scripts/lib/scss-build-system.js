@@ -6,7 +6,7 @@ const { execSync, spawn } = require('child_process');
  * 통합 SCSS 빌드 시스템
  * 자동 의존성 추적, 증분 빌드, 워치 모드 지원
  */
-class ScssBuildsystem {
+class ScssBuildSystem {
   constructor(options = {}) {
     this.options = {
       verbose: options.verbose || false,
@@ -513,8 +513,14 @@ class ScssBuildsystem {
    * 파일 워처 설정
    */
   setupFileWatchers(sourceDir, outputDir) {
-    const chokidar = require('chokidar');
-    
+    let chokidar;
+    try {
+      chokidar = require('chokidar');
+    } catch (err) {
+      this.logger.error('chokidar 모듈을 불러올 수 없습니다. "npm install chokidar"로 설치해 주세요.');
+      process.exit(1);
+    }
+
     const watcher = chokidar.watch(sourceDir, {
       ignored: /(^|[\/\\])\../, // 숨김 파일 무시
       persistent: true,
@@ -647,4 +653,4 @@ class ScssBuildsystem {
   }
 }
 
-module.exports = ScssBuildsystem;
+module.exports = ScssBuildSystem;

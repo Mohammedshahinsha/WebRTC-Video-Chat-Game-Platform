@@ -57,7 +57,7 @@ try {
     // window.__CONFIG__ = { ... } 형태 파싱
     const match = content.match(/window\.__CONFIG__\s*=\s*({[\s\S]*?});/);
     if (match) {
-      config = eval('(' + match[1] + ')');
+      config = JSON.parse(match[1]);
     }
   }
 } catch (e) {

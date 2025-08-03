@@ -208,6 +208,7 @@ class AutoUpdateManager {
 
   async installUpdate() {
     this.logger.info('업데이트 설치 요청');
+    // 업데이트 설치 전 1초 대기
     setTimeout(() => {
       autoUpdater.quitAndInstall();
     }, 1000);

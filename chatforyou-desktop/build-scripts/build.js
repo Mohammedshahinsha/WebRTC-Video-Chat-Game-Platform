@@ -152,7 +152,8 @@ class ChatForYouBuilder {
           builderCmd += ' --linux';
           break;
         case 'all':
-          // 모든 플랫폼
+          // 모든 플랫폼 빌드 (Mac과 Windows)
+          builderCmd += ' --mac --win';
           break;
         case 'pack':
           builderCmd += ' --dir';

@@ -1,4 +1,5 @@
 # ChatForYou v2 - WebRTC 화상채팅 & 게임 플랫폼
+[![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-green)]([LICENSE](https://creativecommons.org/licenses/by-nc-sa/4.0/) )
 [![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FSeJonJ%2FChatForYou_v2&count_bg=%233310C8&title_bg=%2316C86B&icon=&icon_color=%23E7E7E7&title=HITS&edge_flat=true)](https://hits.seeyoufarm.com)
 
 ## 📋 프로젝트 개요

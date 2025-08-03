@@ -153,9 +153,19 @@ class ConfigProcessor {
 
       // JavaScript 객체 파싱
       const configStr = configMatch[1];
-      const config = eval('(' + configStr + ')');
       
-      return config;
+      try {
+        // Function constructor를 사용한 안전한 파싱
+        const parseConfig = new Function('return ' + configStr);
+        return parseConfig();
+      } catch (functionError) {
+        // Function constructor 실패시 JSON.parse 시도
+        try {
+          return JSON.parse(configStr);
+        } catch (jsonError) {
+          throw new Error(`설정 파일 파싱 실패: ${functionError.message}`);
+        }
+      }
       
     } catch (error) {
       this.logger.error(`❌ 설정 파일 읽기 실패: ${configPath}`, error.message);
@@ -187,7 +197,7 @@ class ConfigProcessor {
       CONVERTED_FROM: 'web',
       CONVERSION_DATE: new Date().toISOString()
     };
-
+    
     return electronConfig;
   }
 

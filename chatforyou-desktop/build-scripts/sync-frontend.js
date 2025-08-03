@@ -40,7 +40,8 @@ class FrontendSyncScript {
     this.pathConverter = new PathConverter({
       logger: this.logger,
       verbose: this.options.verbose,
-      dryRun: this.options.dryRun
+      dryRun: this.options.dryRun,
+      useAdvancedMode: false  // 기본 모드로 시작
     });
     
     this.configProcessor = new ConfigProcessor({

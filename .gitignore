@@ -70,6 +70,7 @@ out/
 .vuepress/dist
 .serverless
 .backup
+*.backup
 
 # ========================================
 # OS 생성 파일

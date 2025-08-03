@@ -122,19 +122,36 @@ class SHA512Builder {
       if (ymlPath.includes('latest-mac.yml')) {
         const arm64ZipPattern = /ChatForYou-[\d\.]+-arm64-mac\.zip/;
         const arm64Match = content.match(arm64ZipPattern);
-        if (arm64Match) {
-          const arm64FileName = arm64Match[0];
-          content = content.replace(/^path: .*$/m, `path: ${arm64FileName}`);
-          this.log(`기본 path를 ARM64 버전으로 설정: ${arm64FileName}`);
-          
-          // ARM64 파일의 SHA512를 찾아서 최상위 sha512에도 설정
-          const arm64Sha512Match = content.match(new RegExp(`- url: ${arm64FileName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}[\\s\\S]*?sha512:\\s*([A-Za-z0-9+/=]+)`));
-          if (arm64Sha512Match) {
-            const arm64Sha512 = arm64Sha512Match[1];
-            content = content.replace(/^sha512:\s*([A-Za-z0-9+/=_]+)/m, `sha512: ${arm64Sha512}`);
-            this.log(`최상위 SHA512도 ARM64 버전으로 설정: ${arm64Sha512.substring(0, 20)}...`);
-          }
+        if (!arm64Match) {
+          this.error(`ARM64 zip 파일명을 찾을 수 없습니다. 패턴: ${arm64ZipPattern}`);
+          return false;
         }
+        const arm64FileName = arm64Match[0];
+
+        // path 필드가 존재하는지 확인
+        if (!/^path: .*$/m.test(content)) {
+          this.error(`YAML에서 'path' 필드를 찾을 수 없습니다. 구조를 확인하세요.`);
+          return false;
+        }
+        content = content.replace(/^path: .*$/m, `path: ${arm64FileName}`);
+        this.log(`기본 path를 ARM64 버전으로 설정: ${arm64FileName}`);
+
+        // ARM64 파일의 SHA512를 찾아서 최상위 sha512에도 설정
+        const arm64Sha512Pattern = new RegExp(`- url: ${arm64FileName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}[\\s\\S]*?sha512:\\s*([A-Za-z0-9+/=]+)`);
+        const arm64Sha512Match = content.match(arm64Sha512Pattern);
+        if (!arm64Sha512Match) {
+          this.error(`ARM64 zip에 대한 sha512 값을 찾을 수 없습니다. 패턴: ${arm64Sha512Pattern}`);
+          return false;
+        }
+        const arm64Sha512 = arm64Sha512Match[1];
+
+        // 최상위 sha512 필드가 존재하는지 확인
+        if (!/^sha512:\s*([A-Za-z0-9+/=_]+)/m.test(content)) {
+          this.error(`YAML에서 최상위 'sha512' 필드를 찾을 수 없습니다.`);
+          return false;
+        }
+        content = content.replace(/^sha512:\s*([A-Za-z0-9+/=_]+)/m, `sha512: ${arm64Sha512}`);
+        this.log(`최상위 SHA512도 ARM64 버전으로 설정: ${arm64Sha512.substring(0, 20)}...`);
       }
 
       // 파일 저장

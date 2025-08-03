@@ -1,6 +1,6 @@
 # ChatForYou Desktop - Electron 데스크톱 애플리케이션
 
-[![License](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
+[![License](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-green)]([LICENSE](https://creativecommons.org/licenses/by-nc-sa/4.0/) )
 [![Electron](https://img.shields.io/badge/Electron-28.0.0-47848F.svg?logo=electron)](https://electronjs.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-16+-339933.svg?logo=node.js)](https://nodejs.org/)
 

@@ -265,7 +265,7 @@ class SyncValidator {
         const configMatch = content.match(/window\.__CONFIG__\s*=\s*({[\s\S]*?});/);
         if (configMatch) {
           const configStr = configMatch[1];
-          eval('(' + configStr + ')'); // 구문 검증
+          new Function('return (' + configStr + ')')(); // 구문 검증
           this.addPass(`${fileName}: JavaScript 구문 유효함`);
         }
       } catch (error) {
