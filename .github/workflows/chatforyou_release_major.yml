@@ -141,12 +141,12 @@ jobs:
     #     echo "📋 업데이트된 latest-mac.yml 내용:"
     #     cat dist/latest-mac.yml
         
-    # - name: Upload artifacts
-    #   uses: actions/upload-artifact@v4
-    #   with:
-    #     name: ${{ matrix.artifact-name }}
-    #     path: ${{ matrix.artifact-pattern }}
-    #     retention-days: 7
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ matrix.artifact-name }}
+        path: ${{ matrix.artifact-pattern }}
+        retention-days: 7
 
   create_release:
     needs: [bump_major_version, build_and_release]
