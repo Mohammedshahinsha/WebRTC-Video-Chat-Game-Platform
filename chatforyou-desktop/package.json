@@ -1,6 +1,6 @@
 {
   "name": "chatforyou-desktop",
-  "version": "0.2.1",
+  "version": "0.2.3",
   "description": "ChatForYou Desktop Application built with Electron",
   "main": "src/main/electron-main.js",
   "scripts": {
@@ -23,7 +23,11 @@
     "clean:all": "npm run clean && npx rimraf node_modules",
     "info": "node build-scripts/build-log.js --env=local --platform=info --type=info",
     "info:prod": "node build-scripts/build-log.js --env=prod --platform=info --type=info --save",
-    "postinstall": "electron-builder install-app-deps"
+    "postinstall": "electron-builder install-app-deps",
+    "postbuild": "node build-scripts/sha512-builder.js",
+    "postbuild:mac": "node build-scripts/sha512-builder.js",
+    "postbuild:win": "node build-scripts/sha512-builder.js",
+    "postbuild:linux": "node build-scripts/sha512-builder.js"
   },
   "keywords": [
     "electron",
@@ -67,9 +71,9 @@
       "!src/.backup/**/*"
     ],
     "mac": {
-      "identity": null,
+      "identity": "Developer ID Application: SeJonJ (2508031628)",
       "gatekeeperAssess": false,
-      "hardenedRuntime": false,
+      "hardenedRuntime": true,
       "signIgnore": [
         "node_modules"
       ],

@@ -125,37 +125,19 @@ jobs:
             rm -rf "$temp_dir"
             echo "Re-signed ZIP: $zipfile"
             
-            # Update SHA512 checksum in latest-mac.yml
-            if [ -f "dist/latest-mac.yml" ]; then
-              echo "Updating SHA512 checksum for $(basename "$zipfile")"
-              # 올바른 방법: hex를 바이너리로 변환 후 base64 인코딩
-              new_sha512_hex=$(shasum -a 512 "$zipfile" | cut -d' ' -f1)
-              new_sha512=$(echo -n "$new_sha512_hex" | xxd -r -p | base64)
-              new_size=$(stat -f%z "$zipfile" 2>/dev/null || stat -c%s "$zipfile")
-              
-              echo "Original file: $zipfile"
-              echo "SHA512 hex: $new_sha512_hex"
-              echo "SHA512 base64: $new_sha512"
-              echo "File size: $new_size"
-              
-              # YAML 파일을 정확하게 업데이트
-              zip_filename=$(basename "$zipfile")
-              
-              # sed를 사용한 간단한 업데이트 방식
-              if [[ "$OSTYPE" == "darwin"* ]]; then
-                # macOS
-                sed -i '' "s#sha512: .*#sha512: $new_sha512#" dist/latest-mac.yml
-                sed -i '' "s#size: .*#size: $new_size#" dist/latest-mac.yml
-              else
-                # Linux
-                sed -i "s#sha512: .*#sha512: $new_sha512#" dist/latest-mac.yml
-                sed -i "s#size: .*#size: $new_size#" dist/latest-mac.yml
-              fi
-              
-              echo "Updated latest-mac.yml"
-            fi
+            echo "Re-signed ZIP: $zipfile"
           fi
         done
+
+    - name: Update SHA512 checksums using sha512-builder.js
+      working-directory: ./chatforyou-desktop
+      run: |
+        echo "🔧 SHA512 체크섬 자동 업데이트 시작..."
+        node build-scripts/sha512-builder.js
+        echo "✅ SHA512 체크섬 업데이트 완료"
+        
+        echo "📋 업데이트된 latest-mac.yml 내용:"
+        cat dist/latest-mac.yml
         
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
