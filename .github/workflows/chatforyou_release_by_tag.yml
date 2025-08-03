@@ -56,54 +56,55 @@ jobs:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         CSC_IDENTITY_AUTO_DISCOVERY: false
         
-    - name: Sign macOS ZIP contents (for macOS)
-      if: matrix.platform == 'mac'
-      run: |
-        cd chatforyou-desktop
-        # Find and sign all .app bundles in ZIP files
-        for zipfile in dist/*.zip; do
-          if [ -f "$zipfile" ]; then
-            echo "Processing ZIP file: $zipfile"
-            # Create temp directory
-            temp_dir=$(mktemp -d)
-            # Extract ZIP
-            unzip -q "$zipfile" -d "$temp_dir"
-            # Find .app bundles and sign them
-            find "$temp_dir" -name "*.app" -type d | while read -r app_path; do
-              echo "Signing app: $app_path"
-              codesign --force --deep --sign - "$app_path"
-              codesign --verify --verbose "$app_path"
-            done
-            # Re-create ZIP with signed apps
-            cd "$temp_dir"
-            zip -r -q "../$(basename "$zipfile")" .
-            cd - > /dev/null
-            mv "$temp_dir/../$(basename "$zipfile")" "$zipfile"
-            # Cleanup
-            rm -rf "$temp_dir"
-            echo "Re-signed ZIP: $zipfile"
+    ## 보안 설정 이슈로 인한 mac 자동 업데이트(zip 파일 빌드) 임시 비활성화 -> 추후 해결 시 활성화 예정     
+    # - name: Sign macOS ZIP contents (for macOS)
+    #   if: matrix.platform == 'mac'
+    #   run: |
+    #     cd chatforyou-desktop
+    #     # Find and sign all .app bundles in ZIP files
+    #     for zipfile in dist/*.zip; do
+    #       if [ -f "$zipfile" ]; then
+    #         echo "Processing ZIP file: $zipfile"
+    #         # Create temp directory
+    #         temp_dir=$(mktemp -d)
+    #         # Extract ZIP
+    #         unzip -q "$zipfile" -d "$temp_dir"
+    #         # Find .app bundles and sign them
+    #         find "$temp_dir" -name "*.app" -type d | while read -r app_path; do
+    #           echo "Signing app: $app_path"
+    #           codesign --force --deep --sign - "$app_path"
+    #           codesign --verify --verbose "$app_path"
+    #         done
+    #         # Re-create ZIP with signed apps
+    #         cd "$temp_dir"
+    #         zip -r -q "../$(basename "$zipfile")" .
+    #         cd - > /dev/null
+    #         mv "$temp_dir/../$(basename "$zipfile")" "$zipfile"
+    #         # Cleanup
+    #         rm -rf "$temp_dir"
+    #         echo "Re-signed ZIP: $zipfile"
             
-            echo "Re-signed ZIP: $zipfile"
-          fi
-        done
+    #         echo "Re-signed ZIP: $zipfile"
+    #       fi
+    #     done
 
-    - name: Update SHA512 checksums using sha512-builder.js
-      working-directory: ./chatforyou-desktop
-      if: matrix.platform == 'mac'
-      run: |
-        echo "🔧 SHA512 체크섬 자동 업데이트 시작..."
-        node build-scripts/sha512-builder.js
-        echo "✅ SHA512 체크섬 업데이트 완료"
+    # - name: Update SHA512 checksums using sha512-builder.js
+    #   working-directory: ./chatforyou-desktop
+    #   if: matrix.platform == 'mac'
+    #   run: |
+    #     echo "🔧 SHA512 체크섬 자동 업데이트 시작..."
+    #     node build-scripts/sha512-builder.js
+    #     echo "✅ SHA512 체크섬 업데이트 완료"
         
-        echo "📋 업데이트된 latest-mac.yml 내용:"
-        cat dist/latest-mac.yml
+    #     echo "📋 업데이트된 latest-mac.yml 내용:"
+    #     cat dist/latest-mac.yml
         
-    - name: Upload artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: ${{ matrix.artifact-name }}
-        path: ${{ matrix.artifact-pattern }}
-        retention-days: 7
+    # - name: Upload artifacts
+    #   uses: actions/upload-artifact@v4
+    #   with:
+    #     name: ${{ matrix.artifact-name }}
+    #     path: ${{ matrix.artifact-pattern }}
+    #     retention-days: 7
           
   release:
     needs: build

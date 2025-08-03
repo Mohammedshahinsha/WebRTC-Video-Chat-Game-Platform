@@ -1,5 +1,11 @@
 #!/usr/bin/env node
 
+/**
+ * 해당 파일은 MAC 플랫폼에서 자동업데이트를 위한 zip 파일 생성 시 사용되는 파일입니다.
+ * 특히 SHA512 체크섬 값을 업데이트하는 역할을 합니다.
+ * 현재는 주석처리되어 사용되지 않지만, 추후 활성화 예정입니다.
+ */
+
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -187,10 +193,8 @@ class SHA512Builder {
   }
 }
 
-// 스크립트 실행
-if (require.main === module) {
-  const fixer = new SHA512Builder();
-  fixer.run();
-}
-
-module.exports = SHA512Builder;
+// if (require.main === module) {
+//   const fixer = new SHA512Builder();
+//   fixer.run();
+// }
+// module.exports = SHA512Builder;

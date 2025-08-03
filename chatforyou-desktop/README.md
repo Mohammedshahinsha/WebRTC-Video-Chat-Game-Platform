@@ -6,12 +6,9 @@
 
 **ChatForYou Desktop** - 데스크톱에서 만나는 새로운 소통의 경험 🚀
 
-ChatForYou Desktop은 WebRTC 기반 화상채팅 및 게임 플랫폼의 Electron 데스크톱 버전입니다. 
-Node.js 웹 애플리케이션을 기반으로 자동 변환되어 네이티브 데스크톱 경험을 제공합니다.
+WebRTC 기반 화상채팅 및 게임 플랫폼의 Electron 데스크톱 버전으로, Node.js 웹 애플리케이션을 기반으로 자동 변환되어 네이티브 데스크톱 경험을 제공합니다.
 
 ## 📋 프로젝트 개요
-
-ChatForYou Desktop은 웹 버전의 모든 기능을 데스크톱 환경에 최적화하여 제공하며, 자동 업데이트 시스템을 통해 항상 최신 버전을 유지할 수 있습니다.
 
 ### 🏗️ 아키텍처
 
@@ -33,30 +30,15 @@ ChatForYou_v2/
 
 ## ✨ 주요 기능
 
-### 🎯 웹 기반 기능 (완전 호환)
 - **N:M 화상채팅**: WebRTC 기반 멀티미디어 통신
 - **실시간 채팅**: DataChannel 기반 메시징
-- **CatchMind 게임**: 그림 맞추기 게임
-- **화면 공유**: 실시간 스크린 공유
+- **CatchMind 게임**: 그림 맞추기 게임 (ChatGPT 기반 동적 주제)
 - **파일 전송**: 이미지 파일 공유 (최대 10MB)
 - **텍스트 오버레이**: 비디오 위 문자 표시
 - **실시간 자막**: 음성 → 텍스트 변환
-- **동적 주제 생성**: ChatGPT 기반 게임 주제
-
-### 🖥️ 데스크톱 전용 기능
 - **네이티브 창 관리**: 최소화, 최대화, 닫기
-- **시스템 트레이 지원**: 백그라운드 실행
-- **자동 업데이트**: GitHub Releases 기반 자동 업데이트
-- **오프라인 지원**: 로컬 파일 시스템 접근
+- **자동 업데이트**: GitHub Releases 기반 (플랫폼별 차이 존재)
 - **시스템 알림**: 네이티브 데스크톱 알림
-- **글로벌 단축키**: 개발자 도구 등 (개발 모드)
-
-### 🔄 자동 업데이트 시스템
-- **백그라운드 체크**: 앱 시작 시 자동 업데이트 확인
-- **웹 기반 UI**: 우아한 업데이트 알림 팝업
-- **실시간 진행률**: 다운로드 진행 상황 표시
-- **원클릭 설치**: 사용자 승인 후 자동 설치 및 재시작
-- **롤백 지원**: 업데이트 실패 시 이전 버전 복원
 
 ## 🛠️ 기술 스택
 
@@ -66,7 +48,7 @@ ChatForYou_v2/
 - **electron-builder**: 멀티플랫폼 빌드 도구
 - **electron-updater**: 자동 업데이트 시스템
 
-### Frontend (Synchronized)
+### Frontend
 - **jQuery**: DOM 조작 및 이벤트 처리
 - **Bootstrap 5**: 반응형 UI 프레임워크
 - **SCSS**: CSS 전처리기
@@ -204,22 +186,25 @@ window.__CONFIG__ = {
 
 ## 🔄 자동 업데이트 시스템
 
-### 업데이트 설정
-```yaml
-# app-update.yml
-provider: github
-owner: sejon
-repo: ChatForYou
-updaterCacheDirName: chatforyou-updater
-```
+### 플랫폼별 업데이트 방식
 
-### 업데이트 API (Renderer Process)
+#### 🖥️ Windows - 완전 자동 업데이트
+- 앱 시작 시 GitHub Releases API를 통해 새 버전 확인
+- 새 버전 발견 시 백그라운드에서 자동 다운로드
+- 다운로드 완료 후 사용자에게 설치 여부 확인
+- 사용자 승인 시 자동 설치 후 앱 재시작
+- 다운로드 진행률 실시간 표시 및 업데이트 실패 시 자동 롤백
+
+#### 🍎 macOS - 수동 다운로드 방식
+- 앱 시작 시 새 버전 확인
+- 새 버전 발견 시 GitHub Releases 페이지로 안내
+- 사용자가 직접 DMG 파일을 다운로드하여 설치
+- macOS Gatekeeper 보안 정책으로 인한 수동 설치 방식
+
+### 업데이트 API (Windows 전용)
 ```javascript
 // 업데이트 확인
 const result = await window.electronAPI.update.checkForUpdates();
-
-// 업데이트 정보 조회
-const info = await window.electronAPI.update.getInfo();
 
 // 다운로드 시작
 await window.electronAPI.update.startDownload();
@@ -231,30 +216,13 @@ await window.electronAPI.update.install();
 window.electronAPI.update.onProgress((event, data) => {
   console.log(`진행률: ${data.percent}%`);
 });
-
-window.electronAPI.update.onDownloaded((event, version) => {
-  console.log(`다운로드 완료: ${version}`);
-});
 ```
 
-### 업데이트 테스트 도구
-```bash
-# 현재 버전 확인
-npm run update:version
-
-# 테스트용 빌드 생성 (버전 지정)
-npm run update:build 1.0.1
-
-# 강제 업데이트 체크
-npm run update:check
-
-# 버전 복원
-npm run update:restore
-```
+### 수동 업데이트 확인
+앱 메뉴 **도움말 → 업데이트 확인**을 통해 언제든지 업데이트 확인 가능
 
 ## 🛡️ 보안
 
-### Context Isolation
 Electron의 보안 모범 사례를 준수합니다:
 - **Node.js Integration**: 비활성화
 - **Context Isolation**: 활성화
@@ -272,12 +240,12 @@ Electron의 보안 모범 사례를 준수합니다:
 
 macOS에서 "손상된 파일" 또는 "확인되지 않은 개발자" 에러가 발생할 경우:
 
-**방법 1: 우클릭으로 열기 (가장 쉬움)**
+**방법 1: 열어서 실행하기! **
 1. ChatForYou 앱을 우클릭 → "열기" 선택
 2. 경고 대화상자에서 "열기" 클릭
 3. 한 번 허용하면 이후 정상 실행됩니다
 
-**방법 2: 터미널 명령어 (권장)**
+**방법 2: 터미널 명령 사용하기! **
 ```bash
 # 다운로드한 DMG 파일의 quarantine 속성 제거
 xattr -r -d com.apple.quarantine ~/Downloads/ChatForYou-*.dmg
@@ -295,7 +263,6 @@ xattr -r -d com.apple.quarantine /Applications/ChatForYou.app
 - **NSIS 설치관리자**: GUI 기반 설치 과정
 - **아키텍처**: x64, ia32 지원
 - **바탕화면 바로가기**: 자동 생성
-- **시작 메뉴**: 자동 등록
 
 Windows Defender SmartScreen에서 경고가 나타날 수 있지만, "추가 정보" → "실행"을 클릭하여 진행할 수 있습니다.
 
@@ -303,71 +270,35 @@ Windows Defender SmartScreen에서 경고가 나타날 수 있지만, "추가 �
 
 ### 일반적인 문제
 
-#### 빌드 실패
 ```bash
-# 의존성 재설치
-npm run clean:all
-npm install
-
-# 동기화 문제 해결
-npm run clean
+# 빌드 실패 시
+npm run clean:all && npm install
 npm run sync:verbose
-```
 
-#### 업데이트 실패
-```bash
-# 설정 검증
+# 업데이트 실패 시
 npm run validate
-
-# 수동 업데이트 체크
 npm run update:check
-```
 
-#### SCSS 컴파일 오류
-```bash
-# SCSS 수동 빌드
+# SCSS 컴파일 오류 시
 npm run scss:build
-
-# 실시간 컴파일 (디버깅)
 npm run scss:watch
-```
-
-### 로그 확인
-```bash
-# 애플리케이션 로그 (runtime)
-# macOS: ~/Library/Logs/ChatForYou/main.log
-# Windows: %USERPROFILE%\AppData\Roaming\ChatForYou\logs\main.log
-# Linux: ~/.config/ChatForYou/logs/main.log
-
-# 빌드 로그 (development)
-tail -f scripts/.logs/main.log
 ```
 
 ## 🌐 지원 플랫폼
 
-| 플랫폼 | 버전 | 아키텍처 | 상태 |
-|--------|------|----------|------|
-| **macOS** | 10.12+ | x64, arm64 | ✅ 지원 |
-| **Windows** | 10, 11 | x64, ia32 | ✅ 지원 |
+| 플랫폼 | 버전 | 아키텍처 | 자동 업데이트 | 상태 |
+|--------|------|----------|---------------|------|
+| **macOS** | 10.12+ | x64, arm64 | 🔄 버전 체크 + 수동 설치 | ✅ 지원 |
+| **Windows** | 10, 11 | x64, ia32 | ✅ 완전 자동 | ✅ 지원 |
 
-## 📚 추가 문서
+## 👥 개발팀
+| 역할 | 이름 | 담당 업무 |
+|------|------|-----------|
+| 🚀 **프로젝트 리더** | 장세존 | Electron 앱 개발, DevOps |
+| ⚙️ **백엔드 개발** | 김동현 | 백엔드 · 프론트엔드 기능 개발 |
+| 💻 **풀스택 개발** | 박태식 | 백엔드 · 프론트엔드 기능 개발 |
+| 🎨 **디자인 및 웹 퍼블리싱 총괄** | 임가현 | 웹 퍼블리싱 · UI/UX 디자인 |
 
-- **[빌드 가이드](BUILD-README.md)**: 상세한 빌드 프로세스 설명
-- **[웹 버전 README](../README.md)**: 전체 프로젝트 개요
-
-## 🤝 기여하기
-
-### 개발 환경 설정
-1. Fork 및 Clone
-2. 의존성 설치: `npm install`
-3. 개발 모드 실행: `npm run dev`
-4. 변경사항 테스트: `npm run build`
-
-### Pull Request
-1. 새 기능은 별도 브랜치에서 개발
-2. 코드 스타일 준수
-3. 테스트 코드 작성
-4. 문서 업데이트
 
 ## 📞 지원 및 피드백
 
@@ -379,16 +310,12 @@ tail -f scripts/.logs/main.log
 
 Copyright 2024 SejonJang (wkdtpwhs@gmail.com)
 
-이 프로젝트는 GNU Affero General Public License v3.0 하에 라이선스됩니다.
-자세한 내용은 [LICENSE](https://www.gnu.org/licenses/agpl-3.0.html) 파일을 참조하세요.
+이 프로젝트는 Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License 하에 라이선스됩니다.
 
-## 👥 개발팀
+**비상업적 사용만 허용됩니다:**
+- ✅ 개인적, 교육적, 연구 목적의 사용
+- ✅ 오픈소스 기여 및 개선
+- ❌ 상업적 목적의 사용 및 배포
+- ❌ 수익 창출을 위한 활용
 
-| 역할 | 이름 | 담당 업무 |
-|------|------|-----------|
-| 🚀 **프로젝트 리더** | 장세존 | Electron 앱 개발, 자동 업데이트 시스템, DevOps |
-| ⚙️ **백엔드 개발** | 김동현 | WebRTC 서버, API 개발 |
-| 💻 **풀스택 개발** | 박태식 | 웹 프론트엔드, 게임 기능 |
-| 🎨 **UI/UX 디자인** | 임가현 | 디자인 시스템, 웹 퍼블리싱 |
-
-
+자세한 내용은 [LICENSE](https://creativecommons.org/licenses/by-nc-sa/4.0/) 파일을 참조하세요.

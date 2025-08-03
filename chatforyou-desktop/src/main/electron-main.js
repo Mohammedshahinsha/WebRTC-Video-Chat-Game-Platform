@@ -33,13 +33,46 @@ const log = {
     }
 };
 
-// 자동 업데이트 설정 - AutoUpdateManager 사용
+// 자동 업데이트 설정 - 플랫폼별 처리
 function setupAutoUpdater() {
-    updateManager = new AutoUpdateManager({
-        mainWindow: mainWindow,
-        isDev: isDev && !forceDevUpdate, // forceDevUpdate가 true면 개발 모드를 무시
-        logger: log
-    });
+    // Windows에서만 AutoUpdateManager 사용
+    if (process.platform !== 'darwin') {
+        updateManager = new AutoUpdateManager({
+            mainWindow: mainWindow,
+            isDev: isDev && !forceDevUpdate,
+            logger: log
+        });
+        log.info('Windows 플랫폼: 자동업데이트 활성화');
+    } else {
+        log.info('Mac 플랫폼: 수동 업데이트 안내 시스템');
+        
+        // Mac에서 autoUpdater 이벤트 처리 - 수동 다운로드로 유도
+        autoUpdater.on('update-available', (info) => {
+            log.info(`Mac 업데이트 발견: v${info.version}`);
+            dialog.showMessageBox(mainWindow, {
+                type: 'info',
+                title: '새 버전 업데이트 안내',
+                message: `ChatForYou v${info.version} 업데이트가 있습니다!`,
+                detail: `Mac 버전은 수동 설치가 필요합니다.\nGitHub에서 최신 DMG 파일을 다운로드해주세요.`,
+                buttons: ['GitHub에서 다운로드', '나중에'],
+                defaultId: 0,
+                cancelId: 1
+            }).then(result => {
+                if (result.response === 0) {
+                    shell.openExternal('https://github.com/SeJonJ/ChatForYou/releases/latest');
+                    log.info('Mac 수동 업데이트: GitHub Releases 페이지 열기');
+                }
+            });
+        });
+
+        autoUpdater.on('update-not-available', () => {
+            log.info('Mac: 최신 버전 사용 중');
+        });
+
+        autoUpdater.on('error', (error) => {
+            log.error(`Mac 업데이트 확인 오류: ${error.message}`);
+        });
+    }
 }
 
 function registerGlobalShortcuts() {
@@ -272,7 +305,6 @@ function createMenu() {
                     click: async () => {
                         if (!isDev) {
                             log.info('수동 업데이트 확인 요청');
-                            updateInfo = 'manual-check'; // 수동 확인 표시
                             
                             // 업데이트 확인 중 다이얼로그 표시
                             const checkingDialog = dialog.showMessageBox(mainWindow, {
@@ -479,9 +511,12 @@ app.whenReady().then(() => {
     createMenu();
     setupIpcHandlers();
     setupAutoUpdater();
+    
     if (!isDev) {
         autoUpdater.checkForUpdatesAndNotify();
+        log.info('자동 업데이트 확인 시작');
     }
+    
     if (isDev) {
         registerGlobalShortcuts();
     }
