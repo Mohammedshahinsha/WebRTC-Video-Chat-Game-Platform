@@ -89,6 +89,7 @@ jobs:
 
     - name: Update SHA512 checksums using sha512-builder.js
       working-directory: ./chatforyou-desktop
+      if: matrix.platform == 'mac'
       run: |
         echo "🔧 SHA512 체크섬 자동 업데이트 시작..."
         node build-scripts/sha512-builder.js
