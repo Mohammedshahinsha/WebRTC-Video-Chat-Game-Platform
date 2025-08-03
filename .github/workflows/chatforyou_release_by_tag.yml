@@ -1,0 +1,246 @@
+name: Release ChatForYou Desktop by tag
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'  # v1.0.0, v1.0.1 등의 태그가 push될 때 실행
+  workflow_dispatch:  # 수동 실행도 가능
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    
+    strategy:
+      matrix:
+        include:
+          - os: macos-latest
+            platform: mac
+            build-script: build:mac
+            artifact-name: macos-build
+            artifact-pattern: |
+              chatforyou-desktop/dist/*.dmg
+              chatforyou-desktop/dist/*.dmg.blockmap
+              chatforyou-desktop/dist/*.zip
+              chatforyou-desktop/dist/*.zip.blockmap
+              chatforyou-desktop/dist/latest-mac.yml
+          - os: windows-latest
+            platform: win
+            build-script: build:win
+            artifact-name: windows-build
+            artifact-pattern: |
+              chatforyou-desktop/dist/*.exe
+              chatforyou-desktop/dist/*.exe.blockmap
+              chatforyou-desktop/dist/latest.yml
+        
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: chatforyou-desktop/package-lock.json
+        
+    - name: Install dependencies
+      run: |
+        cd chatforyou-desktop
+        npm ci
+        
+    - name: Build Electron app (통합 빌드 시스템)
+      run: |
+        cd chatforyou-desktop
+        npm run ${{ matrix.build-script }}
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        CSC_IDENTITY_AUTO_DISCOVERY: false
+        
+    ## 보안 설정 이슈로 인한 mac 자동 업데이트(zip 파일 빌드) 임시 비활성화 -> 추후 해결 시 활성화 예정     
+    # - name: Sign macOS ZIP contents (for macOS)
+    #   if: matrix.platform == 'mac'
+    #   run: |
+    #     cd chatforyou-desktop
+    #     # Find and sign all .app bundles in ZIP files
+    #     for zipfile in dist/*.zip; do
+    #       if [ -f "$zipfile" ]; then
+    #         echo "Processing ZIP file: $zipfile"
+    #         # Create temp directory
+    #         temp_dir=$(mktemp -d)
+    #         # Extract ZIP
+    #         unzip -q "$zipfile" -d "$temp_dir"
+    #         # Find .app bundles and sign them
+    #         find "$temp_dir" -name "*.app" -type d | while read -r app_path; do
+    #           echo "Signing app: $app_path"
+    #           codesign --force --deep --sign - "$app_path"
+    #           codesign --verify --verbose "$app_path"
+    #         done
+    #         # Re-create ZIP with signed apps
+    #         cd "$temp_dir"
+    #         zip -r -q "../$(basename "$zipfile")" .
+    #         cd - > /dev/null
+    #         mv "$temp_dir/../$(basename "$zipfile")" "$zipfile"
+    #         # Cleanup
+    #         rm -rf "$temp_dir"
+    #         echo "Re-signed ZIP: $zipfile"
+            
+    #         echo "Re-signed ZIP: $zipfile"
+    #       fi
+    #     done
+
+    # - name: Update SHA512 checksums using sha512-builder.js
+    #   working-directory: ./chatforyou-desktop
+    #   if: matrix.platform == 'mac'
+    #   run: |
+    #     echo "🔧 SHA512 체크섬 자동 업데이트 시작..."
+    #     node build-scripts/sha512-builder.js
+    #     echo "✅ SHA512 체크섬 업데이트 완료"
+        
+    #     echo "📋 업데이트된 latest-mac.yml 내용:"
+    #     cat dist/latest-mac.yml
+        
+    # - name: Upload artifacts
+    #   uses: actions/upload-artifact@v4
+    #   with:
+    #     name: ${{ matrix.artifact-name }}
+    #     path: ${{ matrix.artifact-pattern }}
+    #     retention-days: 7
+          
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Download all artifacts
+      uses: actions/download-artifact@v4
+      
+    - name: Get version from tag
+      id: get_version
+      run: |
+        VERSION=${GITHUB_REF#refs/tags/}
+        echo "version=${VERSION}" >> $GITHUB_OUTPUT
+        echo "version_number=${VERSION#v}" >> $GITHUB_OUTPUT
+      
+    - name: List downloaded files (debug)
+      run: |
+        echo "Downloaded artifacts:"
+        find . -type f -name "*.dmg" -o -name "*.exe" -o -name "*.yml" | sort
+        
+    - name: Generate Release Notes
+      id: release_notes
+      run: |
+        # 이전 태그와 현재 태그 사이의 커밋들로부터 릴리즈 노트 생성
+        CURRENT_TAG="${{ steps.get_version.outputs.version }}"
+        PREVIOUS_TAG=$(git tag --sort=-version:refname | grep -v "$CURRENT_TAG" | head -n 1)
+        
+        echo "Current tag: $CURRENT_TAG"
+        echo "Previous tag: $PREVIOUS_TAG"
+        
+        if [ -z "$PREVIOUS_TAG" ]; then
+          echo "No previous tag found, using all commits"
+          COMMITS=$(git log --pretty=format:"- %s (%h)" --reverse)
+        else
+          echo "Getting commits between $PREVIOUS_TAG and $CURRENT_TAG"
+          COMMITS=$(git log --pretty=format:"- %s (%h)" --reverse "$PREVIOUS_TAG..$CURRENT_TAG")
+        fi
+        
+        # 릴리즈 노트 생성
+        cat > release_notes.md << 'EOF'
+        ## 🎉 ChatForYou ${{ steps.get_version.outputs.version }} 릴리스
+        
+        ### 📝 변경사항
+        
+        EOF
+        
+        if [ -n "$COMMITS" ]; then
+          echo "$COMMITS" >> release_notes.md
+        else
+          echo "- 버그 수정 및 성능 개선" >> release_notes.md
+        fi
+        
+        cat >> release_notes.md << 'EOF'
+        
+        ## 📥 다운로드
+        
+        | 플랫폼 | 파일 | 설명 |
+        |--------|------|------|
+        | macOS (Apple Silicon) | ChatForYou-${{ steps.get_version.outputs.version_number }}-arm64.dmg | Apple M1/M2 Mac용 |
+        | macOS (Intel) | ChatForYou-${{ steps.get_version.outputs.version_number }}.dmg | Intel Mac용 |
+        | Windows | ChatForYou-Setup-${{ steps.get_version.outputs.version_number }}.exe | Windows 10/11 64-bit |
+        
+        ## 🚀 설치 방법
+        
+        ### macOS
+        1. 해당하는 DMG 파일을 다운로드합니다
+        2. DMG 파일을 열고 ChatForYou 아이콘을 Applications 폴더로 드래그합니다
+        3. Launchpad 또는 Applications 폴더에서 ChatForYou를 실행합니다
+        
+        ⚠️ **macOS "손상된 파일" 에러 해결 방법**
+
+        macOS에서 "손상된 파일"이라는 에러가 발생할 경우:
+        
+        **방법 1: 우클릭으로 열기**
+        1. ChatForYou 앱을 우클릭 → "열기" 선택
+        2. 경고 대화상자에서 "열기" 클릭
+        
+        **방법 2: 터미널 명령어 (권장)**
+        ```bash
+        # 다운로드한 DMG 파일의 quarantine 속성 제거
+        xattr -r -d com.apple.quarantine ~/Downloads/ChatForYou-*.dmg
+        
+        # 또는 설치된 앱의 quarantine 속성 제거
+        xattr -r -d com.apple.quarantine /Applications/ChatForYou.app
+        ```
+        
+        **왜 이런 에러가 발생하나요?**
+        - macOS Gatekeeper는 Apple 개발자 인증서로 서명되지 않은 앱을 자동으로 차단합니다
+        - ChatForYou는 개인 프로젝트로 Apple Developer Program에 등록되지 않았습니다
+        - 이는 macOS만의 보안 정책으로, Windows에서는 발생하지 않는 문제입니다
+        
+        ### Windows
+        1. Setup.exe 파일을 다운로드합니다
+        2. 파일을 실행하고 설치 마법사를 따라 진행합니다
+        3. 바탕화면 또는 시작 메뉴에서 ChatForYou를 실행합니다
+        
+        ## 🔄 자동 업데이트
+        
+        앱이 백그라운드에서 자동으로 새 버전을 확인하고, 업데이트가 있을 때 알림을 표시합니다.
+        
+        ## 📞 지원
+        
+        문제가 발생하거나 기능 요청이 있으시면 [GitHub Issues](https://github.com/SeJonJ/ChatForYou/issues)에 알려주세요!
+        
+        EOF
+        
+        # multiline output을 위한 EOF delimiter 설정
+        {
+          echo 'release_body<<EOF'
+          cat release_notes.md
+          echo 'EOF'
+        } >> $GITHUB_OUTPUT
+        
+    - name: Create Release
+      id: create_release
+      uses: softprops/action-gh-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ steps.get_version.outputs.version }}
+        name: ChatForYou ${{ steps.get_version.outputs.version }}
+        body: ${{ steps.release_notes.outputs.release_body }}
+        draft: false
+        prerelease: false
+        files: |
+          macos-build/*.dmg
+          macos-build/*.dmg.blockmap
+          macos-build/*.zip
+          macos-build/*.zip.blockmap
+          macos-build/latest-mac.yml
+          windows-build/*.exe
+          windows-build/*.exe.blockmap
+          windows-build/latest.yml
+        fail_on_unmatched_files: false
