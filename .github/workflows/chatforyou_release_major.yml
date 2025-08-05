@@ -1,18 +1,34 @@
 name: Release ChatForYou Desktop by major version
 
+permissions:
+  contents: write
+  pull-requests: read
+
 on:
   push:
     branches:
-      - chatforyou_v2  # 메인 브랜치 이름
+      - chatforyou_v2
+  pull_request:
+    types: [closed]
+    branches:
+      - chatforyou_v2
 
 jobs:
   bump_major_version:
     runs-on: ubuntu-latest
+    # feat 브랜치가 머지되었을 때만 실행
+    if: |
+      (github.event_name == 'push' && github.ref == 'refs/heads/chatforyou_v2') ||
+      (github.event_name == 'pull_request' && 
+       github.event.pull_request.merged == true && 
+       startsWith(github.event.pull_request.head.ref, 'feat/'))
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0  # 전체 커밋과 태그 히스토리 모두 가져오기 위해 필요
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ref: chatforyou_v2
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -42,9 +58,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # 메이저 버전 올라간 커밋과 생성된 태그를 원격 저장소에 푸시
+          # 현재 브랜치와 새로 생성된 태그를 원격 저장소에 푸시
           git push origin chatforyou_v2
-          git push origin ${{ steps.bump_version.outputs.new_version }}
+          # 새로 생성된 태그만 푸시 (npm version이 생성한 태그)
+          NEW_TAG="v$(node -p "require('./chatforyou-desktop/package.json').version")"
+          echo "Pushing new tag: $NEW_TAG"
+          git push origin "$NEW_TAG"
 
   build_and_release:
     needs: bump_major_version
@@ -76,7 +95,9 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
       with:
-        ref: chatforyou_v2  # 최신 커밋을 가져오기 위해
+        ref: chatforyou_v2
+        fetch-depth: 0
+        token: ${{ secrets.GITHUB_TOKEN }}
       
     - name: Setup Node.js
       uses: actions/setup-node@v4
