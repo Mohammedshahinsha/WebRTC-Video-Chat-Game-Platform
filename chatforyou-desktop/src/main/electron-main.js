@@ -66,7 +66,7 @@ function isValidLocalPath(fileUrl) {
             return false;
         }
         
-        // 파일 확장자 검증 (더 관대한 허용)
+        // 파일 확장자 검증
         const allowedExtensions = [
             '.html', '.htm', '.css', '.js', '.json', '.txt',
             '.svg', '.png', '.jpg', '.jpeg', '.gif', '.ico', '.webp',
@@ -620,13 +620,13 @@ app.on('web-contents-created', (event, contents) => {
     contents.setWindowOpenHandler(({ url }) => {
         if (url.startsWith('file://')) {
             // 보안: file:// URL의 경로 유효성 검사
-            // if (isValidLocalPath(url)) {
-            //     log.debug(`로컬 파일 네비게이션 허용: ${url}`);
-            //     return { action: 'allow' };
-            // } else {
-            //     log.warn(`보안: 허용되지 않은 파일 경로 차단: ${url}`);
-            //     return { action: 'deny' };
-            // }
+            if (isValidLocalPath(url)) {
+                log.debug(`로컬 파일 네비게이션 허용: ${url}`);
+                return { action: 'allow' };
+            } else {
+                log.warn(`보안: 허용되지 않은 파일 경로 차단: ${url}`);
+                return { action: 'deny' };
+            }
         }
         shell.openExternal(url);
         log.debug(`외부 링크를 기본 브라우저에서 열기: ${url}`);
@@ -635,11 +635,11 @@ app.on('web-contents-created', (event, contents) => {
     contents.on('will-navigate', (event, url) => {
         if (url.startsWith('file://')) {
             // 보안: 경로 유효성 검사
-            // if (!isValidLocalPath(url)) {
-            //     log.warn(`보안: will-navigate에서 허용되지 않은 경로 차단: ${url}`);
-            //     event.preventDefault();
-            //     return;
-            // }
+            if (!isValidLocalPath(url)) {
+                log.warn(`보안: will-navigate에서 허용되지 않은 경로 차단: ${url}`);
+                event.preventDefault();
+                return;
+            }
             
             // 로컬 파일 네비게이션 처리
             const urlPath = url.replace('file://', '');
@@ -660,10 +660,10 @@ app.on('web-contents-created', (event, contents) => {
                 const correctUrl = `file://${correctPath}${queryString}`;
                 
                 // 수정된 URL도 보안 검증
-                // if (!isValidLocalPath(correctUrl)) {
-                //     log.warn(`보안: 수정된 URL도 허용되지 않음: ${correctUrl}`);
-                //     return;
-                // }
+                if (!isValidLocalPath(correctUrl)) {
+                    log.warn(`보안: 수정된 URL도 허용되지 않음: ${correctUrl}`);
+                    return;
+                }
                 
                 log.debug(`HTML 네비게이션 수정: ${url} -> ${correctUrl}`);
                 contents.loadURL(correctUrl);
