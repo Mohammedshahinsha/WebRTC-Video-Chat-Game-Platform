@@ -13,50 +13,71 @@ let mainWindow;
 let updateManager = null; // AutoUpdateManager 인스턴스
 
 /**
- * 보안: file:// URL의 경로가 허용되는 디렉터리인지 검증
+ * 보안: file:// URL의 경로가 허용되는 디렉토리인지 검증
  * Directory Traversal 공격 방지
  */
 function isValidLocalPath(fileUrl) {
     try {
-        // file:// 프로토콜 제거
-        const urlPath = fileUrl.replace('file://', '');
+        // file:// 프로토콜 제거 및 Windows 경로 형식 처리
+        let urlPath = fileUrl.replace('file://', '');
+        
+        // Windows에서 슬래시 3개 (//) 처리
+        if (process.platform === 'win32' && urlPath.startsWith('/')) {
+            urlPath = urlPath.substring(1);
+        }
         
         // URL 디코딩 (..%2F 등의 인코딩된 경로 탐색 시도 방지)
         const decodedPath = decodeURIComponent(urlPath);
         
-        // 정규화된 절대 경로로 변환
-        const normalizedPath = path.resolve(decodedPath.split('?')[0]); // 쿼리 파라미터 제거
+        // 쿼리 파라미터와 해시 제거
+        const cleanPath = decodedPath.split('?')[0].split('#')[0];
         
-        // 허용되는 디렉터리 목록 (앱 디렉터리 내부만 허용)
+        // 정규화된 절대 경로로 변환 - Windows/Unix 호환
+        const normalizedPath = path.resolve(cleanPath);
+        
+        // 허용되는 디렉토리 목록 (앱 디렉토리 내부만 허용)
         const appDir = path.resolve(__dirname, '..');
         const allowedDirs = [
             path.join(appDir, 'templates'),
             path.join(appDir, 'static'),
-            path.join(appDir, 'config')
+            path.join(appDir, 'config'),
+            path.join(appDir, 'assets'),
+            path.join(appDir, 'resources')
         ];
         
-        // 경로가 허용된 디렉터리 내부에 있는지 확인
+        // 경로가 허용된 디렉터리 내부에 있는지 확인 - Windows 대소문자 무시
         const isInAllowedDir = allowedDirs.some(allowedDir => {
-            return normalizedPath.startsWith(path.resolve(allowedDir));
+            const resolvedAllowedDir = path.resolve(allowedDir);
+            if (process.platform === 'win32') {
+                return normalizedPath.toLowerCase().startsWith(resolvedAllowedDir.toLowerCase());
+            }
+            return normalizedPath.startsWith(resolvedAllowedDir);
         });
         
         if (!isInAllowedDir) {
-            log.warn(`보안: 허용되지 않은 디렉터리 접근 시도: ${normalizedPath}`);
+            log.warn(`보안: 허용되지 않은 디렉토리 접근 시도: ${normalizedPath}`);
             return false;
         }
         
-        // .. 경로 탐색 시도 차단 (정규화 후에도 추가 검사)
-        if (normalizedPath.includes('..') || decodedPath.includes('..')) {
-            log.warn(`보안: 경로 탐색 시도 차단: ${decodedPath}`);
+        // Directory traversal 공격 차단 - 더 정확한 검사
+        const relativePath = path.relative(appDir, normalizedPath);
+        if (relativePath.startsWith('..') || path.isAbsolute(relativePath)) {
+            log.warn(`보안: 경로 탐색 시도 차단: ${relativePath}`);
             return false;
         }
         
-        // 파일 확장자 검증 (허용되는 파일만)
-        const allowedExtensions = ['.html', '.css', '.js', '.json', '.svg', '.png', '.jpg', '.jpeg', '.gif', '.ico'];
+        // 파일 확장자 검증
+        const allowedExtensions = [
+            '.html', '.htm', '.css', '.js', '.json', '.txt',
+            '.svg', '.png', '.jpg', '.jpeg', '.gif', '.ico', '.webp',
+            '.woff', '.woff2', '.ttf', '.eot' // 웹폰트 지원
+        ];
+        
         const fileExtension = path.extname(normalizedPath).toLowerCase();
         
-        if (!allowedExtensions.includes(fileExtension)) {
-            log.warn(`보안: 허용되지 않은 파일 확장자: ${fileExtension}`);
+        // 확장자가 없는 경우나 허용된 확장자인 경우만 통과
+        if (fileExtension && !allowedExtensions.includes(fileExtension)) {
+            log.warn(`보안: 허용되지 않은 파일 확장자: ${fileExtension} (${normalizedPath})`);
             return false;
         }
         
